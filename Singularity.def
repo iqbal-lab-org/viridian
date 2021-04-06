@@ -1,0 +1,28 @@
+BootStrap: debootstrap
+OSVersion: focal
+MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+
+%environment
+export PATH=/bioinf-tools/:$PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export LANG=C.UTF-8
+
+
+%setup
+    mkdir $SINGULARITY_ROOTFS/viridian_workflow
+    rsync -a .ci/install_dependencies.sh MANIFEST.in viridian_workflow LICENSE tox.ini requirements.txt setup.py tests $SINGULARITY_ROOTFS/viridian_workflow/
+
+
+%post
+    #_____________________ setup $PATH _______________________#
+    export PATH=/bioinf-tools/:$PATH
+    export LANG=C.UTF-8
+
+    /viridian_workflow/install_dependencies.sh /bioinf-tools
+    pip3 install tox
+    cd /viridian_workflow
+    tox
+
+
+%runscript
+    viridian_workflow "$@"
