@@ -17,9 +17,12 @@ apt-get install -y \
   python3 \
   python3-pip \
   python3-setuptools \
+  python3-dev \
   wget \
-  zlib1g-dev
-
+  zlib1g-dev \
+  libbz2-dev \
+  liblzma-dev \
+  libhts-dev
 
 if [ ! -d $install_root ]; then
   mkdir $install_root
@@ -54,4 +57,7 @@ pip3 install .
 
 #________________________ qcovid ____________________________#
 cd $install_root
-# TODO: install qcovid
+git clone https://github.com/iqbal-lab-org/QCovid.git
+cd QCovid
+pip3 install -r requirements.txt
+pip3 install .
