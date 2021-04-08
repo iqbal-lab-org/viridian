@@ -31,5 +31,5 @@ def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2):
     viridian_out = os.path.join(outdir, "viridian")
     assembly = run_viridian(viridian_out, ref_genome, amplicon_bed, bam, bad_amplicons)
 
-    self_map = minimap.run(outdir, assembly, fq1, fq2)
+    # self_map = minimap.run(outdir, assembly, fq1, fq2)
     # qcovid.self_qc(outdir, assembly, self_mapping)

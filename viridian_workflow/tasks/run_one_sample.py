@@ -5,7 +5,7 @@ def run(options):
     one_sample_pipeline.run_one_sample(
         options.outdir,
         options.ref_fasta,
-        options.outdir,
+        options.amplicon_bed,
         options.fastq1,
         options.fastq2,
     )
