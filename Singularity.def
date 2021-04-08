@@ -22,6 +22,7 @@ export LANG=C.UTF-8
     pip3 install tox
     cd /viridian_workflow
     tox
+    pip3 install .
 
 
 %runscript

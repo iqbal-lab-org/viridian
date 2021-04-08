@@ -22,7 +22,8 @@ apt-get install -y \
   zlib1g-dev \
   libbz2-dev \
   liblzma-dev \
-  libhts-dev
+  libhts-dev \
+  samtools
 
 if [ ! -d $install_root ]; then
   mkdir $install_root

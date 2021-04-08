@@ -9,6 +9,8 @@ __all__ = [
     "one_sample_pipeline",
     "tasks",
     "utils",
+    "minimap",
+    "qcovid"
 ]
 
 from viridian_workflow import *
