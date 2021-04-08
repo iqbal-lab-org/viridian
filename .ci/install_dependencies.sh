@@ -59,5 +59,4 @@ pip3 install .
 cd $install_root
 git clone https://github.com/iqbal-lab-org/QCovid.git
 cd QCovid
-pip3 install -r requirements.txt
 pip3 install .
