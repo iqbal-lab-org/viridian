@@ -18,7 +18,7 @@ def run_viridian(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
         amplicon_bed,
         outdir,
     ]
-    assembly = os.path.join(outdir, "assembly.fa")
+    assembly = os.path.join(outdir, "consensus.final_assembly.fa")
     subprocess.Popen(viridian_cmd).wait()
     assert os.path.isfile(assembly)
     return assembly
