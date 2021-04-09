@@ -25,6 +25,7 @@ def run_viridian(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
 
 
 def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2):
+    os.mkdir(outdir)
     bam = minimap.run(outdir, ref_genome, fq1, fq2)
     bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
 
