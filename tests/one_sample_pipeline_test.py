@@ -94,6 +94,7 @@ def test_data():
         print(ref_fa, file=f)
 
     yield data
+    subprocess.check_output(f"rm -rf {outdir}", shell=True)
 
 
 def test_complete_assembly_from_all_good_amplicons(test_data):
