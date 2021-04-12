@@ -106,8 +106,6 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
     make_catted_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
-    # TODO: get this so it runs, then check the output looks "correct",
-    # for whatever we decide "correct" means
     one_sample_pipeline.run_one_sample(
         outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
     )

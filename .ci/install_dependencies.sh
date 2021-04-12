@@ -60,5 +60,5 @@ pip3 install .
 cd $install_root
 git clone https://github.com/iqbal-lab-org/QCovid.git
 cd QCovid
-git checkout 42f25a054aa5f9460a4de9aef17b4b8ea5e795e7
+git checkout 598ef7f9c6e267561021888abbe90727f2784188
 pip3 install .
