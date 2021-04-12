@@ -2,25 +2,28 @@ import subprocess
 import os
 
 from viridian_workflow import minimap, qcovid
+from viridian_workflow.utils import check_file, run_process
 
 
 def run_viridian(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
-    viridian_cmd = [
-        "viridian",
-        "assemble",
-        "--min_read_length",
-        "50",
-        "--bam",
-        bam,
-        "--amplicons_to_fail_file",
-        bad_amplicons,
-        ref_genome,
-        amplicon_bed,
-        outdir,
-    ]
+    viridian_cmd = " ".join(
+        [
+            "viridian",
+            "assemble",
+            "--min_read_length",
+            "50",
+            "--bam",
+            bam,
+            "--amplicons_to_fail_file",
+            bad_amplicons,
+            ref_genome,
+            amplicon_bed,
+            outdir,
+        ]
+    )
     assembly = os.path.join(outdir, "consensus.final_assembly.fa")
-    subprocess.Popen(viridian_cmd).wait()
-    assert os.path.isfile(assembly)
+    run_process(viridian_cmd)
+    check_file(assembly)
     return assembly
 
 
