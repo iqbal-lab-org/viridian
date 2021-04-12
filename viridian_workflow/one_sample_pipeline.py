@@ -36,7 +36,7 @@ def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2):
     assembly = run_viridian(viridian_out, ref_genome, amplicon_bed, bam, bad_amplicons)
 
     varifier_out = os.path.join(outdir, "varifier")
-    vcf = varifier.run(outdir, ref_genome, assembly)
+    vcf = varifier.run(varifier_out, ref_genome, assembly)
 
     # self_map = minimap.run(outdir, assembly, fq1, fq2)
     # qcovid.self_qc(outdir, assembly, self_mapping)
