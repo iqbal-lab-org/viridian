@@ -23,7 +23,8 @@ apt-get install -y \
   libbz2-dev \
   liblzma-dev \
   libhts-dev \
-  samtools
+  samtools \
+  mummer
 
 if [ ! -d $install_root ]; then
   mkdir $install_root
@@ -38,6 +39,9 @@ git checkout 4dfd495cc2816f67556bc6318654e572636ee40a
 make
 cd ..
 cp -s minimap2_git/minimap2 .
+wget https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
+tar -jxvf k8-0.2.4.tar.bz2
+cp k8-0.2.4/k8-`uname -s` k8
 
 #________________________ racon _____________________________#
 git clone --recursive https://github.com/lbcb-sci/racon.git racon-git
@@ -54,6 +58,13 @@ cd $install_root
 git clone https://github.com/iqbal-lab-org/viridian.git
 cd viridian
 git checkout 1bcb9f2df0130ae6d6873ad78c385ef03642b9c0
+pip3 install .
+
+#________________________ varifier __________________________#
+cd $install_root
+git clone https://github.com/iqbal-lab-org/varifier.git
+cd varifier
+git checkout 368079a27c36784a01a10ec17b3a2777b8013629
 pip3 install .
 
 #________________________ qcovid ____________________________#

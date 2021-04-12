@@ -13,7 +13,7 @@ class PipelineProcessError(Exception):
 
 def check_file(fn):
     if not os.path.isfile(fn):
-        raise OutputFileError(fn)
+        raise OutputFileError(os.path.abspath(fn))
 
 
 def run_process(cmd, ignore_error=False):
