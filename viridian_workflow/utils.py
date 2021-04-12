@@ -27,5 +27,5 @@ def run_process(cmd, ignore_error=False):
     )
     logging.info(result.stdout)
     if not ignore_error and result.returncode != 0:
-        raise PipelineProcessError("Process returned {result.returncode}")
+        raise PipelineProcessError(f"Process returned {result.returncode}")
         logging.error(result.stderr)
