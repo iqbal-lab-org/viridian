@@ -27,6 +27,7 @@ apt-get install -y \
   curl \
   libvcflib-tools \
   libcurl4-gnutls-dev \
+  libssl-dev \
   samtools
 
 if [ ! -d $install_root ]; then
