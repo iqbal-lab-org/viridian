@@ -1,0 +1,17 @@
+dist: focal
+language: python
+
+python:
+  - '3.6'
+
+install: sudo ./.ci/install_dependencies.sh /bioinf-tools
+
+before_script:
+    - export PATH=$HOME/bioinf-tools/:$PATH
+
+script:
+  - tox
+
+notifications:
+  email: false
+

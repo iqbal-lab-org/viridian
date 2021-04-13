@@ -136,10 +136,15 @@ def test_complete_assembly_no_reads_map(test_data):
         one_sample_pipeline.run_one_sample(
             outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
         )
-    except utils.OutputFileError:
+    except utils.OutputFileError as error:
         # This test should fail on viridian, producing no consensus
         # TODO specify that it was the consensus file that's missing
-        pass
+        if str(error) != str(
+            os.path.abspath(
+                os.path.join(outdir, "viridian/consensus.final_assembly.fa")
+            )
+        ):
+            raise error
 
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
