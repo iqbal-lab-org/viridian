@@ -30,6 +30,8 @@ apt-get install -y \
   libssl-dev \
   samtools
 
+pip3 install tox
+
 if [ ! -d $install_root ]; then
   mkdir $install_root
 fi

@@ -159,7 +159,12 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
     make_catted_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
-        outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
+        outdir,
+        test_data["ref_fasta"],
+        test_data["amplicons_bed"],
+        fq1,
+        fq2,
+        keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
@@ -175,7 +180,12 @@ def test_assembly_amplicon_3_no_reads(test_data):
     make_catted_reads_for_amplicon_set(test_data, amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
-        outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
+        outdir,
+        test_data["ref_fasta"],
+        test_data["amplicons_bed"],
+        fq1,
+        fq2,
+        keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
@@ -197,7 +207,7 @@ def test_complete_assembly_with_snps_and_indels(test_data):
     ref_seq.pop(1200)
     nucleotides_list_to_fasta_file(ref_seq, "ref", ref_fasta)
     one_sample_pipeline.run_one_sample(
-        outdir, ref_fasta, test_data["amplicons_bed"], fq1, fq2
+        outdir, ref_fasta, test_data["amplicons_bed"], fq1, fq2, keep_intermediate=True
     )
     # TODO: check that we got the expected output
     # Should be something like this in the VCF (which doesn't yet exist):
@@ -217,7 +227,12 @@ def test_reads_are_wgs_not_amplicon(test_data):
     tiling_reads(test_data["ref_seq"], 150, 350, fq1, fq2, step=2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
-        outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
+        outdir,
+        test_data["ref_fasta"],
+        test_data["amplicons_bed"],
+        fq1,
+        fq2,
+        keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
@@ -240,7 +255,7 @@ def test_not_expected_amplicons(test_data):
     make_amplicons(amplicons_bed, amplicons=amplicons)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
-        outdir, test_data["ref_fasta"], amplicons_bed, fq1, fq2
+        outdir, test_data["ref_fasta"], amplicons_bed, fq1, fq2, keep_intermediate=True
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)

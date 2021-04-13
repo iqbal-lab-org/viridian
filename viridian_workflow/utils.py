@@ -16,6 +16,10 @@ def check_file(fn):
         raise OutputFileError(os.path.abspath(fn))
 
 
+def rm(fn):
+    subprocess.run(f"rm {fn}")
+
+
 def run_process(cmd, ignore_error=False):
     logging.info(f"Running: {cmd}")
     result = subprocess.run(

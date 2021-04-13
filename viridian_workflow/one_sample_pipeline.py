@@ -27,7 +27,7 @@ def run_viridian(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
     return assembly
 
 
-def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2):
+def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate=False):
     os.mkdir(outdir)
     bam = minimap.run(outdir, ref_genome, fq1, fq2)
     bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
@@ -37,6 +37,12 @@ def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2):
 
     varifier_out = os.path.join(outdir, "varifier")
     vcf = varifier.run(varifier_out, ref_genome, assembly)
+    check_file(vcf)
+
+    # clean up intermediate files
+    if not keep_intermediate:
+        utils.rm(bam)
+        utils.rm(bam + ".bai")
 
     # self_map = minimap.run(outdir, assembly, fq1, fq2)
     # qcovid.self_qc(outdir, assembly, self_mapping)
