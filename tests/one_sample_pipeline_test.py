@@ -7,7 +7,7 @@ import tempfile
 
 import pyfastaq
 
-from viridian_workflow import one_sample_pipeline
+from viridian_workflow import one_sample_pipeline, utils
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "one_sample_pipeline")
@@ -132,10 +132,15 @@ def test_complete_assembly_no_reads_map(test_data):
         print("@read1/1", "A" * 100, "+", "I" * 100, sep="\n", file=f1)
         print("@read1/2", "A" * 100, "+", "I" * 100, sep="\n", file=f2)
     outdir = f"{pre_out}.out"
-    one_sample_pipeline.run_one_sample(
-        outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
-    )
-    # TODO: check that we got the expected output
+    try:
+        one_sample_pipeline.run_one_sample(
+            outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
+        )
+    except utils.OutputFileError:
+        # This test should fail on viridian, producing no consensus
+        # TODO specify that it was the consensus file that's missing
+        pass
+
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
 
