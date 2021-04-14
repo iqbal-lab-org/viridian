@@ -18,7 +18,7 @@ def check_file(fn):
 
 def rm(fn):
     logging.info(f"Deleting file: {os.path.abspath(fn)}")
-    subprocess.run(f"rm {os.path.abspath(fn)}")
+    os.remove(os.path.abspath(fn))
 
 
 def run_process(cmd, ignore_error=False, stdout=None):

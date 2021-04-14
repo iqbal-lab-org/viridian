@@ -8,7 +8,7 @@ from viridian_workflow.utils import run_process, check_file
 def run(outdir, ref_genome, fq1, fq2, prefix=None):
     bam = os.path.join(outdir, "reference_mapped.bam")
     if prefix:
-        bam = os.path.join(outdir, "{prefix}-reference_mapped.bam")
+        bam = os.path.join(outdir, f"{prefix}-reference_mapped.bam")
 
     minimap_cmd = ["minimap2", "-ax", "sr", ref_genome, fq1, fq2]
     sort_cmd = ["samtools", "sort", "-o", bam]
