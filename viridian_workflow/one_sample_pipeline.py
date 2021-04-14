@@ -2,7 +2,7 @@ import subprocess
 import os
 
 from viridian_workflow import minimap, qcovid, varifier
-from viridian_workflow.utils import check_file, run_process
+from viridian_workflow.utils import check_file, run_process, rm
 
 
 def run_viridian(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
@@ -36,13 +36,15 @@ def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate
     assembly = run_viridian(viridian_out, ref_genome, amplicon_bed, bam, bad_amplicons)
 
     varifier_out = os.path.join(outdir, "varifier")
-    vcf = varifier.run(varifier_out, ref_genome, assembly)
+    self_map = minimap.run(outdir, assembly, fq1, fq2, prefix="self_qc")
+    masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
+
+    vcf = varifier.run(varifier_out, ref_genome, masked_fasta)
     check_file(vcf)
 
     # clean up intermediate files
     if not keep_intermediate:
-        utils.rm(bam)
-        utils.rm(bam + ".bai")
-
-    # self_map = minimap.run(outdir, assembly, fq1, fq2)
-    # qcovid.self_qc(outdir, assembly, self_mapping)
+        rm(bam)
+        rm(bam + ".bai")
+        rm(self_map)
+        rm(self_map + ".bai")
