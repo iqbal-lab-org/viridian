@@ -10,7 +10,7 @@ before_script:
     - export PATH=/bioinf-tools:$PATH
 
 script:
-  - tox
+  - tox --sitepackages
 
 notifications:
   email: false
