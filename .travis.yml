@@ -2,7 +2,7 @@ dist: focal
 language: python
 
 python:
-  - '3.8'
+  - '3.6'
 
 install: sudo ./.ci/install_dependencies.sh /bioinf-tools
 
@@ -10,7 +10,7 @@ before_script:
     - export PATH=/bioinf-tools:$PATH
 
 script:
-  - tox --sitepackages
+  - tox
 
 notifications:
   email: false
