@@ -4,7 +4,7 @@
 ## Installation
 
 ```
-singularity build viridian_workflow.img Singularity.img
+singularity build viridian_workflow.img Singularity.def
 ```
 
 ## Usage
