@@ -5,15 +5,35 @@ from viridian_workflow import minimap, qcovid, varifier
 from viridian_workflow.utils import check_file, run_process, rm
 
 
-def run_viridian(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
+def run_viridian_illumina(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
     viridian_cmd = " ".join(
         [
             "viridian",
             "assemble",
-            "--min_read_length",
-            "50",
             "--bam",
             bam,
+            "illumina",
+            "--amplicons_to_fail_file",
+            bad_amplicons,
+            ref_genome,
+            amplicon_bed,
+            outdir,
+        ]
+    )
+    assembly = os.path.join(outdir, "consensus.final_assembly.fa")
+    run_process(viridian_cmd)
+    check_file(assembly)
+    return assembly
+
+
+def run_viridian_ont(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
+    viridian_cmd = " ".join(
+        [
+            "viridian",
+            "assemble",
+            "--bam",
+            bam,
+            "ont",
             "--amplicons_to_fail_file",
             bad_amplicons,
             ref_genome,
@@ -33,7 +53,9 @@ def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate
     bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
 
     viridian_out = os.path.join(outdir, "viridian")
-    assembly = run_viridian(viridian_out, ref_genome, amplicon_bed, bam, bad_amplicons)
+    assembly = run_viridian_illumina(
+        viridian_out, ref_genome, amplicon_bed, bam, bad_amplicons
+    )
 
     varifier_out = os.path.join(outdir, "varifier")
     self_map = minimap.run(outdir, assembly, fq1, fq2, prefix="self_qc")
