@@ -10,7 +10,7 @@ def run(outdir, ref_genome, fq1, fq2, prefix=None, threads=4):
     if prefix:
         bam = os.path.join(outdir, f"{prefix}-reference_mapped.bam")
 
-    minimap_cmd = ["minimap2", "-t", threads, "-ax", "sr", ref_genome, fq1, fq2]
+    minimap_cmd = ["minimap2", "-t", str(threads), "-ax", "sr", ref_genome, fq1, fq2]
     sort_cmd = ["samtools", "sort", "-o", bam]
 
     map_proc = subprocess.Popen(minimap_cmd, stdout=subprocess.PIPE)
