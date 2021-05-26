@@ -1,54 +1,42 @@
 dist: focal
 language: go
-
 go:
-  - '1.16'
-
+- '1.16'
 python:
-  - '3.6'
-
+- '3.6'
 addons:
-    # this bit cribbed from https://github.com/singularityhub/travis-ci/blob/master/.travis.yml
   apt:
     packages:
-      - flawfinder
-      - squashfs-tools
-      - uuid-dev
-      - libuuid1
-      - libffi-dev
-      - libssl-dev
-        #      - libssl1.0.0 # obsoleted
-      - libarchive-dev
-      - libgpgme11-dev
-      - libseccomp-dev
+    - flawfinder
+    - squashfs-tools
+    - uuid-dev
+    - libuuid1
+    - libffi-dev
+    - libssl-dev
+    - libarchive-dev
+    - libgpgme11-dev
+    - libseccomp-dev
   homebrew:
     packages:
-      - squashfs
+    - squashfs
     update: true
-
 sudo: required
-
 install:
-    - # sudo ./.ci/install_dependencies.sh /bioinf-tools
-
+- 
 before_install:
-    - sudo chmod u+x .ci/*.sh
-    - /bin/bash .ci/setup.sh
-
+- sudo chmod u+x .ci/*.sh
+- "/bin/bash .ci/setup.sh"
 before_script:
-    - export PATH=/bioinf-tools:$PATH
-
+- export PATH=/bioinf-tools:$PATH
 script:
-    #  - tox
-  - /bin/bash .ci/build.sh
-
+- "/bin/bash .ci/build.sh"
 notifications:
   email: false
-
-  #deploy:
-    #provider: releases
-    #    api_key: ""
-    #file: viridian_workflow.img
-    #skip_cleanup: true
-    #on:
-    #    tags: true
+deploy:
+  provider: releases
+  api_key:
+    secure: CB7vmBLVk0CmZg5IkIORXwEKNWjbwjOq+gnVWnyrLU84bsMekXSXpchnhsQ4nHcuI+YDE3AGgywNmfNq3f6t2NQieJS1QtqfbOU2ufGGCV6DFAXthSr1Fb4gUI1fC2N4atvDxHKoaXrDMhFxIu9sSb9H1n2BTmCJP6XyH56XTCuAu5/FAiqwTrakTpAHRCqWZGiwIhXr4Gwd6DShcXuB6bEpdxaT7iOPHj89QkOMktL4sZEZycOGXRJeYm7xRMsEs7nip3pIsHo344xyLv4u8NuH3rtQZx+movuNdxIRLP2isg810K5nYuKK4A4GBJ9gr53HhZUXEflYJOIIs7qjTM4Tzs5gXEywu2DJP2WVaOsAWHnjIN4hYySHKDL2CCBbpHQl3c1BeaasSbnk9bV5xpYCvyk1bc56Y6XmxRoM9O66xSZJdkzVo09ZZq6p5dSfS7B974JM3kCztRJrrH2Err+ortpQHl0YJndd0rwta+CKbILP941kYmROVRkDEG4jJjcXxpr+eNOqdMipR0SiabWVaXGujb+BjieBp9CXsE/ZPvVL1nT+IVYDXdzaPG79MGbmAH/tjPVLl+qVSFfHDuxGNigEXTFm/xje4z1VhdrS21jHWpnw4otmy4aIBjrjhnu7++b2HfP84di+BTpoHGc6oLUdDugrC5qRENu7un8=
+  file: viridian_workflow.img
+  skip_cleanup: true
+  on:
+    tags: true
