@@ -1,4 +1,4 @@
-dist: linux
+dist: focal
 language: go
 
 go:
