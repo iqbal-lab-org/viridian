@@ -7,7 +7,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="viridian_workflow",
-    version="0.1.0",
+    version="0.1.1",
     description="FIXME",
     packages=find_packages(),
     author="Jeff Knaggs,Martin Hunt",
