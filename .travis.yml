@@ -17,7 +17,7 @@ addons:
       - libuuid1
       - libffi-dev
       - libssl-dev
-      - libssl1.0.0
+        #      - libssl1.0.0 # obsoleted
       - libarchive-dev
       - libgpgme11-dev
       - libseccomp-dev
