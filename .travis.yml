@@ -1,17 +1,54 @@
-dist: focal
-language: python
+dist: linux
+language: go
+
+go:
+  - '1.16'
 
 python:
   - '3.6'
 
-install: sudo ./.ci/install_dependencies.sh /bioinf-tools
+addons:
+    # this bit cribbed from https://github.com/singularityhub/travis-ci/blob/master/.travis.yml
+  apt:
+    packages:
+      - flawfinder
+      - squashfs-tools
+      - uuid-dev
+      - libuuid1
+      - libffi-dev
+      - libssl-dev
+      - libssl1.0.0
+      - libarchive-dev
+      - libgpgme11-dev
+      - libseccomp-dev
+  homebrew:
+    packages:
+      - squashfs
+    update: true
+
+sudo: required
+
+install:
+    - # sudo ./.ci/install_dependencies.sh /bioinf-tools
+
+before_install:
+    - sudo chmod u+x .ci/*.sh
+    - /bin/bash .ci/setup.sh
 
 before_script:
     - export PATH=/bioinf-tools:$PATH
 
 script:
-  - tox
+    #  - tox
+  - /bin/bash .ci/build.sh
 
 notifications:
   email: false
 
+  #deploy:
+    #provider: releases
+    #    api_key: ""
+    #file: viridian_workflow.img
+    #skip_cleanup: true
+    #on:
+    #    tags: true
