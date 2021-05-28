@@ -32,9 +32,3 @@ script:
 - "/bin/bash .ci/build.sh"
 notifications:
   email: false
-deploy:
-  provider: releases
-  api_key:
-    secure: eIyScqse98lP+QUi1XnZ/0rCc3a7/7NJMqlwAK2tEubj6o0DVVsYCdNl6Dv3MVAXpRf1HXrKm3yRhxnJN6Zl9K1gKt6vbB6S2yTsw4gtQm/Snl35vbRKeOXtXgJECFKNvWpmM15n8TCpkSmXSLordLlicDebwVXZCH/xuQT/jiEN/KaIwiQi8JIPuWjWE3i4KeNvy5Vreq3t4sr9PppEa+3XVp5m5h9xbH91EICDT7cIvWAun3dAKrbhINxQ9eGaqzi1z4uC5hAp8d0doPlf9Wf4z8dXtd6iFZeKRfNb2tFtgCHT/JnSgp2rlga23tcfgA56wr7+COXa8H5YXs56qVagv2QH8i9aNC5M9mvrzege3QB/MPJ7R0S1iqBCt4PBIMSnybSNPOZAJn0G4adMaTp/HBGFWMRjvAq4kC2wPOJffCXeIcH6GL05ccByXC90msmLhbA9WBjyw3SZ1mqYHTIBFnwMXfVfg4irkfmQFiAi6p5HO7j2Wi5RP7kDQhmHjpSUm2Eq8y6iiIH6uxHkV8owyXEKvrJG9k/CPLO2pZPOu+nojQpLgGJtKju187l9SvuOhVTuCfDmX+5AiseMXFhPsNJvBqOKviPI+N/9u+axHMiHumBNT+SLEqVeDUDy/VtHCa7256sXNx4xVygE3YGIFDbvCO4JIdZbxT08cgI=
-  file: viridian_workflow.img
-  skip_cleanup: true
