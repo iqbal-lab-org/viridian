@@ -51,6 +51,31 @@ def main(args=None):
 
     subparser_run_one_sample.set_defaults(func=viridian_workflow.tasks.run_one_sample.run)
 
+    # ------------------------ run_one_sample_ont -------------------------
+    subparser_run_one_sample_ont = subparsers.add_parser(
+        "run_one_sample_ont",
+        help="Help for run_one_sample (Nanopore)",
+        usage="viridian_workflow run_one_sample_ont [options] <ref_fasta>",
+        description="description of run_one_sample_ont",
+    )
+    subparser_run_one_sample_ont.add_argument(
+        "ref_fasta",
+        help="FASTA file of reference genome",
+    )
+    subparser_run_one_sample_ont.add_argument(
+        "amplicon_bed",
+        help="Amplicon coordinate file",
+    )
+    subparser_run_one_sample_ont.add_argument(
+        "fastq",
+        help="fq",
+    )
+    subparser_run_one_sample_ont.add_argument(
+        "outdir",
+        help="outdir",
+    )
+
+
     args = parser.parse_args()
 
     logging.basicConfig(

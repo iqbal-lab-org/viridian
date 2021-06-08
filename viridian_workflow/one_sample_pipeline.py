@@ -46,9 +46,10 @@ def run_viridian_ont(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
     check_file(assembly)
     return assembly
 
-def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate=False):
+
+def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq, keep_intermediate=False):
     os.mkdir(outdir)
-    bam = minimap.run(outdir, ref_genome, fq1, fq2)
+    bam = minimap.run_se(outdir, ref_genome, fq)
     bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
 
     viridian_out = os.path.join(outdir, "viridian")
@@ -57,7 +58,7 @@ def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermed
     )
 
     varifier_out = os.path.join(outdir, "varifier")
-    self_map = minimap.run(outdir, assembly, fq1, fq2, prefix="self_qc")
+    self_map = minimap.run_se(outdir, assembly, fq, prefix="self_qc")
     masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
 
     vcf = varifier.run(varifier_out, ref_genome, masked_fasta)
@@ -69,6 +70,7 @@ def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermed
         rm(bam + ".bai")
         rm(self_map)
         rm(self_map + ".bai")
+
 
 def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate=False):
     os.mkdir(outdir)
