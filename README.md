@@ -12,3 +12,11 @@ singularity build viridian_workflow.img Singularity.def
 ```
 singularity run viridian_workflow.img run_one_sample data/MN908947.fasta data/nCoV-artic-v3.bed sample_R1.fastq.gz sample_R2.fastq.gz sample_outdir/
 ```
+
+Single-end read Nanopore:
+
+```
+singularity run viridian_workflow.img run_one_sample_ont data/MN908947.fasta data/nCoV-artic-v3.bed sample.fastq.gz sample_R2.fastq.gz sample_outdir/
+```
+
+

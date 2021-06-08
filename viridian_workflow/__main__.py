@@ -12,7 +12,9 @@ def main(args=None):
         description="viridian_workflow: ...",  # FIXME
     )
 
-    parser.add_argument("--version", action="version", version=viridian_workflow.__version__)
+    parser.add_argument(
+        "--version", action="version", version=viridian_workflow.__version__
+    )
     parser.add_argument(
         "--debug",
         help="More verbose logging, and less file cleaning",
@@ -29,27 +31,24 @@ def main(args=None):
         description="description of run_one_sample",
     )
     subparser_run_one_sample.add_argument(
-        "ref_fasta",
-        help="FASTA file of reference genome",
+        "ref_fasta", help="FASTA file of reference genome",
     )
     subparser_run_one_sample.add_argument(
-        "amplicon_bed",
-        help="Amplicon coordinate file",
+        "amplicon_bed", help="Amplicon coordinate file",
     )
     subparser_run_one_sample.add_argument(
-        "fastq1",
-        help="fq1",
+        "fastq1", help="fq1",
     )
     subparser_run_one_sample.add_argument(
-        "fastq2",
-        help="fq2",
+        "fastq2", help="fq2",
     )
     subparser_run_one_sample.add_argument(
-        "outdir",
-        help="outdir",
+        "outdir", help="outdir",
     )
 
-    subparser_run_one_sample.set_defaults(func=viridian_workflow.tasks.run_one_sample.run)
+    subparser_run_one_sample.set_defaults(
+        func=viridian_workflow.tasks.run_one_sample.run
+    )
 
     # ------------------------ run_one_sample_ont -------------------------
     subparser_run_one_sample_ont = subparsers.add_parser(
@@ -59,22 +58,21 @@ def main(args=None):
         description="description of run_one_sample_ont",
     )
     subparser_run_one_sample_ont.add_argument(
-        "ref_fasta",
-        help="FASTA file of reference genome",
+        "ref_fasta", help="FASTA file of reference genome",
     )
     subparser_run_one_sample_ont.add_argument(
-        "amplicon_bed",
-        help="Amplicon coordinate file",
+        "amplicon_bed", help="Amplicon coordinate file",
     )
     subparser_run_one_sample_ont.add_argument(
-        "fastq",
-        help="fq",
+        "fastq", help="fq",
     )
     subparser_run_one_sample_ont.add_argument(
-        "outdir",
-        help="outdir",
+        "outdir", help="outdir",
     )
 
+    subparser_run_one_sample_ont.set_defaults(
+        func=viridian_workflow.tasks.run_one_sample.run_ont
+    )
 
     args = parser.parse_args()
 
