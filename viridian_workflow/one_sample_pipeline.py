@@ -50,7 +50,7 @@ def run_viridian_ont(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
 def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq, keep_intermediate=False):
     os.mkdir(outdir)
     bam = minimap.run_se(outdir, ref_genome, fq)
-    bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
+    bad_amplicons = qcovid.bin_amplicons_se(outdir, ref_genome, amplicon_bed, bam)
 
     viridian_out = os.path.join(outdir, "viridian")
     assembly = run_viridian_ont(
