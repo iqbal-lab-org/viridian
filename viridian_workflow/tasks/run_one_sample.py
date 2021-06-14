@@ -7,7 +7,7 @@ def run_ont(options):
         options.ref_fasta,
         options.amplicon_bed,
         options.fastq,
-        options.target_sample_depth,
+        target_sample_depth=options.target_sample_depth,
     )
 
 
@@ -18,5 +18,5 @@ def run(options):
         options.amplicon_bed,
         options.fastq1,
         options.fastq2,
-        options.target_sample_depth,
+        target_sample_depth=options.target_sample_depth,
     )
