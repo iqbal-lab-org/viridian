@@ -1,7 +1,10 @@
+from collections import namedtuple
 import logging
 import os
 import subprocess
 import time
+
+import pyfastaq
 
 
 class OutputFileError(Exception):
@@ -42,3 +45,27 @@ def run_process(cmd, ignore_error=False, stdout=None):
     if not ignore_error and result.returncode != 0:
         raise PipelineProcessError(f"Process returned {result.returncode}")
         logging.error(result.stderr)
+
+
+def load_amplicons_bed_file(infile):
+    Amplicon = namedtuple("Amplicon", ("name", "start", "end"))
+    amplicons = []
+
+    with open(infile) as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            name, start, end = line.rstrip().split("\t")
+            amplicons.append(Amplicon(name, int(start), int(end) - 1))
+
+    return amplicons
+
+
+def load_single_seq_fasta(infile):
+    d = {}
+    pyfastaq.tasks.file_to_dict(infile, d)
+    if len(d) != 1:
+        raise Exception(
+            f"Expected exatcly 1 sequence in {infile} but got {len(d)} sequences"
+        )
+    return list(d.values())[0]
