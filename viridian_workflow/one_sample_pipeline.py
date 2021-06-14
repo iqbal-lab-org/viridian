@@ -47,11 +47,24 @@ def run_viridian_ont(outdir, ref_genome, amplicon_bed, bam, bad_amplicons):
     return assembly
 
 
-def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq, keep_intermediate=False, target_sample_depth=1000):
+def run_one_sample_ont(
+    outdir,
+    ref_genome,
+    amplicon_bed,
+    fq,
+    keep_intermediate=False,
+    target_sample_depth=1000,
+):
     os.mkdir(outdir)
     all_reads_bam = minimap.run_se(outdir, ref_genome, fq)
     sample_outprefix = os.path.join(outdir, "sample")
-    sampler = sample_reads.sample_reads(ref_genome, all_reads_bam, sample_outprefix, amplicon_bed, target_depth=target_sample_depth)
+    sampler = sample_reads.sample_reads(
+        ref_genome,
+        all_reads_bam,
+        sample_outprefix,
+        amplicon_bed,
+        target_depth=target_sample_depth,
+    )
     bam = sampler.bam_out
     bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
 
@@ -78,11 +91,25 @@ def run_one_sample_ont(outdir, ref_genome, amplicon_bed, fq, keep_intermediate=F
         rm(sampler.fq_out)
 
 
-def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate=False, target_sample_depth=1000):
+def run_one_sample(
+    outdir,
+    ref_genome,
+    amplicon_bed,
+    fq1,
+    fq2,
+    keep_intermediate=False,
+    target_sample_depth=1000,
+):
     os.mkdir(outdir)
     all_reads_bam = minimap.run(outdir, ref_genome, fq1, fq2)
     sample_outprefix = os.path.join(outdir, "sample")
-    sampler = sample_reads.sample_reads(ref_genome, all_reads_bam, sample_outprefix, amplicon_bed, target_depth=target_sample_depth)
+    sampler = sample_reads.sample_reads(
+        ref_genome,
+        all_reads_bam,
+        sample_outprefix,
+        amplicon_bed,
+        target_depth=target_sample_depth,
+    )
     bam = sampler.bam_out
     bad_amplicons = qcovid.bin_amplicons(outdir, ref_genome, amplicon_bed, bam)
 
@@ -92,7 +119,9 @@ def run_one_sample(outdir, ref_genome, amplicon_bed, fq1, fq2, keep_intermediate
     )
 
     varifier_out = os.path.join(outdir, "varifier")
-    self_map = minimap.run(outdir, assembly, sampler.fq_out1, sampler.fq_out2, prefix="self_qc")
+    self_map = minimap.run(
+        outdir, assembly, sampler.fq_out1, sampler.fq_out2, prefix="self_qc"
+    )
     masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
 
     vcf = varifier.run(varifier_out, ref_genome, masked_fasta)

@@ -9,8 +9,17 @@ from viridian_workflow import utils
 
 random.seed(42)
 
+
 class ReadSampler:
-    def __init__(self, ref_fasta, bam_in, outprefix, amplicons_bed, target_depth, min_read_overlap_proportion=0.5):
+    def __init__(
+        self,
+        ref_fasta,
+        bam_in,
+        outprefix,
+        amplicons_bed,
+        target_depth,
+        min_read_overlap_proportion=0.5,
+    ):
         self.ref_genome = utils.load_single_seq_fasta(ref_fasta)
         self.amplicons = utils.load_amplicons_bed_file(amplicons_bed)
         self.bam_in = bam_in
@@ -42,7 +51,7 @@ class ReadSampler:
             start = max(amplicon.start, read.reference_start)
         except:
             return 0
-        overlap = max(0, end - start  + 1)
+        overlap = max(0, end - start + 1)
         if overlap / read.query_length > self.min_read_overlap_proportion:
             return overlap
         else:
@@ -53,16 +62,22 @@ class ReadSampler:
         reads = {}
         previous_index = None if amplicon_index == 0 else amplicon_index - 1
 
-        for read in self.aln_file_in.fetch(self.ref_genome.id, amplicon.start, amplicon.end + 1):
+        for read in self.aln_file_in.fetch(
+            self.ref_genome.id, amplicon.start, amplicon.end + 1
+        ):
             if self.reads_are_paired != read.is_paired:
-                raise Exception("Mix of paired and unpaired reads in BAM file {self.bam_in}. Cannot continue")
+                raise Exception(
+                    "Mix of paired and unpaired reads in BAM file {self.bam_in}. Cannot continue"
+                )
 
             if read.query_name in self.mates_wanted:
                 mate = self.mates_wanted[read.query_name]
                 if read.is_read1 != mate.is_read1:
                     self.aln_file_out.write(read)
                     self.aln_file_out.write(self.mates_wanted[read.query_name])
-                    total_bases_mapped += self.read_overlap_length_with_amplicon(read, amplicon)
+                    total_bases_mapped += self.read_overlap_length_with_amplicon(
+                        read, amplicon
+                    )
                     self.used_reads.add(read.query_name)
                     del self.mates_wanted[read.query_name]
                 continue
@@ -77,12 +92,16 @@ class ReadSampler:
                 continue
 
             overlap_len = self.read_overlap_length_with_amplicon(read, amplicon)
-            next_overlap_len = self.read_overlap_length_with_amplicon(read, next_amplicon)
+            next_overlap_len = self.read_overlap_length_with_amplicon(
+                read, next_amplicon
+            )
             total_bases_mapped += overlap_len
 
             if overlap_len == 0 or overlap_len < next_overlap_len:
                 if self.reads_are_paired:
-                    self.read_cache[amplicon_index][(read.query_name, read.is_read1)] = read
+                    self.read_cache[amplicon_index][
+                        (read.query_name, read.is_read1)
+                    ] = read
                 continue
 
             if read.query_name not in reads:
@@ -90,10 +109,11 @@ class ReadSampler:
 
             reads[read.query_name][read.is_read1] = (overlap_len, read)
             if self.reads_are_paired and previous_index is not None:
-                self.read_cache[previous_index].pop((read.query_name, read.is_read1), None)
+                self.read_cache[previous_index].pop(
+                    (read.query_name, read.is_read1), None
+                )
 
         return reads, total_bases_mapped
-
 
     def write_reads_for_one_amplicon(self, reads, amplicon, amplicon_index):
         read_names = sorted(list(reads.keys()))
@@ -174,31 +194,43 @@ class ReadSampler:
             pysam.fastq("-0", self.fq_out, self.bam_out)
 
     def run(self):
-        logging.info(f"Start sampling reads from {self.bam_in}, target depth is {self.target_depth}")
+        logging.info(
+            f"Start sampling reads from {self.bam_in}, target depth is {self.target_depth}"
+        )
         self.aln_file_in = pysam.AlignmentFile(self.bam_in, "rb")
         self.reads_are_paired = self.bam_is_paired_reads(self.aln_file_in)
         unsorted_bam = self.bam_out + ".tmp.unsorted.bam"
-        self.aln_file_out = pysam.AlignmentFile(unsorted_bam, "wb", template=self.aln_file_in)
+        self.aln_file_out = pysam.AlignmentFile(
+            unsorted_bam, "wb", template=self.aln_file_in
+        )
         self.mates_wanted = {}
         self.used_reads = set()
         self.initialise_output_json_data()
         self.read_cache = {i: {} for i in range(len(self.amplicons))}
 
         for i, amplicon in enumerate(self.amplicons):
-            logging.info(f"Start processing amplicon {amplicon.name} ({i+1}/{len(self.amplicons)})")
+            logging.info(
+                f"Start processing amplicon {amplicon.name} ({i+1}/{len(self.amplicons)})"
+            )
             if i <= len(self.amplicons) - 2:
-                next_amplicon = self.amplicons[i+1]
+                next_amplicon = self.amplicons[i + 1]
             else:
                 next_amplicon = None
 
-            amplicon_reads, bases_mapped = self.get_reads_for_amplicon(i, amplicon, next_amplicon)
-            sampled_bases = self.write_reads_for_one_amplicon(amplicon_reads, amplicon, i)
+            amplicon_reads, bases_mapped = self.get_reads_for_amplicon(
+                i, amplicon, next_amplicon
+            )
+            sampled_bases = self.write_reads_for_one_amplicon(
+                amplicon_reads, amplicon, i
+            )
             if i > 0:
-                del self.read_cache[i-1]
+                del self.read_cache[i - 1]
 
             self.output_json_data[amplicon.name]["total_mapped_bases"] = bases_mapped
             self.output_json_data[amplicon.name]["sampled_bases"] = sampled_bases
-            logging.info(f"Finish processing amplicon {amplicon.name} ({i+1}/{len(self.amplicons)})")
+            logging.info(
+                f"Finish processing amplicon {amplicon.name} ({i+1}/{len(self.amplicons)})"
+            )
 
         self.finalise_output_json_data()
         self.aln_file_out.close()
@@ -217,7 +249,21 @@ class ReadSampler:
         logging.info(f"Finished sampling reads. Final BAM file is {self.bam_out}")
 
 
-def sample_reads(ref_fasta, bam_in, outprefix, amplicons_bed, target_depth=1000, min_read_overlap_proportion=0.5):
-    sampler = ReadSampler(ref_fasta, bam_in, outprefix, amplicons_bed, target_depth, min_read_overlap_proportion=min_read_overlap_proportion)
+def sample_reads(
+    ref_fasta,
+    bam_in,
+    outprefix,
+    amplicons_bed,
+    target_depth=1000,
+    min_read_overlap_proportion=0.5,
+):
+    sampler = ReadSampler(
+        ref_fasta,
+        bam_in,
+        outprefix,
+        amplicons_bed,
+        target_depth,
+        min_read_overlap_proportion=min_read_overlap_proportion,
+    )
     sampler.run()
     return sampler

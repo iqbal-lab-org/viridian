@@ -28,11 +28,18 @@ def make_test_amplicons_bed(outfile):
 
 def write_read(name, ref_seq, start, end, filehandle, revcomp=False):
     if revcomp:
-        seq = pyfastaq.sequences.Fastq(name, ref_seq[start:end], "I" * (end -start))
+        seq = pyfastaq.sequences.Fastq(name, ref_seq[start:end], "I" * (end - start))
         seq.revcomp()
         print(seq, file=filehandle)
     else:
-        print(f"@{name}", ref_seq[start:end], "+", "I" * (end - start), file=filehandle, sep="\n")
+        print(
+            f"@{name}",
+            ref_seq[start:end],
+            "+",
+            "I" * (end - start),
+            file=filehandle,
+            sep="\n",
+        )
 
 
 def make_test_unpaired_fastq(outfile, ref_seq):
@@ -40,9 +47,9 @@ def make_test_unpaired_fastq(outfile, ref_seq):
     read_len = 100
     with open(outfile, "w") as f:
         for i in range(20):
-            write_read(f"{read_count}", ref_seq, i, i+read_len, f)
+            write_read(f"{read_count}", ref_seq, i, i + read_len, f)
             read_count += 1
-            write_read(f"{read_count}", ref_seq, i, i+read_len, f, revcomp=True)
+            write_read(f"{read_count}", ref_seq, i, i + read_len, f, revcomp=True)
             read_count += 1
 
 
@@ -51,13 +58,22 @@ def make_test_paired_fastq(out1, out2, ref_seq):
         read_len = 100
         pair_count = 0
         for i in range(20):
-            write_read(f"{pair_count}/1", ref_seq, i, i+read_len, f1)
-            write_read(f"{pair_count}/2", ref_seq, 200+i, 200+i+read_len, f2, revcomp=True)
+            write_read(f"{pair_count}/1", ref_seq, i, i + read_len, f1)
+            write_read(
+                f"{pair_count}/2",
+                ref_seq,
+                200 + i,
+                200 + i + read_len,
+                f2,
+                revcomp=True,
+            )
             pair_count += 1
 
 
 def map_reads(ref, reads1, reads2, bam_out):
-    command = f"minimap2 -a -x sr {ref} {reads1} {reads2} | samtools sort -O BAM > {bam_out}"
+    command = (
+        f"minimap2 -a -x sr {ref} {reads1} {reads2} | samtools sort -O BAM > {bam_out}"
+    )
     subprocess.check_output(command, shell=True)
     subprocess.check_output(f"samtools index {bam_out}", shell=True)
 
@@ -83,7 +99,9 @@ def test_data():
     make_test_amplicons_bed(data["amplicons_bed"])
     make_test_unpaired_fastq(data["unpaired_fq"], data["ref_seq"])
     make_test_paired_fastq(data["paired_fq1"], data["paired_fq2"], data["ref_seq"])
-    map_reads(data["ref_fasta"], data["paired_fq1"], data["paired_fq2"], data["paired_bam"])
+    map_reads(
+        data["ref_fasta"], data["paired_fq1"], data["paired_fq2"], data["paired_bam"]
+    )
     map_reads(data["ref_fasta"], data["unpaired_fq"], "", data["unpaired_bam"])
     yield data
     subprocess.check_output(f"rm -rf {outdir}", shell=True)
