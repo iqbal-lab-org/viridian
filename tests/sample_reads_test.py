@@ -13,7 +13,7 @@ from viridian_workflow import sample_reads
 def make_test_ref_genome(outfile):
     ref = "".join(random.choices(["A", "C", "G", "T"], k=1000))
     with open(outfile, "w") as f:
-        print(">ref", file=f)
+        print(">ref foo", file=f)
         print(ref, file=f)
     return ref
 
