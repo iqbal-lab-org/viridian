@@ -11,7 +11,12 @@ def main(args=None):
         usage="viridian_workflow <command> <options>",
         description="viridian_workflow: ...",  # FIXME
     )
-
+    parser.add_argument(
+        "--target_sample_depth",
+        type=int,
+        default=1000,
+        help="Target coverage for amplicon depth normalisation",
+    )
     parser.add_argument(
         "--version", action="version", version=viridian_workflow.__version__
     )
