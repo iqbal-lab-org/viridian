@@ -65,6 +65,9 @@ class ReadSampler:
         for read in self.aln_file_in.fetch(
             self.ref_genome.id, amplicon.start, amplicon.end + 1
         ):
+            if read.is_supplementary or read.is_secondary:
+                continue
+
             if self.reads_are_paired != read.is_paired:
                 raise Exception(
                     "Mix of paired and unpaired reads in BAM file {self.bam_in}. Cannot continue"
@@ -73,12 +76,13 @@ class ReadSampler:
             if read.query_name in self.mates_wanted:
                 mate = self.mates_wanted[read.query_name]
                 if read.is_read1 != mate.is_read1:
-                    self.aln_file_out.write(read)
-                    self.aln_file_out.write(self.mates_wanted[read.query_name])
-                    total_bases_mapped += self.read_overlap_length_with_amplicon(
-                        read, amplicon
-                    )
-                    self.used_reads.add(read.query_name)
+                    if read.query_name not in self.used_reads:
+                        self.aln_file_out.write(read)
+                        self.aln_file_out.write(self.mates_wanted[read.query_name])
+                        total_bases_mapped += self.read_overlap_length_with_amplicon(
+                            read, amplicon
+                        )
+                        self.used_reads.add(read.query_name)
                     del self.mates_wanted[read.query_name]
                 continue
 
@@ -143,18 +147,14 @@ class ReadSampler:
                 continue
 
             if self.reads_are_paired:
-                if read1 is not None:
-                    if read2 is None:
-                        self.mates_wanted[read1.query_name] = read1
-                    else:
-                        self.aln_file_out.write(read1)
-                        self.used_reads.add(read1)
-                if read2 is not None:
-                    if read1 is None:
-                        self.mates_wanted[read2.query_name] = read2
-                    else:
-                        self.aln_file_out.write(read2)
-                        self.used_reads.add(read2)
+                if read1 is not None and read2 is not None:
+                    self.aln_file_out.write(read1)
+                    self.aln_file_out.write(read2)
+                    self.used_reads.add(read1.query_name)
+                elif read1 is not None and read2 is None:
+                    self.mates_wanted[read1.query_name] = read1
+                elif read1 is None and read2 is not None:
+                    self.mates_wanted[read2.query_name] = read2
             elif read2 is not None:
                 self.aln_file_out.write(read2)
                 self.used_reads.add(read2)
