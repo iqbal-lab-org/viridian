@@ -1,4 +1,6 @@
-[![Build Status](https://www.travis-ci.com/iqbal-lab-org/viridian_workflow.svg?branch=master)](https://www.travis-ci.com/iqbal-lab-org/viridian_workflow)
+[![Build Status](https://github.com/iqbal-lab-org/viridian_workflow/actions/workflows/build.yaml/badge.svg)]
+[![REUSE status](https://api.reuse.software/badge/github.com/fsfe/reuse-action)](https://api.reuse.software/info/github.com/fsfe/reuse-action)
+ 
 # Viridian Workflow
 
 ## Installation
