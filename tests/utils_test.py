@@ -1,6 +1,8 @@
 from collections import namedtuple
+import filecmp
 import os
 import pytest
+import subprocess
 
 import pyfastaq
 
@@ -21,6 +23,17 @@ def test_load_single_seq_fasta():
     with pytest.raises(Exception):
         utils.load_single_seq_fasta(infile)
 
+
+def test_amplicons_json_to_bed():
+    json_in = os.path.join(data_dir, "amplicons_json_to_bed.json")
+    expect_bed = os.path.join(data_dir, "amplicons_json_to_bed.bed")
+    tmp_out = "tmp.amplicons_json_to_bed.bed"
+    subprocess.check_output(f"rm -f {tmp_out}", shell=True)
+    utils.amplicons_json_to_bed(json_in, tmp_out)
+    assert filecmp.cmp(tmp_out, expect_bed, shallow=False)
+    os.unlink(tmp_out)
+
+
 def test_load_amplicons_bed_file():
     Amplicon = namedtuple("Amplicon", ("name", "start", "end"))
     expect = [
@@ -29,4 +42,3 @@ def test_load_amplicons_bed_file():
     ]
     infile = os.path.join(data_dir, "load_amplicons_bed_file.bed")
     assert expect == utils.load_amplicons_bed_file(infile)
-

@@ -1,0 +1,13 @@
+{
+    "foo": "bar",
+    "amplicons": {
+        "amp1": {
+            "start": 100,
+            "end": 120
+        },
+        "amp2": {
+            "start": 110,
+            "end": 250
+        }
+    }
+}
