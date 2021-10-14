@@ -24,13 +24,15 @@ def test_load_single_seq_fasta():
         utils.load_single_seq_fasta(infile)
 
 
-def test_amplicons_json_to_bed():
+def test_amplicons_json_to_bed_and_range():
     json_in = os.path.join(data_dir, "amplicons_json_to_bed.json")
     expect_bed = os.path.join(data_dir, "amplicons_json_to_bed.bed")
     tmp_out = "tmp.amplicons_json_to_bed.bed"
     subprocess.check_output(f"rm -f {tmp_out}", shell=True)
-    utils.amplicons_json_to_bed(json_in, tmp_out)
+    got_start, got_end = utils.amplicons_json_to_bed_and_range(json_in, tmp_out)
     assert filecmp.cmp(tmp_out, expect_bed, shallow=False)
+    assert got_start == 100
+    assert got_end == 250
     os.unlink(tmp_out)
 
 

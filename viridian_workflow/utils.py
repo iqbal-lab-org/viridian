@@ -49,17 +49,27 @@ def run_process(cmd, ignore_error=False, stdout=None):
         logging.error(result.stderr)
 
 
-def amplicons_json_to_bed(infile, outfile):
+def amplicons_json_to_bed_and_range(infile, outfile):
+    """Converts the amplicons JSON file to a BED file, which is used in
+    various stages of the pipeline. Returns the 0-based inclusive coordinates
+    of the start of the first amplicon and end of the last amplicon, as
+    a tuple (start, end)"""
     with open(infile) as f:
         data = json.load(f)
+
+    start = float("inf")
+    end = -1
 
     data_out = []
     for amplicon, d in data["amplicons"].items():
         data_out.append((amplicon, d["start"], d["end"] + 1))
+        start = min(start, d["start"])
+        end = max(end, d["end"])
     data_out.sort(key=itemgetter(1))
     with open(outfile, "w") as f:
         for t in data_out:
             print(*t, sep="\t", file=f)
+    return start, end
 
 
 def load_amplicons_bed_file(infile):
