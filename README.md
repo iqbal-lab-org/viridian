@@ -34,6 +34,9 @@ The FASTA and JSON files in those commands can be found in the `data/`
 directory of this repository.
 
 Other options:
+* `--sample_name MY_NAME`: use this to change the sample name
+  (default is "sample") that is put in the final FASTA file, BAM file, and
+  VCF file.
 * `--keep_bam`: use this option to keep the BAM file of original input reads
   mapped to the reference genome.
 * `--force`: use with caution - it will overwrite the output directory if
