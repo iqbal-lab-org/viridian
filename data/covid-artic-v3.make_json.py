@@ -39,6 +39,12 @@ with open(tsv_file) as f:
         }
         amplicons[amplicon_name][l_or_r.lower() + "_primers"].append(d)
 
+for amplicon_name, d in amplicons.items():
+    d["start"] = min([x["start"] for x in d["left_primers"]])
+    d["end"] = max([x["end"] for x in d["right_primers"]])
+    d["left_primer_end"] = max([x["end"] for x in d["left_primers"]])
+    d["right_primer_start"] = min([x["start"] for x in d["right_primers"]])
+
 json_data = {
     "name": "covid-artic-v3",
     "source_file": tsv_url,

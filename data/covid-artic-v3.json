@@ -32,7 +32,11 @@
           "start": 385,
           "end": 409
         }
-      ]
+      ],
+      "start": 30,
+      "end": 409,
+      "left_primer_end": 53,
+      "right_primer_start": 385
     },
     "nCoV-2019_2_pool2": {
       "left_primers": [
@@ -62,7 +66,11 @@
           "start": 704,
           "end": 725
         }
-      ]
+      ],
+      "start": 320,
+      "end": 725,
+      "left_primer_end": 341,
+      "right_primer_start": 704
     },
     "nCoV-2019_3_pool1": {
       "left_primers": [
@@ -92,7 +100,11 @@
           "start": 1004,
           "end": 1027
         }
-      ]
+      ],
+      "start": 642,
+      "end": 1027,
+      "left_primer_end": 663,
+      "right_primer_start": 1004
     },
     "nCoV-2019_4_pool2": {
       "left_primers": [
@@ -122,7 +134,11 @@
           "start": 1312,
           "end": 1336
         }
-      ]
+      ],
+      "start": 943,
+      "end": 1336,
+      "left_primer_end": 964,
+      "right_primer_start": 1312
     },
     "nCoV-2019_5_pool1": {
       "left_primers": [
@@ -152,7 +168,11 @@
           "start": 1623,
           "end": 1650
         }
-      ]
+      ],
+      "start": 1242,
+      "end": 1650,
+      "left_primer_end": 1263,
+      "right_primer_start": 1623
     },
     "nCoV-2019_6_pool2": {
       "left_primers": [
@@ -182,7 +202,11 @@
           "start": 1942,
           "end": 1963
         }
-      ]
+      ],
+      "start": 1573,
+      "end": 1963,
+      "left_primer_end": 1594,
+      "right_primer_start": 1942
     },
     "nCoV-2019_7_pool1": {
       "left_primers": [
@@ -236,7 +260,11 @@
           "start": 2242,
           "end": 2263
         }
-      ]
+      ],
+      "start": 1868,
+      "end": 2268,
+      "left_primer_end": 1896,
+      "right_primer_start": 2242
     },
     "nCoV-2019_8_pool2": {
       "left_primers": [
@@ -266,7 +294,11 @@
           "start": 2568,
           "end": 2591
         }
-      ]
+      ],
+      "start": 2181,
+      "end": 2591,
+      "left_primer_end": 2204,
+      "right_primer_start": 2568
     },
     "nCoV-2019_9_pool1": {
       "left_primers": [
@@ -320,7 +352,11 @@
           "start": 2880,
           "end": 2901
         }
-      ]
+      ],
+      "start": 2504,
+      "end": 2903,
+      "left_primer_end": 2528,
+      "right_primer_start": 2880
     },
     "nCoV-2019_10_pool2": {
       "left_primers": [
@@ -350,7 +386,11 @@
           "start": 3183,
           "end": 3209
         }
-      ]
+      ],
+      "start": 2826,
+      "end": 3209,
+      "left_primer_end": 2849,
+      "right_primer_start": 3183
     },
     "nCoV-2019_11_pool1": {
       "left_primers": [
@@ -380,7 +420,11 @@
           "start": 3507,
           "end": 3530
         }
-      ]
+      ],
+      "start": 3144,
+      "end": 3530,
+      "left_primer_end": 3165,
+      "right_primer_start": 3507
     },
     "nCoV-2019_12_pool2": {
       "left_primers": [
@@ -410,7 +454,11 @@
           "start": 3826,
           "end": 3852
         }
-      ]
+      ],
+      "start": 3460,
+      "end": 3852,
+      "left_primer_end": 3481,
+      "right_primer_start": 3826
     },
     "nCoV-2019_13_pool1": {
       "left_primers": [
@@ -440,7 +488,11 @@
           "start": 4142,
           "end": 4163
         }
-      ]
+      ],
+      "start": 3771,
+      "end": 4163,
+      "left_primer_end": 3794,
+      "right_primer_start": 4142
     },
     "nCoV-2019_14_pool2": {
       "left_primers": [
@@ -494,7 +546,11 @@
           "start": 4402,
           "end": 4423
         }
-      ]
+      ],
+      "start": 4044,
+      "end": 4449,
+      "left_primer_end": 4076,
+      "right_primer_start": 4402
     },
     "nCoV-2019_15_pool1": {
       "left_primers": [
@@ -548,7 +604,11 @@
           "start": 4666,
           "end": 4688
         }
-      ]
+      ],
+      "start": 4294,
+      "end": 4695,
+      "left_primer_end": 4321,
+      "right_primer_start": 4666
     },
     "nCoV-2019_16_pool2": {
       "left_primers": [
@@ -578,7 +638,11 @@
           "start": 4995,
           "end": 5016
         }
-      ]
+      ],
+      "start": 4636,
+      "end": 5016,
+      "left_primer_end": 4657,
+      "right_primer_start": 4995
     },
     "nCoV-2019_17_pool1": {
       "left_primers": [
@@ -608,7 +672,11 @@
           "start": 5296,
           "end": 5320
         }
-      ]
+      ],
+      "start": 4939,
+      "end": 5320,
+      "left_primer_end": 4965,
+      "right_primer_start": 5296
     },
     "nCoV-2019_18_pool2": {
       "left_primers": [
@@ -662,7 +730,11 @@
           "start": 5620,
           "end": 5642
         }
-      ]
+      ],
+      "start": 5230,
+      "end": 5643,
+      "left_primer_end": 5286,
+      "right_primer_start": 5620
     },
     "nCoV-2019_19_pool1": {
       "left_primers": [
@@ -692,7 +764,11 @@
           "start": 5932,
           "end": 5956
         }
-      ]
+      ],
+      "start": 5563,
+      "end": 5956,
+      "left_primer_end": 5585,
+      "right_primer_start": 5932
     },
     "nCoV-2019_20_pool2": {
       "left_primers": [
@@ -722,7 +798,11 @@
           "start": 6247,
           "end": 6271
         }
-      ]
+      ],
+      "start": 5867,
+      "end": 6271,
+      "left_primer_end": 5893,
+      "right_primer_start": 6247
     },
     "nCoV-2019_21_pool1": {
       "left_primers": [
@@ -776,7 +856,11 @@
           "start": 6526,
           "end": 6547
         }
-      ]
+      ],
+      "start": 6167,
+      "end": 6549,
+      "left_primer_end": 6196,
+      "right_primer_start": 6526
     },
     "nCoV-2019_22_pool2": {
       "left_primers": [
@@ -806,7 +890,11 @@
           "start": 6846,
           "end": 6872
         }
-      ]
+      ],
+      "start": 6466,
+      "end": 6872,
+      "left_primer_end": 6494,
+      "right_primer_start": 6846
     },
     "nCoV-2019_23_pool1": {
       "left_primers": [
@@ -836,7 +924,11 @@
           "start": 7092,
           "end": 7116
         }
-      ]
+      ],
+      "start": 6718,
+      "end": 7116,
+      "left_primer_end": 6744,
+      "right_primer_start": 7092
     },
     "nCoV-2019_24_pool2": {
       "left_primers": [
@@ -866,7 +958,11 @@
           "start": 7389,
           "end": 7414
         }
-      ]
+      ],
+      "start": 7035,
+      "end": 7414,
+      "left_primer_end": 7057,
+      "right_primer_start": 7389
     },
     "nCoV-2019_25_pool1": {
       "left_primers": [
@@ -896,7 +992,11 @@
           "start": 7671,
           "end": 7693
         }
-      ]
+      ],
+      "start": 7305,
+      "end": 7693,
+      "left_primer_end": 7331,
+      "right_primer_start": 7671
     },
     "nCoV-2019_26_pool2": {
       "left_primers": [
@@ -926,7 +1026,11 @@
           "start": 7997,
           "end": 8018
         }
-      ]
+      ],
+      "start": 7626,
+      "end": 8018,
+      "left_primer_end": 7650,
+      "right_primer_start": 7997
     },
     "nCoV-2019_27_pool1": {
       "left_primers": [
@@ -956,7 +1060,11 @@
           "start": 8319,
           "end": 8340
         }
-      ]
+      ],
+      "start": 7943,
+      "end": 8340,
+      "left_primer_end": 7967,
+      "right_primer_start": 8319
     },
     "nCoV-2019_28_pool2": {
       "left_primers": [
@@ -986,7 +1094,11 @@
           "start": 8635,
           "end": 8660
         }
-      ]
+      ],
+      "start": 8249,
+      "end": 8660,
+      "left_primer_end": 8274,
+      "right_primer_start": 8635
     },
     "nCoV-2019_29_pool1": {
       "left_primers": [
@@ -1016,7 +1128,11 @@
           "start": 8954,
           "end": 8982
         }
-      ]
+      ],
+      "start": 8595,
+      "end": 8982,
+      "left_primer_end": 8618,
+      "right_primer_start": 8954
     },
     "nCoV-2019_30_pool2": {
       "left_primers": [
@@ -1046,7 +1162,11 @@
           "start": 9245,
           "end": 9270
         }
-      ]
+      ],
+      "start": 8888,
+      "end": 9270,
+      "left_primer_end": 8912,
+      "right_primer_start": 9245
     },
     "nCoV-2019_31_pool1": {
       "left_primers": [
@@ -1076,7 +1196,11 @@
           "start": 9557,
           "end": 9584
         }
-      ]
+      ],
+      "start": 9204,
+      "end": 9584,
+      "left_primer_end": 9225,
+      "right_primer_start": 9557
     },
     "nCoV-2019_32_pool2": {
       "left_primers": [
@@ -1106,7 +1230,11 @@
           "start": 9834,
           "end": 9857
         }
-      ]
+      ],
+      "start": 9477,
+      "end": 9857,
+      "left_primer_end": 9501,
+      "right_primer_start": 9834
     },
     "nCoV-2019_33_pool1": {
       "left_primers": [
@@ -1136,7 +1264,11 @@
           "start": 10146,
           "end": 10170
         }
-      ]
+      ],
+      "start": 9784,
+      "end": 10170,
+      "left_primer_end": 9805,
+      "right_primer_start": 10146
     },
     "nCoV-2019_34_pool2": {
       "left_primers": [
@@ -1166,7 +1298,11 @@
           "start": 10437,
           "end": 10458
         }
-      ]
+      ],
+      "start": 10076,
+      "end": 10458,
+      "left_primer_end": 10098,
+      "right_primer_start": 10437
     },
     "nCoV-2019_35_pool1": {
       "left_primers": [
@@ -1196,7 +1332,11 @@
           "start": 10737,
           "end": 10762
         }
-      ]
+      ],
+      "start": 10362,
+      "end": 10762,
+      "left_primer_end": 10383,
+      "right_primer_start": 10737
     },
     "nCoV-2019_36_pool2": {
       "left_primers": [
@@ -1226,7 +1366,11 @@
           "start": 11048,
           "end": 11073
         }
-      ]
+      ],
+      "start": 10666,
+      "end": 11073,
+      "left_primer_end": 10687,
+      "right_primer_start": 11048
     },
     "nCoV-2019_37_pool1": {
       "left_primers": [
@@ -1256,7 +1400,11 @@
           "start": 11372,
           "end": 11393
         }
-      ]
+      ],
+      "start": 10999,
+      "end": 11393,
+      "left_primer_end": 11021,
+      "right_primer_start": 11372
     },
     "nCoV-2019_38_pool2": {
       "left_primers": [
@@ -1286,7 +1434,11 @@
           "start": 11668,
           "end": 11692
         }
-      ]
+      ],
+      "start": 11306,
+      "end": 11692,
+      "left_primer_end": 11330,
+      "right_primer_start": 11668
     },
     "nCoV-2019_39_pool1": {
       "left_primers": [
@@ -1316,7 +1468,11 @@
           "start": 11927,
           "end": 11948
         }
-      ]
+      ],
+      "start": 11555,
+      "end": 11948,
+      "left_primer_end": 11583,
+      "right_primer_start": 11927
     },
     "nCoV-2019_40_pool2": {
       "left_primers": [
@@ -1346,7 +1502,11 @@
           "start": 12234,
           "end": 12255
         }
-      ]
+      ],
+      "start": 11863,
+      "end": 12255,
+      "left_primer_end": 11888,
+      "right_primer_start": 12234
     },
     "nCoV-2019_41_pool1": {
       "left_primers": [
@@ -1376,7 +1536,11 @@
           "start": 12465,
           "end": 12489
         }
-      ]
+      ],
+      "start": 12110,
+      "end": 12489,
+      "left_primer_end": 12132,
+      "right_primer_start": 12465
     },
     "nCoV-2019_42_pool2": {
       "left_primers": [
@@ -1406,7 +1570,11 @@
           "start": 12779,
           "end": 12801
         }
-      ]
+      ],
+      "start": 12417,
+      "end": 12801,
+      "left_primer_end": 12438,
+      "right_primer_start": 12779
     },
     "nCoV-2019_43_pool1": {
       "left_primers": [
@@ -1436,7 +1604,11 @@
           "start": 13074,
           "end": 13095
         }
-      ]
+      ],
+      "start": 12710,
+      "end": 13095,
+      "left_primer_end": 12731,
+      "right_primer_start": 13074
     },
     "nCoV-2019_44_pool2": {
       "left_primers": [
@@ -1490,7 +1662,11 @@
           "start": 13363,
           "end": 13384
         }
-      ]
+      ],
+      "start": 13005,
+      "end": 13399,
+      "left_primer_end": 13028,
+      "right_primer_start": 13363
     },
     "nCoV-2019_45_pool1": {
       "left_primers": [
@@ -1544,7 +1720,11 @@
           "start": 13660,
           "end": 13688
         }
-      ]
+      ],
+      "start": 13307,
+      "end": 13698,
+      "left_primer_end": 13343,
+      "right_primer_start": 13660
     },
     "nCoV-2019_46_pool2": {
       "left_primers": [
@@ -1598,7 +1778,11 @@
           "start": 13961,
           "end": 13983
         }
-      ]
+      ],
+      "start": 13599,
+      "end": 13983,
+      "left_primer_end": 13624,
+      "right_primer_start": 13961
     },
     "nCoV-2019_47_pool1": {
       "left_primers": [
@@ -1628,7 +1812,11 @@
           "start": 14271,
           "end": 14298
         }
-      ]
+      ],
+      "start": 13918,
+      "end": 14298,
+      "left_primer_end": 13945,
+      "right_primer_start": 14271
     },
     "nCoV-2019_48_pool2": {
       "left_primers": [
@@ -1658,7 +1846,11 @@
           "start": 14579,
           "end": 14600
         }
-      ]
+      ],
+      "start": 14207,
+      "end": 14600,
+      "left_primer_end": 14231,
+      "right_primer_start": 14579
     },
     "nCoV-2019_49_pool1": {
       "left_primers": [
@@ -1688,7 +1880,11 @@
           "start": 14898,
           "end": 14925
         }
-      ]
+      ],
+      "start": 14545,
+      "end": 14925,
+      "left_primer_end": 14569,
+      "right_primer_start": 14898
     },
     "nCoV-2019_50_pool2": {
       "left_primers": [
@@ -1718,7 +1914,11 @@
           "start": 15224,
           "end": 15245
         }
-      ]
+      ],
+      "start": 14865,
+      "end": 15245,
+      "left_primer_end": 14894,
+      "right_primer_start": 15224
     },
     "nCoV-2019_51_pool1": {
       "left_primers": [
@@ -1748,7 +1948,11 @@
           "start": 15538,
           "end": 15559
         }
-      ]
+      ],
+      "start": 15171,
+      "end": 15559,
+      "left_primer_end": 15192,
+      "right_primer_start": 15538
     },
     "nCoV-2019_52_pool2": {
       "left_primers": [
@@ -1778,7 +1982,11 @@
           "start": 15861,
           "end": 15885
         }
-      ]
+      ],
+      "start": 15481,
+      "end": 15885,
+      "left_primer_end": 15502,
+      "right_primer_start": 15861
     },
     "nCoV-2019_53_pool1": {
       "left_primers": [
@@ -1808,7 +2016,11 @@
           "start": 16186,
           "end": 16208
         }
-      ]
+      ],
+      "start": 15827,
+      "end": 16208,
+      "left_primer_end": 15850,
+      "right_primer_start": 16186
     },
     "nCoV-2019_54_pool2": {
       "left_primers": [
@@ -1838,7 +2050,11 @@
           "start": 16485,
           "end": 16509
         }
-      ]
+      ],
+      "start": 16118,
+      "end": 16509,
+      "left_primer_end": 16143,
+      "right_primer_start": 16485
     },
     "nCoV-2019_55_pool1": {
       "left_primers": [
@@ -1868,7 +2084,11 @@
           "start": 16804,
           "end": 16832
         }
-      ]
+      ],
+      "start": 16416,
+      "end": 16832,
+      "left_primer_end": 16443,
+      "right_primer_start": 16804
     },
     "nCoV-2019_56_pool2": {
       "left_primers": [
@@ -1898,7 +2118,11 @@
           "start": 17130,
           "end": 17151
         }
-      ]
+      ],
+      "start": 16748,
+      "end": 17151,
+      "left_primer_end": 16769,
+      "right_primer_start": 17130
     },
     "nCoV-2019_57_pool1": {
       "left_primers": [
@@ -1928,7 +2152,11 @@
           "start": 17430,
           "end": 17451
         }
-      ]
+      ],
+      "start": 17065,
+      "end": 17451,
+      "left_primer_end": 17086,
+      "right_primer_start": 17430
     },
     "nCoV-2019_58_pool2": {
       "left_primers": [
@@ -1958,7 +2186,11 @@
           "start": 17738,
           "end": 17760
         }
-      ]
+      ],
+      "start": 17381,
+      "end": 17760,
+      "left_primer_end": 17405,
+      "right_primer_start": 17738
     },
     "nCoV-2019_59_pool1": {
       "left_primers": [
@@ -1988,7 +2220,11 @@
           "start": 18036,
           "end": 18061
         }
-      ]
+      ],
+      "start": 17674,
+      "end": 18061,
+      "left_primer_end": 17696,
+      "right_primer_start": 18036
     },
     "nCoV-2019_60_pool2": {
       "left_primers": [
@@ -2018,7 +2254,11 @@
           "start": 18324,
           "end": 18347
         }
-      ]
+      ],
+      "start": 17966,
+      "end": 18347,
+      "left_primer_end": 17992,
+      "right_primer_start": 18324
     },
     "nCoV-2019_61_pool1": {
       "left_primers": [
@@ -2048,7 +2288,11 @@
           "start": 18650,
           "end": 18671
         }
-      ]
+      ],
+      "start": 18253,
+      "end": 18671,
+      "left_primer_end": 18274,
+      "right_primer_start": 18650
     },
     "nCoV-2019_62_pool2": {
       "left_primers": [
@@ -2078,7 +2322,11 @@
           "start": 18957,
           "end": 18978
         }
-      ]
+      ],
+      "start": 18596,
+      "end": 18978,
+      "left_primer_end": 18617,
+      "right_primer_start": 18957
     },
     "nCoV-2019_63_pool1": {
       "left_primers": [
@@ -2108,7 +2356,11 @@
           "start": 19275,
           "end": 19296
         }
-      ]
+      ],
+      "start": 18896,
+      "end": 19296,
+      "left_primer_end": 18917,
+      "right_primer_start": 19275
     },
     "nCoV-2019_64_pool2": {
       "left_primers": [
@@ -2138,7 +2390,11 @@
           "start": 19591,
           "end": 19615
         }
-      ]
+      ],
+      "start": 19204,
+      "end": 19615,
+      "left_primer_end": 19231,
+      "right_primer_start": 19591
     },
     "nCoV-2019_65_pool1": {
       "left_primers": [
@@ -2168,7 +2424,11 @@
           "start": 19911,
           "end": 19938
         }
-      ]
+      ],
+      "start": 19548,
+      "end": 19938,
+      "left_primer_end": 19569,
+      "right_primer_start": 19911
     },
     "nCoV-2019_66_pool2": {
       "left_primers": [
@@ -2198,7 +2458,11 @@
           "start": 20231,
           "end": 20254
         }
-      ]
+      ],
+      "start": 19844,
+      "end": 20254,
+      "left_primer_end": 19865,
+      "right_primer_start": 20231
     },
     "nCoV-2019_67_pool1": {
       "left_primers": [
@@ -2228,7 +2492,11 @@
           "start": 20542,
           "end": 20571
         }
-      ]
+      ],
+      "start": 20172,
+      "end": 20571,
+      "left_primer_end": 20199,
+      "right_primer_start": 20542
     },
     "nCoV-2019_68_pool2": {
       "left_primers": [
@@ -2258,7 +2526,11 @@
           "start": 20867,
           "end": 20889
         }
-      ]
+      ],
+      "start": 20472,
+      "end": 20889,
+      "left_primer_end": 20495,
+      "right_primer_start": 20867
     },
     "nCoV-2019_69_pool1": {
       "left_primers": [
@@ -2288,7 +2560,11 @@
           "start": 21146,
           "end": 21168
         }
-      ]
+      ],
+      "start": 20786,
+      "end": 21168,
+      "left_primer_end": 20812,
+      "right_primer_start": 21146
     },
     "nCoV-2019_70_pool2": {
       "left_primers": [
@@ -2318,7 +2594,11 @@
           "start": 21427,
           "end": 21454
         }
-      ]
+      ],
+      "start": 21075,
+      "end": 21454,
+      "left_primer_end": 21103,
+      "right_primer_start": 21427
     },
     "nCoV-2019_71_pool1": {
       "left_primers": [
@@ -2348,7 +2628,11 @@
           "start": 21716,
           "end": 21742
         }
-      ]
+      ],
+      "start": 21357,
+      "end": 21742,
+      "left_primer_end": 21385,
+      "right_primer_start": 21716
     },
     "nCoV-2019_72_pool2": {
       "left_primers": [
@@ -2378,7 +2662,11 @@
           "start": 22013,
           "end": 22037
         }
-      ]
+      ],
+      "start": 21658,
+      "end": 22037,
+      "left_primer_end": 21681,
+      "right_primer_start": 22013
     },
     "nCoV-2019_73_pool1": {
       "left_primers": [
@@ -2408,7 +2696,11 @@
           "start": 22324,
           "end": 22345
         }
-      ]
+      ],
+      "start": 21961,
+      "end": 22345,
+      "left_primer_end": 21989,
+      "right_primer_start": 22324
     },
     "nCoV-2019_74_pool2": {
       "left_primers": [
@@ -2438,7 +2730,11 @@
           "start": 22626,
           "end": 22649
         }
-      ]
+      ],
+      "start": 22262,
+      "end": 22649,
+      "left_primer_end": 22289,
+      "right_primer_start": 22626
     },
     "nCoV-2019_75_pool1": {
       "left_primers": [
@@ -2468,7 +2764,11 @@
           "start": 22877,
           "end": 22902
         }
-      ]
+      ],
+      "start": 22516,
+      "end": 22902,
+      "left_primer_end": 22541,
+      "right_primer_start": 22877
     },
     "nCoV-2019_76_pool2": {
       "left_primers": [
@@ -2522,7 +2822,11 @@
           "start": 23189,
           "end": 23211
         }
-      ]
+      ],
+      "start": 22797,
+      "end": 23213,
+      "left_primer_end": 22820,
+      "right_primer_start": 23189
     },
     "nCoV-2019_77_pool1": {
       "left_primers": [
@@ -2552,7 +2856,11 @@
           "start": 23500,
           "end": 23521
         }
-      ]
+      ],
+      "start": 23122,
+      "end": 23521,
+      "left_primer_end": 23143,
+      "right_primer_start": 23500
     },
     "nCoV-2019_78_pool2": {
       "left_primers": [
@@ -2582,7 +2890,11 @@
           "start": 23822,
           "end": 23846
         }
-      ]
+      ],
+      "start": 23443,
+      "end": 23846,
+      "left_primer_end": 23465,
+      "right_primer_start": 23822
     },
     "nCoV-2019_79_pool1": {
       "left_primers": [
@@ -2612,7 +2924,11 @@
           "start": 24145,
           "end": 24168
         }
-      ]
+      ],
+      "start": 23789,
+      "end": 24168,
+      "left_primer_end": 23811,
+      "right_primer_start": 24145
     },
     "nCoV-2019_80_pool2": {
       "left_primers": [
@@ -2642,7 +2958,11 @@
           "start": 24443,
           "end": 24466
         }
-      ]
+      ],
+      "start": 24078,
+      "end": 24466,
+      "left_primer_end": 24099,
+      "right_primer_start": 24443
     },
     "nCoV-2019_81_pool1": {
       "left_primers": [
@@ -2672,7 +2992,11 @@
           "start": 24765,
           "end": 24788
         }
-      ]
+      ],
+      "start": 24391,
+      "end": 24788,
+      "left_primer_end": 24415,
+      "right_primer_start": 24765
     },
     "nCoV-2019_82_pool2": {
       "left_primers": [
@@ -2702,7 +3026,11 @@
           "start": 25052,
           "end": 25075
         }
-      ]
+      ],
+      "start": 24696,
+      "end": 25075,
+      "left_primer_end": 24720,
+      "right_primer_start": 25052
     },
     "nCoV-2019_83_pool1": {
       "left_primers": [
@@ -2732,7 +3060,11 @@
           "start": 25347,
           "end": 25368
         }
-      ]
+      ],
+      "start": 24978,
+      "end": 25368,
+      "left_primer_end": 25002,
+      "right_primer_start": 25347
     },
     "nCoV-2019_84_pool2": {
       "left_primers": [
@@ -2762,7 +3094,11 @@
           "start": 25646,
           "end": 25672
         }
-      ]
+      ],
+      "start": 25279,
+      "end": 25672,
+      "left_primer_end": 25300,
+      "right_primer_start": 25646
     },
     "nCoV-2019_85_pool1": {
       "left_primers": [
@@ -2792,7 +3128,11 @@
           "start": 25969,
           "end": 25993
         }
-      ]
+      ],
+      "start": 25601,
+      "end": 25993,
+      "left_primer_end": 25622,
+      "right_primer_start": 25969
     },
     "nCoV-2019_86_pool2": {
       "left_primers": [
@@ -2822,7 +3162,11 @@
           "start": 26290,
           "end": 26314
         }
-      ]
+      ],
+      "start": 25902,
+      "end": 26314,
+      "left_primer_end": 25923,
+      "right_primer_start": 26290
     },
     "nCoV-2019_87_pool1": {
       "left_primers": [
@@ -2852,7 +3196,11 @@
           "start": 26566,
           "end": 26589
         }
-      ]
+      ],
+      "start": 26197,
+      "end": 26589,
+      "left_primer_end": 26218,
+      "right_primer_start": 26566
     },
     "nCoV-2019_88_pool2": {
       "left_primers": [
@@ -2882,7 +3230,11 @@
           "start": 26890,
           "end": 26912
         }
-      ]
+      ],
+      "start": 26520,
+      "end": 26912,
+      "left_primer_end": 26541,
+      "right_primer_start": 26890
     },
     "nCoV-2019_89_pool1": {
       "left_primers": [
@@ -2936,7 +3288,11 @@
           "start": 27190,
           "end": 27214
         }
-      ]
+      ],
+      "start": 26835,
+      "end": 27226,
+      "left_primer_end": 26859,
+      "right_primer_start": 27190
     },
     "nCoV-2019_90_pool2": {
       "left_primers": [
@@ -2966,7 +3322,11 @@
           "start": 27511,
           "end": 27532
         }
-      ]
+      ],
+      "start": 27141,
+      "end": 27532,
+      "left_primer_end": 27163,
+      "right_primer_start": 27511
     },
     "nCoV-2019_91_pool1": {
       "left_primers": [
@@ -2996,7 +3356,11 @@
           "start": 27825,
           "end": 27853
         }
-      ]
+      ],
+      "start": 27446,
+      "end": 27853,
+      "left_primer_end": 27470,
+      "right_primer_start": 27825
     },
     "nCoV-2019_92_pool2": {
       "left_primers": [
@@ -3026,7 +3390,11 @@
           "start": 28145,
           "end": 28171
         }
-      ]
+      ],
+      "start": 27784,
+      "end": 28171,
+      "left_primer_end": 27807,
+      "right_primer_start": 28145
     },
     "nCoV-2019_93_pool1": {
       "left_primers": [
@@ -3056,7 +3424,11 @@
           "start": 28442,
           "end": 28463
         }
-      ]
+      ],
+      "start": 28081,
+      "end": 28463,
+      "left_primer_end": 28103,
+      "right_primer_start": 28442
     },
     "nCoV-2019_94_pool2": {
       "left_primers": [
@@ -3086,7 +3458,11 @@
           "start": 28756,
           "end": 28778
         }
-      ]
+      ],
+      "start": 28394,
+      "end": 28778,
+      "left_primer_end": 28415,
+      "right_primer_start": 28756
     },
     "nCoV-2019_95_pool1": {
       "left_primers": [
@@ -3116,7 +3492,11 @@
           "start": 29041,
           "end": 29062
         }
-      ]
+      ],
+      "start": 28677,
+      "end": 29062,
+      "left_primer_end": 28698,
+      "right_primer_start": 29041
     },
     "nCoV-2019_96_pool2": {
       "left_primers": [
@@ -3146,7 +3526,11 @@
           "start": 29356,
           "end": 29377
         }
-      ]
+      ],
+      "start": 28985,
+      "end": 29377,
+      "left_primer_end": 29006,
+      "right_primer_start": 29356
     },
     "nCoV-2019_97_pool1": {
       "left_primers": [
@@ -3176,7 +3560,11 @@
           "start": 29665,
           "end": 29692
         }
-      ]
+      ],
+      "start": 29288,
+      "end": 29692,
+      "left_primer_end": 29315,
+      "right_primer_start": 29665
     },
     "nCoV-2019_98_pool2": {
       "left_primers": [
@@ -3206,7 +3594,11 @@
           "start": 29836,
           "end": 29865
         }
-      ]
+      ],
+      "start": 29486,
+      "end": 29865,
+      "left_primer_end": 29509,
+      "right_primer_start": 29836
     }
   }
 }
