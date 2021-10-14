@@ -2,7 +2,12 @@ import subprocess
 import os
 
 from viridian_workflow import minimap, qcovid, sample_reads, varifier
-from viridian_workflow.utils import amplicons_json_to_bed, check_file, run_process, rm
+from viridian_workflow.utils import (
+    amplicons_json_to_bed_and_range,
+    check_file,
+    run_process,
+    rm,
+)
 
 
 def check_tech(tech):
@@ -57,7 +62,9 @@ def run_one_sample(
 
     os.mkdir(outdir)
     amplicon_bed = os.path.join(outdir, "amplicons.bed")
-    amplicons_json_to_bed(amplicon_json, amplicon_bed)
+    amplicons_start, amplicons_end = amplicons_json_to_bed_and_range(
+        amplicon_json, amplicon_bed
+    )
     if paired:
         all_reads_bam = minimap.run(outdir, ref_genome, fq1, fq2)
     else:
@@ -91,7 +98,13 @@ def run_one_sample(
 
     masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
 
-    vcf = varifier.run(varifier_out, ref_genome, masked_fasta)
+    vcf = varifier.run(
+        varifier_out,
+        ref_genome,
+        masked_fasta,
+        min_coord=amplicons_start,
+        max_coord=amplicons_end,
+    )
     check_file(vcf)
 
     # clean up intermediate files
