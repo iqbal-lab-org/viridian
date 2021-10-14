@@ -54,3 +54,13 @@ def test_set_sample_name_in_vcf_file():
     expect = os.path.join(data_dir, "set_sample_name_in_vcf_file.expect.vcf")
     assert filecmp.cmp(tmp_out, expect, shallow=False)
     os.unlink(tmp_out)
+
+
+def test_set_seq_name_in_fasta_file():
+    infile = os.path.join(data_dir, "set_seq_name_in_fasta_file.in.fasta")
+    tmp_out = "tmp.set_seq_name_in_fasta_file.fasta"
+    subprocess.check_output(f"rm -f {tmp_out}", shell=True)
+    utils.set_seq_name_in_fasta_file(infile, tmp_out, "NEW_NAME")
+    expect = os.path.join(data_dir, "set_seq_name_in_fasta_file.expect.fasta")
+    assert filecmp.cmp(tmp_out, expect, shallow=False)
+    os.unlink(tmp_out)

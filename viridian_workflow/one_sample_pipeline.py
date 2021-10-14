@@ -8,6 +8,7 @@ from viridian_workflow.utils import (
     run_process,
     rm,
     set_sample_name_in_vcf_file,
+    set_seq_name_in_fasta_file,
 )
 
 
@@ -108,11 +109,13 @@ def run_one_sample(
         )
 
     masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
+    final_masked_fasta = os.path.join(outdir, "consensus.masked.fa")
+    set_seq_name_in_fasta_file(masked_fasta, final_masked_fasta, sample_name)
 
     varifier_vcf = varifier.run(
         varifier_out,
         ref_genome,
-        masked_fasta,
+        final_masked_fasta,
         min_coord=amplicons_start,
         max_coord=amplicons_end,
     )
