@@ -1,5 +1,4 @@
 ![Build Status](https://github.com/iqbal-lab-org/viridian_workflow/actions/workflows/build.yaml/badge.svg)
-[![REUSE status](https://api.reuse.software/badge/github.com/iqbal-lab-org/viridian_workflow)](https://api.reuse.software/info/github.com/iqbal-lab-org/viridian_workflow)
 
 # Viridian Workflow
 
