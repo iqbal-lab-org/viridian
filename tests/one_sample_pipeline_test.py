@@ -1,4 +1,5 @@
 import copy
+import json
 import os
 import pytest
 import random
@@ -56,9 +57,17 @@ def make_amplicons(outfile, amplicons=None):
             ("amplicon5", 1242, 1651),
         ]
 
+    json_data = {"amplicons": {}}
+    for name, start, end in amplicons:
+        json_data["amplicons"][name] = {
+            "start": start,
+            "end": end,
+            "left_primer_end": start,
+            "right_primer_start": end,
+        }
+
     with open(outfile, "w") as f:
-        for amplicon in amplicons:
-            print(*amplicon, sep="\t", file=f)
+        json.dump(json_data, f, indent=2)
 
     return amplicons
 
@@ -103,10 +112,10 @@ def test_data():
     os.mkdir(outdir)
     data = {
         "dirname": outdir,
-        "amplicons_bed": os.path.join(outdir, "amplicons.bed"),
+        "amplicons_json": os.path.join(outdir, "amplicons.json"),
         "ref_fasta": os.path.join(outdir, "ref.fasta"),
     }
-    data["amplicons"] = make_amplicons(data["amplicons_bed"])
+    data["amplicons"] = make_amplicons(data["amplicons_json"])
     data["ref_seq"] = (
         ["A"] * 20 + random.choices(["A", "C", "G", "T"], k=1680) + ["A"] * 20
     )
@@ -134,7 +143,12 @@ def test_complete_assembly_no_reads_map(test_data):
     outdir = f"{pre_out}.out"
     try:
         one_sample_pipeline.run_one_sample(
-            outdir, test_data["ref_fasta"], test_data["amplicons_bed"], fq1, fq2
+            "illumina",
+            outdir,
+            test_data["ref_fasta"],
+            test_data["amplicons_json"],
+            fq1,
+            fq2,
         )
     except utils.OutputFileError as error:
         # This test should fail on viridian, producing no consensus
@@ -159,9 +173,10 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
     make_catted_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
+        "illumina",
         outdir,
         test_data["ref_fasta"],
-        test_data["amplicons_bed"],
+        test_data["amplicons_json"],
         fq1,
         fq2,
         keep_intermediate=True,
@@ -180,9 +195,10 @@ def test_assembly_amplicon_3_no_reads(test_data):
     make_catted_reads_for_amplicon_set(test_data, amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
+        "illumina",
         outdir,
         test_data["ref_fasta"],
-        test_data["amplicons_bed"],
+        test_data["amplicons_json"],
         fq1,
         fq2,
         keep_intermediate=True,
@@ -207,7 +223,13 @@ def test_complete_assembly_with_snps_and_indels(test_data):
     ref_seq.pop(1200)
     nucleotides_list_to_fasta_file(ref_seq, "ref", ref_fasta)
     one_sample_pipeline.run_one_sample(
-        outdir, ref_fasta, test_data["amplicons_bed"], fq1, fq2, keep_intermediate=True
+        "illumina",
+        outdir,
+        ref_fasta,
+        test_data["amplicons_json"],
+        fq1,
+        fq2,
+        keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     # Should be something like this in the VCF (which doesn't yet exist):
@@ -227,9 +249,10 @@ def test_reads_are_wgs_not_amplicon(test_data):
     tiling_reads(test_data["ref_seq"], 150, 350, fq1, fq2, step=2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
+        "illumina",
         outdir,
         test_data["ref_fasta"],
-        test_data["amplicons_bed"],
+        test_data["amplicons_json"],
         fq1,
         fq2,
         keep_intermediate=True,
@@ -254,11 +277,17 @@ def _test_not_expected_amplicons(test_data):
         ("amplicon2", 850, 1200),
         ("amplicon3", 1165, 1700),
     ]
-    amplicons_bed = f"{pre_out}.amplicons.bed"
-    make_amplicons(amplicons_bed, amplicons=amplicons)
+    amplicons_json = f"{pre_out}.amplicons.json"
+    make_amplicons(amplicons_json, amplicons=amplicons)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
-        outdir, test_data["ref_fasta"], amplicons_bed, fq1, fq2, keep_intermediate=True
+        "illumina",
+        outdir,
+        test_data["ref_fasta"],
+        amplicons_json,
+        fq1,
+        fq2,
+        keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)

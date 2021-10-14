@@ -1,5 +1,7 @@
 from collections import namedtuple
+import json
 import logging
+from operator import itemgetter
 import os
 import subprocess
 import time
@@ -45,6 +47,19 @@ def run_process(cmd, ignore_error=False, stdout=None):
     if not ignore_error and result.returncode != 0:
         raise PipelineProcessError(f"Process returned {result.returncode}")
         logging.error(result.stderr)
+
+
+def amplicons_json_to_bed(infile, outfile):
+    with open(infile) as f:
+        data = json.load(f)
+
+    data_out = []
+    for amplicon, d in data["amplicons"].items():
+        data_out.append((amplicon, d["start"], d["end"] + 1))
+    data_out.sort(key=itemgetter(1))
+    with open(outfile, "w") as f:
+        for t in data_out:
+            print(*t, sep="\t", file=f)
 
 
 def load_amplicons_bed_file(infile):
