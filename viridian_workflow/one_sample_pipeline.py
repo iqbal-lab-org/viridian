@@ -7,6 +7,7 @@ from viridian_workflow.utils import (
     check_file,
     run_process,
     rm,
+    set_sample_name_in_vcf_file,
 )
 
 
@@ -67,7 +68,9 @@ def run_one_sample(
         amplicon_json, amplicon_bed
     )
     if paired:
-        all_reads_bam = minimap.run(outdir, ref_genome, fq1, fq2, sample_name=sample_name)
+        all_reads_bam = minimap.run(
+            outdir, ref_genome, fq1, fq2, sample_name=sample_name
+        )
     else:
         all_reads_bam = minimap.run_se(outdir, ref_genome, fq1, sample_name=sample_name)
     sample_outprefix = os.path.join(outdir, "sample")
@@ -92,21 +95,31 @@ def run_one_sample(
     varifier_out = os.path.join(outdir, "varifier")
     if paired:
         self_map = minimap.run(
-            outdir, assembly, sampler.fq_out1, sampler.fq_out2, prefix="self_qc", sample_name=sample_name
+            outdir,
+            assembly,
+            sampler.fq_out1,
+            sampler.fq_out2,
+            prefix="self_qc",
+            sample_name=sample_name,
         )
     else:
-        self_map = minimap.run_se(outdir, assembly, sampler.fq_out, prefix="self_qc", sample_name=sample_name)
+        self_map = minimap.run_se(
+            outdir, assembly, sampler.fq_out, prefix="self_qc", sample_name=sample_name
+        )
 
     masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
 
-    vcf = varifier.run(
+    varifier_vcf = varifier.run(
         varifier_out,
         ref_genome,
         masked_fasta,
         min_coord=amplicons_start,
         max_coord=amplicons_end,
     )
-    check_file(vcf)
+    check_file(varifier_vcf)
+    final_vcf = os.path.join(outdir, "variants.vcf")
+    set_sample_name_in_vcf_file(varifier_vcf, final_vcf, sample_name)
+    check_file(final_vcf)
 
     # clean up intermediate files
     if not keep_intermediate:
