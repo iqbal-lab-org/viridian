@@ -49,6 +49,7 @@ def run_one_sample(
     keep_intermediate=False,
     keep_bam=False,
     target_sample_depth=1000,
+    sample_name="sample",
 ):
     check_tech(tech)
     if tech == "ont":
@@ -66,9 +67,9 @@ def run_one_sample(
         amplicon_json, amplicon_bed
     )
     if paired:
-        all_reads_bam = minimap.run(outdir, ref_genome, fq1, fq2)
+        all_reads_bam = minimap.run(outdir, ref_genome, fq1, fq2, sample_name=sample_name)
     else:
-        all_reads_bam = minimap.run_se(outdir, ref_genome, fq1)
+        all_reads_bam = minimap.run_se(outdir, ref_genome, fq1, sample_name=sample_name)
     sample_outprefix = os.path.join(outdir, "sample")
     sampler = sample_reads.sample_reads(
         ref_genome,
@@ -91,10 +92,10 @@ def run_one_sample(
     varifier_out = os.path.join(outdir, "varifier")
     if paired:
         self_map = minimap.run(
-            outdir, assembly, sampler.fq_out1, sampler.fq_out2, prefix="self_qc"
+            outdir, assembly, sampler.fq_out1, sampler.fq_out2, prefix="self_qc", sample_name=sample_name
         )
     else:
-        self_map = minimap.run_se(outdir, assembly, sampler.fq_out, prefix="self_qc")
+        self_map = minimap.run_se(outdir, assembly, sampler.fq_out, prefix="self_qc", sample_name=sample_name)
 
     masked_fasta = qcovid.self_qc(outdir, assembly, self_map)
 

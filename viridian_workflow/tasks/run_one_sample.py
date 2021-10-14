@@ -23,4 +23,5 @@ def run(options):
         keep_intermediate=options.debug,
         keep_bam=options.keep_bam,
         target_sample_depth=options.target_sample_depth,
+        sample_name=options.sample_name,
     )
