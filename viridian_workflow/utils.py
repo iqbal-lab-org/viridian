@@ -27,6 +27,11 @@ def rm(fn):
     os.remove(os.path.abspath(fn))
 
 
+def load_json(infile):
+    with open(infile) as f:
+        return json.load(f)
+
+
 def run_process(cmd, ignore_error=False, stdout=None):
     logging.info(f"Running: {cmd}")
     stdout_fd = subprocess.PIPE
@@ -54,9 +59,7 @@ def amplicons_json_to_bed_and_range(infile, outfile):
     various stages of the pipeline. Returns the 0-based inclusive coordinates
     of the start of the first amplicon and end of the last amplicon, as
     a tuple (start, end)"""
-    with open(infile) as f:
-        data = json.load(f)
-
+    data = load_json(infile)
     start = float("inf")
     end = -1
 

@@ -1,3 +1,5 @@
+import logging
+import subprocess
 from viridian_workflow import one_sample_pipeline
 
 
@@ -13,6 +15,10 @@ def run(options):
         fq1 = options.reads1
         fq2 = options.reads2
 
+    if options.force:
+        logging.info(f"--force option used, so deleting {options.outdir} if it exists")
+        subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
+
     one_sample_pipeline.run_one_sample(
         options.tech,
         options.outdir,
@@ -24,4 +30,5 @@ def run(options):
         keep_bam=options.keep_bam,
         target_sample_depth=options.target_sample_depth,
         sample_name=options.sample_name,
+        command_line_args=options,
     )
