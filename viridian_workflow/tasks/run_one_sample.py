@@ -1,3 +1,5 @@
+import logging
+import subprocess
 from viridian_workflow import one_sample_pipeline
 
 
@@ -12,6 +14,10 @@ def run(options):
         assert options.reads1 is not None and options.reads2 is not None
         fq1 = options.reads1
         fq2 = options.reads2
+
+    if options.force:
+        logging.info(f"--force option used, so deleting {options.outdir} if it exists")
+        subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
 
     one_sample_pipeline.run_one_sample(
         options.tech,
