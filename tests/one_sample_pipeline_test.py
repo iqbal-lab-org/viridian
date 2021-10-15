@@ -155,7 +155,7 @@ def test_complete_assembly_no_reads_map(test_data):
         # TODO specify that it was the consensus file that's missing
         if str(error) != str(
             os.path.abspath(
-                os.path.join(outdir, "viridian/consensus.final_assembly.fa")
+                os.path.join(outdir, "Processing/viridian/consensus.final_assembly.fa")
             )
         ):
             raise error

@@ -43,6 +43,20 @@ Other options:
   it already exists.
 
 
+
+## Output files
+
+The default files in the output directory are:
+
+* `consensus.fa`: a FASTA file of the consensus sequence.
+* `variants.vcf`: a VCF file of the identified variants between the consensus
+  sequence and the reference genome.
+* `log.json`: contains logging information for the viridian workflow run.
+
+If the option `--keep_bam` is used, then a sorted BAM file of the reads mapped
+to the reference will also be present, called
+`reference_mapped.bam` (and its index file `reference_mapped.bam.bai`).
+
 ## Configuration
 
 Quality control thresholds are configured in `viridian_workflow/config.ini`:

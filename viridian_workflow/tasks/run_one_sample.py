@@ -30,4 +30,5 @@ def run(options):
         keep_bam=options.keep_bam,
         target_sample_depth=options.target_sample_depth,
         sample_name=options.sample_name,
+        command_line_args=options,
     )
