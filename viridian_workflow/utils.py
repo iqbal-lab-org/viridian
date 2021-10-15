@@ -96,3 +96,23 @@ def load_single_seq_fasta(infile):
     ref = list(d.values())[0]
     ref.id = ref.id.split()[0]
     return ref
+
+
+def set_sample_name_in_vcf_file(infile, outfile, sample_name):
+    with open(infile) as f_in, open(outfile, "w") as f_out:
+        for line in f_in:
+            if line.startswith("#CHROM\tPOS"):
+                fields = line.rstrip().split("\t")
+                fields[-1] = sample_name
+                print(*fields, sep="\t", file=f_out)
+            else:
+                print(line, end="", file=f_out)
+
+
+def set_seq_name_in_fasta_file(infile, outfile, new_name):
+    """Changes name in FASTA file. Assumes that there is only one sequence
+    in the file, raises Exception if it finds >1 sequence"""
+    seq = load_single_seq_fasta(infile)
+    seq.id = new_name
+    with open(outfile, "w") as f:
+        print(seq, file=f)

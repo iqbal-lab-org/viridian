@@ -102,6 +102,12 @@ def main(args=None):
         help="Target coverage for amplicon depth normalisation [%(default)s]",
         metavar="INT",
     )
+    subparser_run_one_sample.add_argument(
+        "--sample_name",
+        default="sample",
+        help="Name of sample to put in header of final FASTA, VCF, and BAM files [%(default)s]",
+        metavar="STRING",
+    )
 
     subparser_run_one_sample.set_defaults(
         func=viridian_workflow.tasks.run_one_sample.run
