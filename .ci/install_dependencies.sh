@@ -37,6 +37,16 @@ if [ ! -d $install_root ]; then
 fi
 cd $install_root
 
+#____________________ readItAndKeep _________________________#
+cd $install_root
+git clone https://github.com/GenomePathogenAnalysisService/read-it-and-keep.git
+cd read-it-and-keep
+git checkout a898e0cb758b547650f3b45264f7df063a47007a
+cd src
+make
+cd ../..
+cp -s read-it-and-keep/src/readItAndKeep .
+
 #_________________________ bcftools _________________________#
 cd $install_root
 wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
