@@ -3,8 +3,31 @@
 import logging
 import subprocess
 import os
-from viridian_workflow.utils import run_process, check_file
+from viridian_workflow.utils import run_process, run_process_safe, check_file
 from viridian_workflow.config import qcovid as cfg
+
+
+def detect_primers_pe(outdir, ref_genome, fq1, fq2, primers=None):
+    if not primers:
+        primers = cfg.primers
+
+    primer_string = ",".join(list(primers.values()))
+
+    primer_set = run_process_safe(
+        ["detect_primers.py", "--json", ref_genome, primer_string, fq1, fq2,]
+    )
+    if primer_set is None:
+        raise Exception("primer detection failed totally")
+
+    if primer_set["status"] != "success":
+        logging.info("Failed to detect primers: {primer_set['status']}")
+        raise Exception("could not infer detect primer set")
+
+    return primer_set
+
+
+def detect_primers_se(outdir, ref_genome, fq1, fq2, primers=None):
+    raise NotImplementedError
 
 
 def bin_amplicons(outdir, ref_genome, amplicon_bed, bam):

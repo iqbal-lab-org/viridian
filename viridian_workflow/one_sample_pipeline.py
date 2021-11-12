@@ -53,9 +53,9 @@ def run_one_sample(
     tech,
     outdir,
     ref_genome,
-    amplicon_json,
     fq1,
     fq2=None,
+    amplicon_json=None,
     keep_intermediate=False,
     keep_bam=False,
     target_sample_depth=1000,
@@ -101,18 +101,28 @@ def run_one_sample(
     with open(json_log, "w") as f:
         json.dump(log_info, f, indent=2)
 
+    if not amplicon_json:
+        logging.info("No primer set specified. Attempting to detect.")
+        if paired:
+            amplicon_json = qcovid.detect_primers_pe(outdir, ref_genome, fq1, fq2)
+        else:
+            amplicon_json = qcovid.detect_primers_se(outdir, ref_genome, fq1)
+        logging.info(f"Detected primers: {amplicon_json}")
+
     processing_dir = os.path.join(outdir, "Processing")
     os.mkdir(processing_dir)
-    amplicon_bed = os.path.join(processing_dir, "amplicons.bed")
-    amplicons_start, amplicons_end = amplicons_json_to_bed_and_range(
-        amplicon_json, amplicon_bed
-    )
     if paired:
         all_reads_bam = minimap.run(
             outdir, ref_genome, fq1, fq2, sample_name=sample_name
         )
     else:
         all_reads_bam = minimap.run_se(outdir, ref_genome, fq1, sample_name=sample_name)
+
+    amplicon_bed = os.path.join(processing_dir, "amplicons.bed")
+    amplicons_start, amplicons_end = amplicons_json_to_bed_and_range(
+        amplicon_json, amplicon_bed
+    )
+
     logging.info("Mapping and sampling reads")
     sample_outprefix = os.path.join(processing_dir, "sample_reads")
     sampler = sample_reads.sample_reads(
@@ -125,9 +135,13 @@ def run_one_sample(
     bam = sampler.bam_out
     logging.info(f"Running QC on all mapped reads in {bam}")
     if paired:
-        bad_amplicons = qcovid.bin_amplicons(processing_dir, ref_genome, amplicon_bed, bam)
+        bad_amplicons = qcovid.bin_amplicons(
+            processing_dir, ref_genome, amplicon_bed, bam
+        )
     else:
-        bad_amplicons = qcovid.bin_amplicons_se(processing_dir, ref_genome, amplicon_bed, bam)
+        bad_amplicons = qcovid.bin_amplicons_se(
+            processing_dir, ref_genome, amplicon_bed, bam
+        )
 
     logging.info("Making initial unmasked consensus using Viridian")
     viridian_out = os.path.join(processing_dir, "viridian")
@@ -147,7 +161,11 @@ def run_one_sample(
         )
     else:
         self_map = minimap.run_se(
-            processing_dir, assembly, sampler.fq_out, prefix="self_qc", sample_name=sample_name
+            processing_dir,
+            assembly,
+            sampler.fq_out,
+            prefix="self_qc",
+            sample_name=sample_name,
         )
 
     logging.info("Running QC on Viridian consensus to make masked FASTA")
@@ -175,7 +193,9 @@ def run_one_sample(
     # clean up intermediate files
     if not keep_intermediate:
         if keep_bam:
-            logging.info(f"Keeping BAM file {all_reads_bam} because --keep_bam option used")
+            logging.info(
+                f"Keeping BAM file {all_reads_bam} because --keep_bam option used"
+            )
         else:
             rm(all_reads_bam)
             rm(all_reads_bam + ".bai")

@@ -42,7 +42,7 @@ def main(args=None):
     subparser_run_one_sample = subparsers.add_parser(
         "run_one_sample",
         help="Help for run_one_sample",
-        usage=f"viridian_workflow run_one_sample --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out --amplicon_json <amplicon.json> <reads options (see help)>",
+        usage=f"viridian_workflow run_one_sample --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)> [--amplicon_json amplicon.json]",
         description="run_one_sample: runs the pipeline on one sample",
         epilog="IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'.",
     )
@@ -59,25 +59,20 @@ def main(args=None):
         metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
+        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
+    )
+    subparser_run_one_sample.add_argument(
+        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
+    )
+    subparser_run_one_sample.add_argument(
         "--amplicon_json",
-        help="REQUIRED. JSON file of amplicons and primers",
-        required=True,
+        help="OPTIONAL. JSON file of amplicons and primers",
+        required=False,
+        default=None,
         metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
-        "--reads1",
-        help="Illumina reads file 1",
-        metavar="FILENAME",
-    )
-    subparser_run_one_sample.add_argument(
-        "--reads2",
-        help="Illumina reads file 2",
-        metavar="FILENAME",
-    )
-    subparser_run_one_sample.add_argument(
-        "--reads",
-        help="Unpaired reads (eg nanopore) file",
-        metavar="FILENAME",
+        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
         "--outdir",
