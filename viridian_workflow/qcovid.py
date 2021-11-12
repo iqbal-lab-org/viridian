@@ -3,7 +3,7 @@
 import logging
 import subprocess
 import os
-from viridian_workflow.utils import run_process, run_process_safe, check_file
+from viridian_workflow.utils import run_process, check_file
 from viridian_workflow.config import qcovid as cfg
 
 
@@ -13,7 +13,7 @@ def detect_primers_pe(outdir, ref_genome, fq1, fq2, primers=None):
 
     primer_string = ",".join(list(primers.values()))
 
-    primer_set = run_process_safe(
+    primer_set = run_process(
         ["detect_primers.py", "--json", ref_genome, primer_string, fq1, fq2,]
     )
     if primer_set is None:
