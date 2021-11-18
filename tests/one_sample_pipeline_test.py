@@ -146,9 +146,9 @@ def test_complete_assembly_no_reads_map(test_data):
             "illumina",
             outdir,
             test_data["ref_fasta"],
-            test_data["amplicons_json"],
             fq1,
             fq2,
+            amplicon_json=test_data["amplicons_json"],
         )
     except utils.OutputFileError as error:
         # This test should fail on viridian, producing no consensus
@@ -176,9 +176,9 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
         "illumina",
         outdir,
         test_data["ref_fasta"],
-        test_data["amplicons_json"],
         fq1,
         fq2,
+        amplicon_json=test_data["amplicons_json"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
@@ -198,9 +198,9 @@ def test_assembly_amplicon_3_no_reads(test_data):
         "illumina",
         outdir,
         test_data["ref_fasta"],
-        test_data["amplicons_json"],
         fq1,
         fq2,
+        test_data["amplicons_json"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
@@ -226,9 +226,9 @@ def test_complete_assembly_with_snps_and_indels(test_data):
         "illumina",
         outdir,
         ref_fasta,
-        test_data["amplicons_json"],
         fq1,
         fq2,
+        test_data["amplicons_json"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
@@ -252,14 +252,17 @@ def test_reads_are_wgs_not_amplicon(test_data):
         "illumina",
         outdir,
         test_data["ref_fasta"],
-        test_data["amplicons_json"],
         fq1,
         fq2,
+        amplicon_json=test_data["amplicons_json"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
+def test_primer_detection(test_data):
+    return True
+    # TODO
 
 # TODO: at the time of writing, this test fails because viridian makes no
 # output, because all the amplicons are failed. It hits this error:
@@ -284,9 +287,9 @@ def _test_not_expected_amplicons(test_data):
         "illumina",
         outdir,
         test_data["ref_fasta"],
-        amplicons_json,
         fq1,
         fq2,
+        amplicon_json=amplicons_json,
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output

@@ -69,6 +69,7 @@ tar -jxvf k8-0.2.4.tar.bz2
 cp k8-0.2.4/k8-`uname -s` k8
 
 #________________________ racon _____________________________#
+cd $install_root
 git clone --recursive https://github.com/lbcb-sci/racon.git racon-git
 cd racon-git
 mkdir build
@@ -108,6 +109,6 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/QCovid.git
 cd QCovid
-git checkout 3408fc8d0f3121b24302546a33914f64adad2400
+git checkout aa48ac72dbf2c8286cfa13cd4a8981d2db375b43
 pip3 install .
 cd ..

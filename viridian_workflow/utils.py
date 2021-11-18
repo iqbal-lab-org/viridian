@@ -47,11 +47,12 @@ def run_process(cmd, ignore_error=False, stdout=None):
     )
     time_elapsed = time.time() - start_time
     logging.info(f"Process ({cmd}) completed in {time_elapsed} seconds.")
-    if not stdout:
-        logging.info(result.stdout)
     if not ignore_error and result.returncode != 0:
         raise PipelineProcessError(f"Process returned {result.returncode}")
         logging.error(result.stderr)
+    if not stdout:
+        logging.info(result.stdout)
+        return result.stdout
 
 
 def amplicons_json_to_bed_and_range(infile, outfile):

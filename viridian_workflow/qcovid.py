@@ -11,7 +11,7 @@ def detect_primers_pe(outdir, ref_genome, fq1, fq2, primers=None):
     if not primers:
         primers = cfg.primers
 
-    primer_string = ",".join(list(primers.values()))
+    primer_string = ",".join(primers)
 
     primer_set = run_process(
         ["detect_primers.py", "--json", ref_genome, primer_string, fq1, fq2,]
@@ -23,7 +23,7 @@ def detect_primers_pe(outdir, ref_genome, fq1, fq2, primers=None):
         logging.info("Failed to detect primers: {primer_set['status']}")
         raise Exception("could not infer detect primer set")
 
-    return primer_set
+    return primer_set["primer_set"]
 
 
 def detect_primers_se(outdir, ref_genome, fq1, fq2, primers=None):
