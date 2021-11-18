@@ -109,6 +109,7 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/QCovid.git
 cd QCovid
-git checkout aa48ac72dbf2c8286cfa13cd4a8981d2db375b43
+git checkout d2bba0a18f65277fd53ba8b532104b7b4c7ce191
+cp primers/*.qcovid.tsv ..
 pip3 install .
 cd ..
