@@ -150,9 +150,9 @@ def test_complete_assembly_no_reads_map(test_data):
             fq2,
             amplicon_json=test_data["amplicons_json"],
         )
-    except utils.OutputFileError as error:
         # This test should fail on viridian, producing no consensus
         # TODO specify that it was the consensus file that's missing
+    except utils.OutputFileError as error:
         if str(error) != str(
             os.path.abspath(
                 os.path.join(outdir, "Processing/viridian/consensus.final_assembly.fa")
@@ -260,9 +260,25 @@ def test_reads_are_wgs_not_amplicon(test_data):
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
-def test_primer_detection(test_data):
-    return True
-    # TODO
+
+def test_primer_detection_failure(test_data):
+    assert os.path.exists(test_data["dirname"])
+    pre_out = "tmp.reads_are_wgs_not_amplicon"
+    subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
+    fq1 = f"{pre_out}.1.fq"
+    fq2 = f"{pre_out}.2.fq"
+    tiling_reads(test_data["ref_seq"], 150, 350, fq1, fq2, step=2)
+    outdir = f"{pre_out}.out"
+    with pytest.raises(utils.PrimerError):
+        one_sample_pipeline.run_one_sample(
+            "illumina",
+            outdir,
+            test_data["ref_fasta"],
+            fq1,
+            fq2,
+            keep_intermediate=True,
+        )
+
 
 # TODO: at the time of writing, this test fails because viridian makes no
 # output, because all the amplicons are failed. It hits this error:

@@ -9,6 +9,10 @@ import time
 import pyfastaq
 
 
+class PrimerError(Exception):
+    pass
+
+
 class OutputFileError(Exception):
     pass
 
@@ -30,6 +34,24 @@ def rm(fn):
 def load_json(infile):
     with open(infile) as f:
         return json.load(f)
+
+
+def run_process_stdout(cmd, ignore_error=False):
+    logging.info(f"Running: {cmd}")
+    print(" ".join(cmd))
+
+    start_time = time.time()
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True,)
+
+    time_elapsed = time.time() - start_time
+    logging.info(f"Process ({cmd}) completed in {time_elapsed} seconds.")
+    logging.info(result.stdout)
+
+    if not ignore_error and result.returncode != 0:
+        raise PipelineProcessError(f"Process returned {result.returncode}")
+        logging.error(result.stderr)
+
+    return result.stdout
 
 
 def run_process(cmd, ignore_error=False, stdout=None):
