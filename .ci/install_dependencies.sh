@@ -3,6 +3,7 @@ set -vexu
 
 install_root=$1
 
+apt-get update
 apt-get install -y software-properties-common
 apt-add-repository universe
 apt-get update
@@ -12,6 +13,8 @@ apt-get install -y \
   cmake \
   automake \
   gcc \
+  gcc-10 \
+  g++-10 \
   gdb \
   git \
   python3 \
@@ -30,6 +33,7 @@ apt-get install -y \
   libssl-dev \
   samtools
 
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
 pip3 install tox
 
 if [ ! -d $install_root ]; then
@@ -69,12 +73,13 @@ tar -jxvf k8-0.2.4.tar.bz2
 cp k8-0.2.4/k8-`uname -s` k8
 
 #________________________ racon _____________________________#
+cd $install_root
 git clone --recursive https://github.com/lbcb-sci/racon.git racon-git
 cd racon-git
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make CC=gcc-10 CPP=g++-10 CXX=g++-10 LD=g++-10
 cd ../../
 cp -s racon-git/build/bin/racon .
 
