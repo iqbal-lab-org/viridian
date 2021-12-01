@@ -43,7 +43,7 @@ cd $install_root
 
 #_________________________ bcftools _________________________#
 cd $install_root
-wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
+wget -q https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
 tar xf bcftools-1.10.2.tar.bz2
 cd bcftools-1.10.2/
 make
@@ -68,7 +68,7 @@ make
 cd ..
 cp -s minimap2_git/minimap2 .
 cp -s minimap2_git/misc/paftools.js .
-wget https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
+wget -q https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
 tar -jxvf k8-0.2.4.tar.bz2
 cp k8-0.2.4/k8-`uname -s` k8
 
@@ -92,7 +92,7 @@ pip3 install .
 
 #________________________ mummer ____________________________#
 cd $install_root
-wget https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-4.0.0rc1.tar.gz
+wget -q https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-4.0.0rc1.tar.gz
 tar -xvf mummer-4.0.0rc1.tar.gz
 cd mummer-4.0.0rc1
 ./configure LDFLAGS=-static
