@@ -4,15 +4,29 @@
 
 ## Installation
 
+Clone this repository and then from its root, build either a Singularity
+or Docker container.
+
+To build a singularity container:
 ```
 singularity build viridian_workflow.img Singularity.def
 ```
+
+To build a docker container:
+```
+docker build --network=host .
+```
+(without `--network=host` you will likely get `pip install` timing out and
+the build failing).
+
+Both the Docker and Singularity container will have the main script
+`viridian_workflow` installed.
 
 ## Usage
 
 To run on paired Illumina reads:
 ```
-singularity run viridian_workflow.img run_one_sample \
+viridian_workflow run_one_sample \
   --tech illumina
   --ref_fasta data/MN908947.fasta \
   --amplicon_json data/covid-artic-v3.json \
@@ -22,7 +36,7 @@ singularity run viridian_workflow.img run_one_sample \
 ```
 To run on unpaired nanopore reads:
 ```
-singularity run viridian_workflow.img run_one_sample \
+viridian_workflow run_one_sample \
   --tech ont
   --ref_fasta data/MN908947.fasta \
   --amplicon_json data/covid-artic-v3.json \
