@@ -61,8 +61,8 @@ def match_reads(reads, amplicon_sets):
         yield read, matches
 
 
-def detect(reads):
-    """Generate amplicon match stats and assign a identify closest set of
+def detect(amplicon_sets, reads):
+    """Generate amplicon match stats and identify closest set of
     matching amplicons
     """
 
@@ -72,15 +72,16 @@ def detect(reads):
         # other stats for stuff like amplicon containment and
         # ambiguous match counts
 
-    for read, a_matches in match_reads(reads):
+    for read, amplicon_matches in match_reads(reads, amplicon_sets):
         for a in amplicon_matches:
             # unambiguous match for the read
-            if len(a_matches[a]) == 1:
-                matches[a.name] += 1
+            if len(amplicon_matches[a]) == 1:
+                matches[a] += 1
 
     return score(matches)
 
 
 if __name__ == "__main__":
-    reads = pysam.AlignmentFile(sys.argv[1], "rb")
-    detect(reads)
+    amplicons = [AmpliconSet.from_tsv(tsv) for tsv in sys.argv[1].split(",")]
+    reads = pysam.AlignmentFile(sys.argv[2], "rb")
+    print(detect(amplicons, reads))
