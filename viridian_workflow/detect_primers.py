@@ -40,7 +40,7 @@ def read_interval(read):
 
 
 def annotate_read(read, match):
-    """Set the match details for a read 
+    """Set the match details for a read
     """
     raise NotImplementedError
 
@@ -82,6 +82,6 @@ def detect(amplicon_sets, reads):
 
 
 if __name__ == "__main__":
-    amplicons = [AmpliconSet.from_tsv(tsv) for tsv in sys.argv[1].split(",")]
+    amplicons = [AmpliconSet(tsv, tsv_file=tsv) for tsv in sys.argv[1].split(",")]
     reads = pysam.AlignmentFile(sys.argv[2], "rb")
     print(detect(amplicons, reads))

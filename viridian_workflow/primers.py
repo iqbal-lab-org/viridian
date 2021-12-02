@@ -13,6 +13,9 @@ class Amplicon:
         self.left = []
         self.right = []
 
+    def __eq__(self, other):
+        return type(other) is type(self) and self.__dict__ == other.__dict__
+
     def add(self, primer):
         length = len(primer.seq)
         if primer.left:
@@ -32,12 +35,20 @@ class Amplicon:
 
 
 class AmpliconSet:
-    def __init__(self, name, amplicons, tolerance):
-        """AmpliconSet supports various membership operations
-        """
+    def __init__(self, name, tolerance=5, amplicons=None, tsv_file=None, json_file=None):
+        """AmpliconSet supports various membership operations"""
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
+        if not len([x for x in (amplicons, tsv_file, json_file) if x is not None]) == 1:
+            raise Exception(
+                "Must provide exactly one of amplicons, tsv_file, json_file"
+            )
+        if tsv_file is not None:
+            amplicons = AmpliconSet.from_tsv(tsv_file)
+        elif json_file is not None:
+            amplicons = AmpliconSet.from_json(json_file)
+        assert amplicons is not None
 
         primer_lengths = set()
         sequences = {}
@@ -62,12 +73,13 @@ class AmpliconSet:
         for k, v in sequences.items():
             self.seqs[k[: self.min_primer_length]] = v
 
-    def from_json(fn):
+    @classmethod
+    def from_json(cls, fn):
         raise NotImplementedError
 
-    def from_tsv(fn, tolerance=5):
-        """Import primer set from tsv (QCovid style)
-        """
+    @classmethod
+    def from_tsv(cls, fn, tolerance=5):
+        """Import primer set from tsv (QCovid style)"""
         amplicons = {}
 
         for l in open(fn):
@@ -83,7 +95,7 @@ class AmpliconSet:
             amplicons[amplicon_name].add(primer)
             # exact matching: also store the reverse complement of the primer
 
-        return AmpliconSet(fn, amplicons, tolerance=tolerance)
+        return amplicons
 
     def match(self, start, end):
         """Identify a template's mapped interval based on the start and end
