@@ -36,8 +36,7 @@ def test_AmpliconSet_from_tsv():
 def test_AmpliconSet_match():
     tsv_file = os.path.join(data_dir, "AmpliconSet_match.amplicons.tsv")
     amplicons = primers.AmpliconSet.from_tsv(tsv_file)
-    tolerance = 5
-    amplicon_set = primers.AmpliconSet("NAME", tolerance, tsv_file=tsv_file)
+    amplicon_set = primers.AmpliconSet("NAME", tolerance=5, tsv_file=tsv_file)
     f = amplicon_set.match
     assert f(0, 0) is None
     assert f(0, 10000) is None

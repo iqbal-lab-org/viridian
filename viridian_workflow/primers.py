@@ -45,9 +45,9 @@ class AmpliconSet:
                 "Must provide exactly one of amplicons, tsv_file, json_file"
             )
         if tsv_file is not None:
-            amplicons = AmpliconSet.from_tsv(tsv_file)
+            amplicons = AmpliconSet.from_tsv(tsv_file, tolerance=tolerance)
         elif json_file is not None:
-            amplicons = AmpliconSet.from_json(json_file)
+            amplicons = AmpliconSet.from_json(json_file, tolerance=tolerance)
         assert amplicons is not None
 
         primer_lengths = set()
@@ -74,7 +74,7 @@ class AmpliconSet:
             self.seqs[k[: self.min_primer_length]] = v
 
     @classmethod
-    def from_json(cls, fn):
+    def from_json(cls, fn, tolerance=5):
         raise NotImplementedError
 
     @classmethod
