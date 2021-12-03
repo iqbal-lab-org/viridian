@@ -5,6 +5,16 @@ try:
 except:
     __version__ = "local"
 
-__all__ = ["one_sample_pipeline", "tasks", "utils", "minimap", "qcovid", "sample_reads", "config"]
+__all__ = [
+    "config",
+    "detect_primers",
+    "minimap",
+    "one_sample_pipeline",
+    "primers",
+    "qcovid",
+    "sample_reads",
+    "tasks",
+    "utils",
+]
 
 from viridian_workflow import *
