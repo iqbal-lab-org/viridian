@@ -50,9 +50,13 @@ def test_load_list_of_amplicon_sets():
     with open(tmp_tsv, "w") as f:
         print("Name", "File", sep="\t", file=f)
         print("Scheme1", scheme1_tsv, sep="\t", file=f)
-    expect = [primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv)]
-    got = amplicon_schemes.load_list_of_amplicon_sets(tsv_others_to_use=tmp_tsv)
-    assert got == expect
+    expect_list = [primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv)]
+    expect_dict = {"Scheme1": scheme1_tsv}
+    got_dict, got_list = amplicon_schemes.load_list_of_amplicon_sets(
+        tsv_others_to_use=tmp_tsv
+    )
+    assert got_list == expect_list
+    assert got_dict == expect_dict
 
     with pytest.raises(Exception):
         amplicon_schemes.load_list_of_amplicon_sets(
@@ -60,14 +64,16 @@ def test_load_list_of_amplicon_sets():
         )
 
     built_in_schemes = amplicon_schemes.get_built_in_schemes()
-    expect = [
+    expect_dict["COVID-ARTIC-V4"] = built_in_schemes["COVID-ARTIC-V4"]
+    expect_list = [
         primers.AmpliconSet(
             "COVID-ARTIC-V4", vwf_tsv_file=built_in_schemes["COVID-ARTIC-V4"]
         ),
         primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv),
     ]
-    got = amplicon_schemes.load_list_of_amplicon_sets(
+    got_dict, got_list = amplicon_schemes.load_list_of_amplicon_sets(
         built_in_names_to_use={"COVID-ARTIC-V4"}, tsv_others_to_use=tmp_tsv
     )
-    assert got == expect
+    assert got_list == expect_list
+    assert got_dict == expect_dict
     os.unlink(tmp_tsv)
