@@ -35,3 +35,39 @@ def test_convert_tsv_to_viridian_json():
     expect["source_file"] = os.path.basename(expect["source_file"])
     assert got == expect
     os.unlink(tmp_json)
+
+
+def test_load_list_of_amplicon_sets():
+    with pytest.raises(Exception):
+        amplicon_schemes.load_list_of_amplicon_sets(
+            built_in_names_to_use=None, tsv_others_to_use=None
+        )
+    scheme1_tsv = os.path.join(data_dir, "load_list_of_amplicon_sets.scheme.tsv")
+    tmp_tsv = "tmp.load_list_of_amplicon_sets.tsv"
+    subprocess.check_output(f"rm -f {tmp_tsv}", shell=True)
+    with pytest.raises(Exception):
+        amplicon_schemes.load_list_of_amplicon_sets(tsv_others_to_use=tmp_tsv)
+    with open(tmp_tsv, "w") as f:
+        print("Name", "File", sep="\t", file=f)
+        print("Scheme1", scheme1_tsv, sep="\t", file=f)
+    expect = [primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv)]
+    got = amplicon_schemes.load_list_of_amplicon_sets(tsv_others_to_use=tmp_tsv)
+    assert got == expect
+
+    with pytest.raises(Exception):
+        amplicon_schemes.load_list_of_amplicon_sets(
+            built_in_names_to_use={"does not exist"}, tsv_others_to_use=tmp_tsv
+        )
+
+    built_in_schemes = amplicon_schemes.get_built_in_schemes()
+    expect = [
+        primers.AmpliconSet(
+            "COVID-ARTIC-V4", vwf_tsv_file=built_in_schemes["COVID-ARTIC-V4"]
+        ),
+        primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv),
+    ]
+    got = amplicon_schemes.load_list_of_amplicon_sets(
+        built_in_names_to_use={"COVID-ARTIC-V4"}, tsv_others_to_use=tmp_tsv
+    )
+    assert got == expect
+    os.unlink(tmp_tsv)

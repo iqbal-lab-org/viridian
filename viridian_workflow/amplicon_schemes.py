@@ -2,6 +2,8 @@ import csv
 import json
 import os
 
+from viridian_workflow import primers
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(this_dir, "amplicon_scheme_data")
 
@@ -59,3 +61,32 @@ def convert_tsv_to_viridian_json(tsv_in, json_out, scheme_name=None):
 
     with open(json_out, "w") as f:
         json.dump(data, f, indent=2)
+
+
+def load_list_of_amplicon_sets(built_in_names_to_use=None, tsv_others_to_use=None):
+    assert built_in_names_to_use is not None or tsv_others_to_use is not None
+    schemes = {}
+    if built_in_names_to_use is not None:
+        all_built_in_schemes = get_built_in_schemes()
+        for name in built_in_names_to_use:
+            if name not in all_built_in_schemes:
+                names = ",".join(sorted(list(all_built_in_schemes.keys())))
+                raise Exception(
+                    f"No built-in amplicon scheme called {name}. Available names: {names}"
+                )
+            schemes[name] = all_built_in_schemes[name]
+
+    if tsv_others_to_use is not None:
+        with open(tsv_others_to_use) as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            for d in reader:
+                if d["Name"] in schemes:
+                    raise Exception(
+                        f"Duplicate name '{d['Name']}' used. Cannot continue"
+                    )
+                if not os.path.exists(d["File"]):
+                    raise FileNotFoundError(f"File not found: {d['File']}")
+                schemes[d["Name"]] = d["File"]
+
+    assert len(schemes) > 0
+    return [primers.AmpliconSet(k, vwf_tsv_file=v) for k, v in sorted(schemes.items())]

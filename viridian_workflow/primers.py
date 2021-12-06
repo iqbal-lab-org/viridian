@@ -42,17 +42,36 @@ class Amplicon:
 
 class AmpliconSet:
     def __init__(
-        self, name, tolerance=5, amplicons=None, tsv_file=None, json_file=None
+        self,
+        name,
+        tolerance=5,
+        amplicons=None,
+        vwf_tsv_file=None,
+        tsv_file=None,
+        json_file=None,
     ):
         """AmpliconSet supports various membership operations"""
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
-        if not len([x for x in (amplicons, tsv_file, json_file) if x is not None]) == 1:
-            raise Exception(
-                "Must provide exactly one of amplicons, tsv_file, json_file"
+        if (
+            not len(
+                [
+                    x
+                    for x in (amplicons, vwf_tsv_file, tsv_file, json_file)
+                    if x is not None
+                ]
             )
-        if tsv_file is not None:
+            == 1
+        ):
+            raise Exception(
+                "Must provide exactly one of amplicons, vwf_tsv_file, tsv_file, json_file"
+            )
+        if vwf_tsv_file is not None:
+            amplicons = AmpliconSet.from_tsv_viridian_workflow_format(
+                vwf_tsv_file, tolerance=tolerance
+            )
+        elif tsv_file is not None:
             amplicons = AmpliconSet.from_tsv(tsv_file, tolerance=tolerance)
         elif json_file is not None:
             amplicons = AmpliconSet.from_json(json_file, tolerance=tolerance)
@@ -80,6 +99,9 @@ class AmpliconSet:
         # the internal sequences table allows lookup by primer sequence
         for k, v in sequences.items():
             self.seqs[k[: self.min_primer_length]] = v
+
+    def __eq__(self, other):
+        return type(other) is type(self) and self.__dict__ == other.__dict__
 
     @classmethod
     def from_json(cls, fn, tolerance=5):
