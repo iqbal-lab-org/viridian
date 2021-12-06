@@ -8,7 +8,7 @@ import subprocess
 
 
 ref = {}
-pyfastaq.tasks.file_to_dict("MN908947.fasta", ref)
+pyfastaq.tasks.file_to_dict("../MN908947.fasta", ref)
 assert len(ref) == 1
 ref = list(ref.values())[0]
 amplicons = {}
@@ -22,8 +22,17 @@ with open(bed_file, "rb") as f:
     bed_file_sha256 = hashlib.sha256(f.read()).hexdigest()
 
 
-with open(bed_file) as f:
-    for line in f:
+with open(bed_file) as f_in, open("../covid-artic-v4.vwf.tsv", "w") as f_out:
+    print("Amplicon_name",
+        "Primer_name",
+        "Left_or_right",
+        "Sequence",
+        "Position",
+        sep="\t",
+        file=f_out
+    )
+
+    for line in f_in:
         fields = line.rstrip().split("\t")
         ref_name, start, end, primer_name, pool, strand, seq = fields
         start = int(start)
@@ -49,6 +58,15 @@ with open(bed_file) as f:
         }
         assert d["end"] + 1 == end
         amplicons[amplicon_name][l_or_r.lower() + "_primers"].append(d)
+        print(
+            amplicon_name,
+            primer_name,
+            l_or_r.lower(),
+            seq,
+            start,
+            sep="\t",
+            file=f_out
+        )
 
 for amplicon_name, d in amplicons.items():
     d["start"] = min([x["start"] for x in d["left_primers"]])
