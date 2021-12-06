@@ -1,3 +1,4 @@
+import csv
 import sys
 from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
@@ -15,6 +16,11 @@ class Amplicon:
 
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
+
+    def __str__(self):
+        return ", ".join(
+            [self.name, str(self.start), str(self.end), str(self.left), str(self.right)]
+        )
 
     def add(self, primer):
         length = len(primer.seq)
@@ -35,7 +41,9 @@ class Amplicon:
 
 
 class AmpliconSet:
-    def __init__(self, name, tolerance=5, amplicons=None, tsv_file=None, json_file=None):
+    def __init__(
+        self, name, tolerance=5, amplicons=None, tsv_file=None, json_file=None
+    ):
         """AmpliconSet supports various membership operations"""
         self.tree = IntervalTree()
         self.name = name
@@ -95,6 +103,37 @@ class AmpliconSet:
             amplicons[amplicon_name].add(primer)
             # exact matching: also store the reverse complement of the primer
 
+        return amplicons
+
+    @classmethod
+    def from_tsv_viridian_workflow_format(cs, fn, tolerance=5):
+        amplicons = {}
+        required_cols = {
+            "Amplicon_name",
+            "Primer_name",
+            "Left_or_right",
+            "Sequence",
+            "Position",
+        }
+        with open(fn) as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            missing_cols = required_cols.difference(set(reader.fieldnames))
+            if len(missing_cols) > 0:
+                missing_cols = ",".join(sorted(list(missing_cols)))
+                raise Exception(
+                    f"Amplicon scheme TSV missing these columns: {missing_cols}. Got these columns: {reader.fieldnames}"
+                )
+
+            for d in reader:
+                if d["Amplicon_name"] not in amplicons:
+                    amplicons[d["Amplicon_name"]] = Amplicon(d["Amplicon_name"])
+
+                left = d["Left_or_right"].lower() == "left"
+                # We assume that primer is always left+forward, or right+reverse
+                forward = left
+                pos = int(d["Position"])
+                primer = Primer(d["Primer_name"], d["Sequence"], left, forward, pos)
+                amplicons[d["Amplicon_name"]].add(primer)
         return amplicons
 
     def match(self, start, end):
