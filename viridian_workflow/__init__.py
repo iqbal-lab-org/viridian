@@ -6,6 +6,7 @@ except:
     __version__ = "local"
 
 __all__ = [
+    "amplicon_schemes",
     "config",
     "detect_primers",
     "minimap",
