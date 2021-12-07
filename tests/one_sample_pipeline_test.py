@@ -186,7 +186,7 @@ def test_data():
 
     nucleotides_list_to_fasta_file(data["ref_seq"], "ref", data["ref_fasta"])
     yield data
-    #subprocess.check_output(f"rm -rf {outdir}", shell=True)
+    subprocess.check_output(f"rm -rf {outdir}", shell=True)
 
 
 def _test_complete_assembly_no_reads_map(test_data):
