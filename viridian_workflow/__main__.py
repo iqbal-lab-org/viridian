@@ -42,7 +42,7 @@ def main(args=None):
     subparser_run_one_sample = subparsers.add_parser(
         "run_one_sample",
         help="Help for run_one_sample",
-        usage=f"viridian_workflow run_one_sample --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)> [--amplicon_json amplicon.json]",
+        usage=f"viridian_workflow run_one_sample [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)>",
         description="run_one_sample: runs the pipeline on one sample",
         epilog="IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'.",
     )
@@ -65,13 +65,6 @@ def main(args=None):
         "--reads2", help="Illumina reads file 2", metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
-        "--amplicon_json",
-        help="OPTIONAL. JSON file of amplicons and primers",
-        required=False,
-        default=None,
-        metavar="FILENAME",
-    )
-    subparser_run_one_sample.add_argument(
         "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
@@ -89,6 +82,22 @@ def main(args=None):
         "--keep_bam",
         action="store_true",
         help="Keep BAM file of reads mapped to reference genome (it is deleted by default)",
+    )
+    scheme_names = ",".join(sorted(list(viridian_workflow.amplicon_schemes.get_built_in_schemes().keys())))
+    subparser_run_one_sample.add_argument(
+        "--built_in_amp_schemes",
+        help=f"Comma-separated list of built in amplicon schemes to use [{scheme_names}]",
+        metavar="scheme1,scheme2,...",
+    )
+    subparser_run_one_sample.add_argument(
+        "--amp_schemes_tsv",
+        help="Tab-delimited file of amplicon schemes to use. Must have header line that includes column names 'Name' and 'File'",
+        metavar="FILENAME",
+    )
+    subparser_run_one_sample.add_argument(
+        "--force_amp_scheme",
+        help="Force choice of amplicon scheme. The value provided must exactly match a built-in name or a name in file given by --amp_schemes_tsv",
+        metavar="STRING",
     )
     subparser_run_one_sample.add_argument(
         "--target_sample_depth",
