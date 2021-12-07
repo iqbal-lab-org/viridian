@@ -223,8 +223,8 @@ def run_one_sample(
     minimap.run(
         self_map_bam,
         assembly,
-        sampler.fq_out1,
-        fq2=sampler.fq_out2,
+        fq1,
+        fq2=fq2,
         sample_name=sample_name,
         sort=True,
     )
