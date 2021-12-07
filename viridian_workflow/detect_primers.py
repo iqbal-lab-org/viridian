@@ -100,6 +100,14 @@ def amplicon_set_counts_to_naive_total_counts(scheme_counts):
     return counts
 
 
+def amplicon_set_counts_to_json_friendly(scheme_counts):
+    dict_out = {}
+    for k, v in scheme_counts.items():
+        new_key = ";".join(sorted([str(x) for x in k]))
+        dict_out[new_key] = v
+    return dict_out
+
+
 def gather_stats_from_bam(infile, bam_out, amplicon_sets):
     open_mode_in = "r" + pysam_open_mode(infile)
     aln_file_in = pysam.AlignmentFile(infile, open_mode_in)

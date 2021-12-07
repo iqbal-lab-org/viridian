@@ -96,6 +96,19 @@ def test_amplicon_set_counts_to_naive_total_counts():
     }
 
 
+def test_amplicon_set_counts_to_json_friendly():
+    dict_in = {
+        (3, 1, 2): 42,
+        (1,): 11,
+        (2,): 100,
+    }
+    assert detect_primers.amplicon_set_counts_to_json_friendly(dict_in) == {
+        "1;2;3": 42,
+        "1": 11,
+        "2": 100,
+    }
+
+
 def _write_sim_reads(ref_seq, coords, outfile, suffix="", revcomp=False):
     with open(outfile, "w") as f:
         for i, (start, end) in enumerate(coords):
