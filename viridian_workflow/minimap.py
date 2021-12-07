@@ -1,6 +1,5 @@
 """minimap2 and samtools utilities
 """
-import os
 import subprocess
 from viridian_workflow.utils import run_process, check_file
 

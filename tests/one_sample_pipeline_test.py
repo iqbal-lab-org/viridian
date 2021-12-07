@@ -1,10 +1,8 @@
 import copy
-import json
 import os
 import pytest
 import random
 import subprocess
-import tempfile
 
 import pyfastaq
 

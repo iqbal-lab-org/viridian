@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
-import json
-import sys
 from collections import defaultdict
-from intervaltree import Interval
 
 import pysam
-from viridian_workflow import primers
 
 
 def score(matches):

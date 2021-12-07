@@ -1,6 +1,5 @@
 import csv
-import sys
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from intervaltree import IntervalTree
 
 Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])

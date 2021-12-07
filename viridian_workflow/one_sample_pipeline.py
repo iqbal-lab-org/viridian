@@ -121,7 +121,7 @@ def run_one_sample(
         if force_amp_scheme not in amplicon_scheme_name_to_tsv:
             names = ",".join(sorted(list(amplicon_scheme_name_to_tsv.keys())))
             raise Exception(
-                "Chose to force amplicons scheme to be {force_amp_scheme}, but scheme not found. Found these: {names}"
+                f"Chose to force amplicons scheme to be {force_amp_scheme}, but scheme not found. Found these: {names}"
             )
     update_json_latest_stage(log_info, "Processed amplicon scheme files", json_log)
 

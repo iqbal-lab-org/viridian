@@ -14,7 +14,7 @@ def test_get_built_in_schemes():
     assert len(found_schemes) > 0
     for filename in found_schemes.values():
         assert os.path.exists(filename)
-        foo = primers.AmpliconSet.from_tsv_viridian_workflow_format(filename)
+        primers.AmpliconSet.from_tsv_viridian_workflow_format(filename)
 
 
 def test_convert_tsv_to_viridian_json():

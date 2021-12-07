@@ -1,7 +1,6 @@
 """qcovid wrapper
 """
 import logging
-import subprocess
 import os
 import json
 from viridian_workflow.utils import (

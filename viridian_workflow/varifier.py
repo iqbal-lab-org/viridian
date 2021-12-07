@@ -1,7 +1,5 @@
 """varifier wrapper
 """
-import logging
-import subprocess
 import os
 from viridian_workflow.utils import run_process, check_file
 

@@ -3,7 +3,6 @@ import logging
 import os
 import pysam
 import random
-import subprocess
 
 from viridian_workflow import utils
 
@@ -234,12 +233,12 @@ class ReadSampler:
 
         self.finalise_output_json_data()
         self.aln_file_out.close()
-        logging.info(f"Sorting sampled BAM file")
+        logging.info("Sorting sampled BAM file")
         pysam.sort("-o", self.bam_out, unsorted_bam)
         os.unlink(unsorted_bam)
-        logging.info(f"Indexing sampled BAM file")
+        logging.info("Indexing sampled BAM file")
         pysam.index(self.bam_out)
-        logging.info(f"Writing fastq file(s)")
+        logging.info("Writing fastq file(s)")
         self.write_fastq()
 
         logging.info(f"Writing summary JSON file {self.json_out}")
