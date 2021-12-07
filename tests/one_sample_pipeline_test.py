@@ -20,10 +20,14 @@ def perfect_reads_from_sublist(seq, start, end, read_length, read_pairs, out1, o
     with open(out1, "w") as f1, open(out2, "w") as f2:
         for i in range(read_pairs):
             read1 = pyfastaq.sequences.Fastq(
-                f"{i}/1", "".join(seq[start : start + read_length]), qual_string
+                f"{start}-{end}.{i}/1",
+                "".join(seq[start : start + read_length]),
+                qual_string,
             )
             read2 = pyfastaq.sequences.Fastq(
-                f"{i}/2", "".join(seq[end - read_length : end]), qual_string
+                f"{start}-{end}.{i}/2",
+                "".join(seq[end - read_length : end]),
+                qual_string,
             )
             read2.revcomp()
             print(read1, file=f1)
@@ -47,7 +51,7 @@ def tiling_reads(seq, read_length, frag_length, out1, out2, step=2):
             print(read2, file=f2)
 
 
-def make_amplicons(outfile, amplicons=None):
+def make_amplicons(amps_outfile, schemes_outfile, ref_seq, amplicons=None):
     if amplicons is None:
         amplicons = [
             ("amplicon1", 30, 410),
@@ -57,17 +61,37 @@ def make_amplicons(outfile, amplicons=None):
             ("amplicon5", 1242, 1651),
         ]
 
-    json_data = {"amplicons": {}}
-    for name, start, end in amplicons:
-        json_data["amplicons"][name] = {
-            "start": start,
-            "end": end,
-            "left_primer_end": start,
-            "right_primer_start": end,
-        }
+    primer_length = 10
+    with open(amps_outfile, "w") as f:
+        print(
+            "Amplicon_name",
+            "Primer_name",
+            "Left_or_right",
+            "Sequence",
+            "Position",
+            sep="\t",
+            file=f,
+        )
+        for name, start, end in amplicons:
+            left_seq = "".join(ref_seq[start : start + primer_length])
+            right_seq = pyfastaq.sequences.Fasta(
+                "x", "".join(ref_seq[end - primer_length : end + 1])
+            )
+            right_seq.revcomp()
+            print(name, name + "_left", "left", left_seq, start, sep="\t", file=f)
+            print(
+                name,
+                name + "_right",
+                "right",
+                right_seq.seq,
+                end - primer_length,
+                sep="\t",
+                file=f,
+            )
 
-    with open(outfile, "w") as f:
-        json.dump(json_data, f, indent=2)
+    with open(schemes_outfile, "w") as f:
+        print("Name\tFile", file=f)
+        print("scheme1", os.path.abspath(amps_outfile), sep="\t", file=f)
 
     return amplicons
 
@@ -112,12 +136,15 @@ def test_data():
     os.mkdir(outdir)
     data = {
         "dirname": outdir,
-        "amplicons_json": os.path.join(outdir, "amplicons.json"),
+        "amplicons_tsv": os.path.join(outdir, "amplicons.tsv"),
+        "schemes_tsv": os.path.join(outdir, "amplicon_schemes.tsv"),
         "ref_fasta": os.path.join(outdir, "ref.fasta"),
     }
-    data["amplicons"] = make_amplicons(data["amplicons_json"])
     data["ref_seq"] = (
         ["A"] * 20 + random.choices(["A", "C", "G", "T"], k=1680) + ["A"] * 20
+    )
+    data["amplicons"] = make_amplicons(
+        data["amplicons_tsv"], data["schemes_tsv"], data["ref_seq"]
     )
 
     reads_prefix = os.path.join(outdir, "reads")
@@ -130,7 +157,7 @@ def test_data():
     subprocess.check_output(f"rm -rf {outdir}", shell=True)
 
 
-def test_complete_assembly_no_reads_map(test_data):
+def _test_complete_assembly_no_reads_map(test_data):
     assert os.path.exists(test_data["dirname"])
     pre_out = "tmp.no_reads_map"
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
@@ -148,7 +175,7 @@ def test_complete_assembly_no_reads_map(test_data):
             test_data["ref_fasta"],
             fq1,
             fq2,
-            amplicon_json=test_data["amplicons_json"],
+            amplicon_json=test_data["amplicons_tsv"],
         )
         # This test should fail on viridian, producing no consensus
         # TODO specify that it was the consensus file that's missing
@@ -178,7 +205,7 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
         test_data["ref_fasta"],
         fq1,
         fq2,
-        amplicon_json=test_data["amplicons_json"],
+        tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
@@ -200,7 +227,7 @@ def test_assembly_amplicon_3_no_reads(test_data):
         test_data["ref_fasta"],
         fq1,
         fq2,
-        test_data["amplicons_json"],
+        tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
@@ -228,7 +255,7 @@ def test_complete_assembly_with_snps_and_indels(test_data):
         ref_fasta,
         fq1,
         fq2,
-        test_data["amplicons_json"],
+        tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
@@ -254,30 +281,11 @@ def test_reads_are_wgs_not_amplicon(test_data):
         test_data["ref_fasta"],
         fq1,
         fq2,
-        amplicon_json=test_data["amplicons_json"],
+        tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
-
-
-def test_primer_detection_failure(test_data):
-    assert os.path.exists(test_data["dirname"])
-    pre_out = "tmp.reads_are_wgs_not_amplicon"
-    subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
-    fq1 = f"{pre_out}.1.fq"
-    fq2 = f"{pre_out}.2.fq"
-    tiling_reads(test_data["ref_seq"], 150, 350, fq1, fq2, step=2)
-    outdir = f"{pre_out}.out"
-    with pytest.raises(utils.PrimerError):
-        one_sample_pipeline.run_one_sample(
-            "illumina",
-            outdir,
-            test_data["ref_fasta"],
-            fq1,
-            fq2,
-            keep_intermediate=True,
-        )
 
 
 # TODO: at the time of writing, this test fails because viridian makes no
