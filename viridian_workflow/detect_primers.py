@@ -41,6 +41,8 @@ def annotate_read(read, match):
 
 
 def match_read_to_amplicons(read, amplicon_sets):
+    if read.is_unmapped:
+        return None
     matches = {}
     for amplicons in amplicon_sets:
         m = amplicons.match(*read_interval(read))

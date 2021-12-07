@@ -53,6 +53,9 @@ def test_match_read_to_amplicons():
     # scheme2:
     # 100-300, 290-500, 490-700, 790-1001
     read = mock.Mock()
+    read.is_unmapped = True
+    assert detect_primers.match_read_to_amplicons(read, amplicon_sets) is None
+    read.is_unmapped = False
     read.is_paired = False
     read.reference_start = 100
     read.reference_end = 290
