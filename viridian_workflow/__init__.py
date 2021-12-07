@@ -16,6 +16,7 @@ __all__ = [
     "sample_reads",
     "tasks",
     "utils",
+    "varifier",
 ]
 
 from viridian_workflow import *
