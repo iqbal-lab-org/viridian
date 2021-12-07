@@ -36,12 +36,21 @@ def load_json(infile):
         return json.load(f)
 
 
+def write_json(outfile, data):
+    with open(outfile, "w") as f:
+        json.dump(data, f, indent=2)
+
+
 def run_process_stdout(cmd, ignore_error=False):
     logging.info(f"Running: {cmd}")
     print(" ".join(cmd))
 
     start_time = time.time()
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True,)
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+    )
 
     time_elapsed = time.time() - start_time
     logging.info(f"Process ({cmd}) completed in {time_elapsed} seconds.")
