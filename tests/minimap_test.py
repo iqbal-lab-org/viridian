@@ -21,6 +21,7 @@ def bam_is_sorted_and_indexed(bam):
         return False
     return "HD" in header and header["HD"].get("SO", None) == "coordinate"
 
+
 def test_paired_unsorted():
     ref = os.path.join(data_dir, "ref.fa")
     reads1 = os.path.join(data_dir, "reads_1.fq")
@@ -31,6 +32,7 @@ def test_paired_unsorted():
     assert os.path.exists(bam)
     assert not bam_is_sorted_and_indexed(bam)
     os.unlink(bam)
+
 
 def test_paired_sorted():
     ref = os.path.join(data_dir, "ref.fa")
@@ -44,6 +46,7 @@ def test_paired_sorted():
     os.unlink(bam)
     os.unlink(f"{bam}.bai")
 
+
 def test_unpaired_unsorted():
     ref = os.path.join(data_dir, "ref.fa")
     reads = os.path.join(data_dir, "reads.fq")
@@ -53,6 +56,7 @@ def test_unpaired_unsorted():
     assert os.path.exists(bam)
     assert not bam_is_sorted_and_indexed(bam)
     os.unlink(bam)
+
 
 def test_unpaired_sorted():
     ref = os.path.join(data_dir, "ref.fa")

@@ -59,13 +59,19 @@ def main(args=None):
         metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
-        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
+        "--reads1",
+        help="Illumina reads file 1",
+        metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
-        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
+        "--reads2",
+        help="Illumina reads file 2",
+        metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
-        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
+        "--reads",
+        help="Unpaired reads (eg nanopore) file",
+        metavar="FILENAME",
     )
     subparser_run_one_sample.add_argument(
         "--outdir",
@@ -83,7 +89,9 @@ def main(args=None):
         action="store_true",
         help="Keep BAM file of reads mapped to reference genome (it is deleted by default)",
     )
-    scheme_names = ",".join(sorted(list(viridian_workflow.amplicon_schemes.get_built_in_schemes().keys())))
+    scheme_names = ",".join(
+        sorted(list(viridian_workflow.amplicon_schemes.get_built_in_schemes().keys()))
+    )
     subparser_run_one_sample.add_argument(
         "--built_in_amp_schemes",
         help=f"Comma-separated list of built in amplicon schemes to use [{scheme_names}]",
