@@ -205,14 +205,9 @@ def run_one_sample(
     update_json_latest_stage(log_info, "QC on all mapped reads", json_log)
 
     logging.info("Making initial unmasked consensus using Viridian")
-    with open(amplicon_json) as f:
-        a = json.load(f)
-    amps_json_test = os.path.join(processing_dir, "vir.amps.json")
-    with open(amps_json_test, "w") as f:
-        json.dump(a["amplicons"], f, indent=2)
     viridian_out = os.path.join(processing_dir, "viridian")
     assembly = run_viridian(
-        tech, viridian_out, ref_genome, amps_json_test, bam, bad_amplicons
+        tech, viridian_out, ref_genome, amplicon_json, bam, bad_amplicons
     )
     log_info["viridian"] = utils.load_json(os.path.join(viridian_out, "run_info.json"))
     update_json_latest_stage(log_info, "Viridian", json_log)
