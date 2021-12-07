@@ -12,7 +12,7 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "one_sample_pipeline")
 
 
-def perfect_reads_from_sublist(seq, start, end, read_length, read_pairs, out1, out2):
+def perfect_paired_reads_from_sublist(seq, start, end, read_length, read_pairs, out1, out2):
     assert read_length < end - start
     qual_string = "I" * read_length
     with open(out1, "w") as f1, open(out2, "w") as f2:
@@ -30,6 +30,21 @@ def perfect_reads_from_sublist(seq, start, end, read_length, read_pairs, out1, o
             read2.revcomp()
             print(read1, file=f1)
             print(read2, file=f2)
+
+
+def perfect_unpaired_reads_from_sublist(seq, start, end, reads, out):
+    qual_string = "I" * (end - start)
+    with open(out, "w") as f:
+        for i in range(reads):
+            read = pyfastaq.sequences.Fastq(
+                f"{start}-{end}.{i}",
+                "".join(seq[start : end]),
+                qual_string,
+            )
+            if i % 2 == 0:
+                read.revcomp()
+            print(read, file=f)
+
 
 
 def tiling_reads(seq, read_length, frag_length, out1, out2, step=2):
@@ -100,16 +115,22 @@ def make_fwd_rev_reads_for_each_amplicon(ref_seq, amplicons, outprefix):
         out1 = f"{outprefix}.{name}.1.fastq"
         out2 = f"{outprefix}.{name}.2.fastq"
         filenames[name] = {"fwd": out1, "rev": out2}
-        perfect_reads_from_sublist(ref_seq, start, end, 250, 200, out1, out2)
+        perfect_paired_reads_from_sublist(ref_seq, start, end, 250, 200, out1, out2)
     return filenames
 
 
-def make_catted_reads_for_amplicon_set(test_data, wanted_amplicons, out1, out2):
+def make_unpaired_reads_for_each_amplicon(ref_seq, amplicons, outprefix):
+    filenames = {}
+    for name, start, end in amplicons:
+        out = f"{outprefix}.{name}.fastq"
+        perfect_unpaired_reads_from_sublist(ref_seq, start, end, 200, out)
+        filenames[name] = out
+    return filenames
+
+
+def make_catted_paired_reads_for_amplicon_set(test_data, wanted_amplicons, out1, out2):
     fwd_files = []
     rev_files = []
-    import pprint
-
-    pprint.pprint(test_data)
     for name, _, _ in test_data["amplicons"]:
         if name in wanted_amplicons:
             fwd_files.append(test_data["reads"][name]["fwd"])
@@ -118,6 +139,16 @@ def make_catted_reads_for_amplicon_set(test_data, wanted_amplicons, out1, out2):
     subprocess.check_output("rm -rf {out1} {out2}", shell=True)
     subprocess.check_output(f"cat {' ' .join(fwd_files)} > {out1}", shell=True)
     subprocess.check_output(f"cat {' ' .join(rev_files)} > {out2}", shell=True)
+
+
+def make_catted_unpaired_reads_for_amplicon_set(test_data, wanted_amplicons, out):
+    files = []
+    for name, _, _ in test_data["amplicons"]:
+        if name in wanted_amplicons:
+            files.append(test_data["unpaired_reads"][name])
+
+    subprocess.check_output("rm -rf {out}", shell=True)
+    subprocess.check_output(f"cat {' ' .join(files)} > {out}", shell=True)
 
 
 def nucleotides_list_to_fasta_file(nuc_list, seq_name, outfile):
@@ -149,10 +180,13 @@ def test_data():
     data["reads"] = make_fwd_rev_reads_for_each_amplicon(
         data["ref_seq"], data["amplicons"], reads_prefix
     )
+    data["unpaired_reads"] = make_unpaired_reads_for_each_amplicon(
+        data["ref_seq"], data["amplicons"], reads_prefix
+    )
 
     nucleotides_list_to_fasta_file(data["ref_seq"], "ref", data["ref_fasta"])
     yield data
-    subprocess.check_output(f"rm -rf {outdir}", shell=True)
+    #subprocess.check_output(f"rm -rf {outdir}", shell=True)
 
 
 def _test_complete_assembly_no_reads_map(test_data):
@@ -172,7 +206,7 @@ def _test_complete_assembly_no_reads_map(test_data):
             outdir,
             test_data["ref_fasta"],
             fq1,
-            fq2,
+            fq2=fq2,
             amplicon_json=test_data["amplicons_tsv"],
         )
         # This test should fail on viridian, producing no consensus
@@ -195,14 +229,34 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
     fq1 = f"{pre_out}.1.fq"
     fq2 = f"{pre_out}.2.fq"
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
-    make_catted_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
+    make_catted_paired_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
         "illumina",
         outdir,
         test_data["ref_fasta"],
         fq1,
-        fq2,
+        fq2=fq2,
+        tsv_of_amp_schemes=test_data["schemes_tsv"],
+        keep_intermediate=True,
+    )
+    # TODO: check that we got the expected output
+    subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
+
+
+def test_complete_assembly_from_all_good_amplicons_unpaired(test_data):
+    assert os.path.exists(test_data["dirname"])
+    pre_out = "tmp.complete_assembly_from_all_good_amplicons_unpaired"
+    subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
+    fq = f"{pre_out}.fq"
+    all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
+    make_catted_unpaired_reads_for_amplicon_set(test_data, all_amplicon_names, fq)
+    outdir = f"{pre_out}.out"
+    one_sample_pipeline.run_one_sample(
+        "ont",
+        outdir,
+        test_data["ref_fasta"],
+        fq,
         tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
@@ -217,14 +271,14 @@ def test_assembly_amplicon_3_no_reads(test_data):
     fq1 = f"{pre_out}.1.fq"
     fq2 = f"{pre_out}.2.fq"
     amplicon_names = {"amplicon1", "amplicon2", "amplicon4", "amplicon5"}
-    make_catted_reads_for_amplicon_set(test_data, amplicon_names, fq1, fq2)
+    make_catted_paired_reads_for_amplicon_set(test_data, amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     one_sample_pipeline.run_one_sample(
         "illumina",
         outdir,
         test_data["ref_fasta"],
         fq1,
-        fq2,
+        fq2=fq2,
         tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
@@ -239,7 +293,7 @@ def test_complete_assembly_with_snps_and_indels(test_data):
     fq1 = f"{pre_out}.1.fq"
     fq2 = f"{pre_out}.2.fq"
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
-    make_catted_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
+    make_catted_paired_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     ref_fasta = f"{pre_out}.ref.fa"
     ref_seq = copy.copy(test_data["ref_seq"])
@@ -252,7 +306,7 @@ def test_complete_assembly_with_snps_and_indels(test_data):
         outdir,
         ref_fasta,
         fq1,
-        fq2,
+        fq2=fq2,
         tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
@@ -278,7 +332,7 @@ def test_reads_are_wgs_not_amplicon(test_data):
         outdir,
         test_data["ref_fasta"],
         fq1,
-        fq2,
+        fq2=fq2,
         tsv_of_amp_schemes=test_data["schemes_tsv"],
         keep_intermediate=True,
     )
@@ -296,7 +350,7 @@ def _test_not_expected_amplicons(test_data):
     fq1 = f"{pre_out}.1.fq"
     fq2 = f"{pre_out}.2.fq"
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
-    make_catted_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
+    make_catted_paired_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     amplicons = [
         ("amplicon1", 50, 900),
         ("amplicon2", 850, 1200),
@@ -310,7 +364,7 @@ def _test_not_expected_amplicons(test_data):
         outdir,
         test_data["ref_fasta"],
         fq1,
-        fq2,
+        fq2=fq2,
         amplicon_json=amplicons_json,
         keep_intermediate=True,
     )

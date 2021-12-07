@@ -231,9 +231,12 @@ def run_one_sample(
     update_json_latest_stage(log_info, "Map reads to Viridian consensus", json_log)
 
     logging.info("Running QC on Viridian consensus to make masked FASTA")
-    masked_fasta = qcovid.self_qc(processing_dir, assembly, self_map_bam)
+    # FIXME. This is a temporary hack while self qc is rewritten. We're
+    # skipping self QC for now, but needs to be reinstated in the future.
+    #masked_fasta = qcovid.self_qc(processing_dir, assembly, self_map_bam)
     final_masked_fasta = os.path.join(outdir, "consensus.fa")
-    utils.set_seq_name_in_fasta_file(masked_fasta, final_masked_fasta, sample_name)
+    #utils.set_seq_name_in_fasta_file(masked_fasta, final_masked_fasta, sample_name)
+    utils.set_seq_name_in_fasta_file(assembly, final_masked_fasta, sample_name)
     update_json_latest_stage(log_info, "Ran QC on reads mapped to consensus", json_log)
 
     logging.info("Making VCF file of variants")
