@@ -4,7 +4,7 @@ from collections import defaultdict
 from intervaltree import Interval
 
 import pysam
-from primers import AmpliconSet
+from primers import AmpliconSet, set_tags, get_tags
 
 
 def score(matches):
@@ -14,6 +14,7 @@ def score(matches):
     # naive: take max of all bins
     m = 0
     winner = None
+    print(matches.items())
     for k, v in matches.items():
         if v >= m:
             m = v
@@ -61,11 +62,12 @@ def match_reads(reads, amplicon_sets):
         yield read, matches
 
 
-def detect(amplicon_sets, reads):
+def detect(amplicon_sets, reads, outbam, header=None):
     """Generate amplicon match stats and identify closest set of
     matching amplicons
     """
 
+    out = pysam.AlignmentFile(outbam, "wb", header=reads.header)
     matches = {}
     for aset in amplicon_sets:
         matches[aset.name] = 0
@@ -73,15 +75,20 @@ def detect(amplicon_sets, reads):
         # ambiguous match counts
 
     for read, amplicon_matches in match_reads(reads, amplicon_sets):
+        read = set_tags(amplicon_sets, read, amplicon_matches)
         for a in amplicon_matches:
             # unambiguous match for the read
             if len(amplicon_matches[a]) == 1:
                 matches[a] += 1
-
+        out.write(read)
+    out.close()
     return score(matches)
 
 
 if __name__ == "__main__":
-    amplicons = [AmpliconSet(tsv, tsv_file=tsv) for tsv in sys.argv[1].split(",")]
+    amplicons = [
+        AmpliconSet(tsv, tsv_file=tsv, shortname=s)
+        for tsv, s in zip(sys.argv[1].split(","), ["a", "b", "c"])
+    ]
     reads = pysam.AlignmentFile(sys.argv[2], "rb")
     print(detect(amplicons, reads))
