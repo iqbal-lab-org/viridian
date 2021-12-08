@@ -1,0 +1,1110 @@
+{
+  "name": "covid-midnight-1200",
+  "source_file": "https://zenodo.org/record/3897530/files/SARS-CoV-2_primer_sets_RBK004_nanopore_sequencing.tab",
+  "source_file_sha256": "ca230b9ccaf1c9c4131fd3a6a3dc14cc3e1b8e4f9adbf0e8ce513ac738b60c45",
+  "reference_accession": "MN908947.3",
+  "amplicons": {
+    "SARSCoV_1200_1": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_1_LEFT",
+            "Sequence": "ACCAACCAACTTTCGATCTCTTGT",
+            "Pool": "1",
+            "Length": "24",
+            "Tm": "60.69",
+            "GC%": "41.67",
+            "Start": "30",
+            "End": "54"
+          },
+          "start": 30,
+          "end": 53
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_1_RIGHT",
+            "Sequence": "GGTTGCATTCATTTGGTGACGC",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.49",
+            "GC%": "50",
+            "Start": "1205",
+            "End": "1183"
+          },
+          "start": 1183,
+          "end": 1204
+        }
+      ],
+      "start": 30,
+      "end": 1204,
+      "left_primer_end": 53,
+      "right_primer_start": 1183
+    },
+    "SARSCoV_1200_3": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_3_LEFT",
+            "Sequence": "GGCTTGAAGAGAAGTTTAAGGAAGGT",
+            "Pool": "1",
+            "Length": "26",
+            "Tm": "61.19",
+            "GC%": "42.31",
+            "Start": "2153",
+            "End": "2179"
+          },
+          "start": 2153,
+          "end": 2178
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_3_RIGHT",
+            "Sequence": "GATTGTCCTCACTGCCGTCTTG",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.5",
+            "GC%": "54.55",
+            "Start": "3257",
+            "End": "3235"
+          },
+          "start": 3235,
+          "end": 3256
+        }
+      ],
+      "start": 2153,
+      "end": 3256,
+      "left_primer_end": 2178,
+      "right_primer_start": 3235
+    },
+    "SARSCoV_1200_5": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_5_LEFT",
+            "Sequence": "ACCTACTAAAAAGGCTGGTGGC",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "60.55",
+            "GC%": "50",
+            "Start": "4167",
+            "End": "4189"
+          },
+          "start": 4167,
+          "end": 4188
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_5_RIGHT",
+            "Sequence": "AGCATCTTGTAGAGCAGGTGGA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.16",
+            "GC%": "50",
+            "Start": "5359",
+            "End": "5337"
+          },
+          "start": 5337,
+          "end": 5358
+        }
+      ],
+      "start": 4167,
+      "end": 5358,
+      "left_primer_end": 4188,
+      "right_primer_start": 5337
+    },
+    "SARSCoV_1200_7": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_7_LEFT",
+            "Sequence": "ACCTGGTGTATACGTTGTCTTTGG",
+            "Pool": "1",
+            "Length": "24",
+            "Tm": "60.8",
+            "GC%": "45.83",
+            "Start": "6283",
+            "End": "6307"
+          },
+          "start": 6283,
+          "end": 6306
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_7_RIGHT",
+            "Sequence": "GCTGAAATCGGGGCCATTTGTA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.53",
+            "GC%": "50",
+            "Start": "7401",
+            "End": "7379"
+          },
+          "start": 7379,
+          "end": 7400
+        }
+      ],
+      "start": 6283,
+      "end": 7400,
+      "left_primer_end": 6306,
+      "right_primer_start": 7379
+    },
+    "SARSCoV_1200_9": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_9_LEFT",
+            "Sequence": "AGAAGTTACTGGCGATAGTTGTAATAACT",
+            "Pool": "1",
+            "Length": "29",
+            "Tm": "60.59",
+            "GC%": "34.48",
+            "Start": "8253",
+            "End": "8282"
+          },
+          "start": 8253,
+          "end": 8281
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_9_RIGHT",
+            "Sequence": "TGCTGATATGTCCAAAGCACCA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "60.29",
+            "GC%": "45.45",
+            "Start": "9400",
+            "End": "9378"
+          },
+          "start": 9378,
+          "end": 9399
+        }
+      ],
+      "start": 8253,
+      "end": 9399,
+      "left_primer_end": 8281,
+      "right_primer_start": 9378
+    },
+    "SARSCoV_1200_11": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_11_LEFT",
+            "Sequence": "AGACACCTAAGTATAAGTTTGTTCGCA",
+            "Pool": "1",
+            "Length": "27",
+            "Tm": "60.74",
+            "GC%": "37.04",
+            "Start": "10343",
+            "End": "10370"
+          },
+          "start": 10343,
+          "end": 10369
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_11_RIGHT",
+            "Sequence": "GCCCACATGGAAATGGCTTGAT",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.8",
+            "GC%": "50",
+            "Start": "11469",
+            "End": "11447"
+          },
+          "start": 11447,
+          "end": 11468
+        }
+      ],
+      "start": 10343,
+      "end": 11468,
+      "left_primer_end": 10369,
+      "right_primer_start": 11447
+    },
+    "SARSCoV_1200_13": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_13_LEFT",
+            "Sequence": "ACCTCTTACAACAGCAGCCAAAC",
+            "Pool": "1",
+            "Length": "23",
+            "Tm": "61.55",
+            "GC%": "47.83",
+            "Start": "12450",
+            "End": "12473"
+          },
+          "start": 12450,
+          "end": 12472
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_13_RIGHT",
+            "Sequence": "CGTCCTTTTCTTGGAAGCGACA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.38",
+            "GC%": "50",
+            "Start": "13621",
+            "End": "13599"
+          },
+          "start": 13599,
+          "end": 13620
+        }
+      ],
+      "start": 12450,
+      "end": 13620,
+      "left_primer_end": 12472,
+      "right_primer_start": 13599
+    },
+    "SARSCoV_1200_15": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_15_LEFT",
+            "Sequence": "TTTTAAGGAATTACTTGTGTATGCTGCT",
+            "Pool": "1",
+            "Length": "28",
+            "Tm": "60.06",
+            "GC%": "32.14",
+            "Start": "14540",
+            "End": "14568"
+          },
+          "start": 14540,
+          "end": 14567
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_15_RIGHT",
+            "Sequence": "ACACACAACAGCATCGTCAGAG",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.12",
+            "GC%": "50",
+            "Start": "15735",
+            "End": "15713"
+          },
+          "start": 15713,
+          "end": 15734
+        }
+      ],
+      "start": 14540,
+      "end": 15734,
+      "left_primer_end": 14567,
+      "right_primer_start": 15713
+    },
+    "SARSCoV_1200_17": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_17_LEFT",
+            "Sequence": "TCAAGCTTTTTGCAGCAGAAACG",
+            "Pool": "1",
+            "Length": "23",
+            "Tm": "61.28",
+            "GC%": "43.48",
+            "Start": "16624",
+            "End": "16647"
+          },
+          "start": 16624,
+          "end": 16646
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_17_RIGHT",
+            "Sequence": "CCAAGCAGGGTTACGTGTAAGG",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.19",
+            "GC%": "54.55",
+            "Start": "17754",
+            "End": "17732"
+          },
+          "start": 17732,
+          "end": 17753
+        }
+      ],
+      "start": 16624,
+      "end": 17753,
+      "left_primer_end": 16646,
+      "right_primer_start": 17732
+    },
+    "SARSCoV_1200_19": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_19_LEFT",
+            "Sequence": "GGCACATGGCTTTGAGTTGACA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.91",
+            "GC%": "50",
+            "Start": "18596",
+            "End": "18618"
+          },
+          "start": 18596,
+          "end": 18617
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_19_RIGHT",
+            "Sequence": "CCTGTTGTCCATCAAAGTGTCCC",
+            "Pool": "1",
+            "Length": "23",
+            "Tm": "61.62",
+            "GC%": "52.17",
+            "Start": "19678",
+            "End": "19655"
+          },
+          "start": 19655,
+          "end": 19677
+        }
+      ],
+      "start": 18596,
+      "end": 19677,
+      "left_primer_end": 18617,
+      "right_primer_start": 19655
+    },
+    "SARSCoV_1200_21": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_21_LEFT",
+            "Sequence": "TCTGTAGTTTCTAAGGTTGTCAAAGTGA",
+            "Pool": "1",
+            "Length": "28",
+            "Tm": "60.58",
+            "GC%": "35.71",
+            "Start": "20553",
+            "End": "20581"
+          },
+          "start": 20553,
+          "end": 20580
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_21_RIGHT",
+            "Sequence": "GCAGGGGGTAATTGAGTTCTGG",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "60.95",
+            "GC%": "54.55",
+            "Start": "21642",
+            "End": "21620"
+          },
+          "start": 21620,
+          "end": 21641
+        }
+      ],
+      "start": 20553,
+      "end": 21641,
+      "left_primer_end": 20580,
+      "right_primer_start": 21620
+    },
+    "SARSCoV_1200_23": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_23_LEFT",
+            "Sequence": "ACTTTAGAGTCCAACCAACAGAATCT",
+            "Pool": "1",
+            "Length": "26",
+            "Tm": "60.18",
+            "GC%": "38.46",
+            "Start": "22511",
+            "End": "22537"
+          },
+          "start": 22511,
+          "end": 22536
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_23_RIGHT",
+            "Sequence": "TGACTAGCTACACTACGTGCCC",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.52",
+            "GC%": "54.55",
+            "Start": "23631",
+            "End": "23609"
+          },
+          "start": 23609,
+          "end": 23630
+        }
+      ],
+      "start": 22511,
+      "end": 23630,
+      "left_primer_end": 22536,
+      "right_primer_start": 23609
+    },
+    "SARSCoV_1200_25": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_25_LEFT",
+            "Sequence": "TGCTGCTACTAAAATGTCAGAGTGT",
+            "Pool": "1",
+            "Length": "25",
+            "Tm": "60.51",
+            "GC%": "40",
+            "Start": "24633",
+            "End": "24658"
+          },
+          "start": 24633,
+          "end": 24657
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_25_RIGHT",
+            "Sequence": "CATTTCCAGCAAAGCCAAAGCC",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.45",
+            "GC%": "50",
+            "Start": "25790",
+            "End": "25768"
+          },
+          "start": 25768,
+          "end": 25789
+        }
+      ],
+      "start": 24633,
+      "end": 25789,
+      "left_primer_end": 24657,
+      "right_primer_start": 25768
+    },
+    "SARSCoV_1200_27": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_27_LEFT",
+            "Sequence": "TGGATCACCGGTGGAATTGCTA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.75",
+            "GC%": "50",
+            "Start": "26744",
+            "End": "26766"
+          },
+          "start": 26744,
+          "end": 26765
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_27_RIGHT",
+            "Sequence": "TGTTCGTTTAGGCGTGACAAGT",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "60.74",
+            "GC%": "45.45",
+            "Start": "27894",
+            "End": "27872"
+          },
+          "start": 27872,
+          "end": 27893
+        }
+      ],
+      "start": 26744,
+      "end": 27893,
+      "left_primer_end": 26765,
+      "right_primer_start": 27872
+    },
+    "SARSCoV_1200_29": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_29_LEFT",
+            "Sequence": "TGAGGGAGCCTTGAATACACCA",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.1",
+            "GC%": "50",
+            "Start": "28677",
+            "End": "28699"
+          },
+          "start": 28677,
+          "end": 28698
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_29_RIGHT",
+            "Sequence": "TAGGCAGCTCTCCCTAGCATTG",
+            "Pool": "1",
+            "Length": "22",
+            "Tm": "61.61",
+            "GC%": "54.55",
+            "Start": "29790",
+            "End": "29768"
+          },
+          "start": 29768,
+          "end": 29789
+        }
+      ],
+      "start": 28677,
+      "end": 29789,
+      "left_primer_end": 28698,
+      "right_primer_start": 29768
+    },
+    "SARSCoV_1200_2": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_2_LEFT",
+            "Sequence": "CCATAATCAAGACTATTCAACCAAGGGT",
+            "Pool": "2",
+            "Length": "28",
+            "Tm": "61.27",
+            "GC%": "39.29",
+            "Start": "1100",
+            "End": "1128"
+          },
+          "start": 1100,
+          "end": 1127
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_2_RIGHT",
+            "Sequence": "ACAGGTGACAATTTGTCCACCG",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.33",
+            "GC%": "50",
+            "Start": "2266",
+            "End": "2244"
+          },
+          "start": 2244,
+          "end": 2265
+        }
+      ],
+      "start": 1100,
+      "end": 2265,
+      "left_primer_end": 1127,
+      "right_primer_start": 2244
+    },
+    "SARSCoV_1200_4": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_4_LEFT",
+            "Sequence": "GGAATTTGGTGCCACTTCTGCT",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.66",
+            "GC%": "50",
+            "Start": "3144",
+            "End": "3166"
+          },
+          "start": 3144,
+          "end": 3165
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_4_RIGHT",
+            "Sequence": "CCTGACCCGGGTAAGTGGTTAT",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.49",
+            "GC%": "54.55",
+            "Start": "4262",
+            "End": "4240"
+          },
+          "start": 4240,
+          "end": 4261
+        }
+      ],
+      "start": 3144,
+      "end": 4261,
+      "left_primer_end": 3165,
+      "right_primer_start": 4240
+    },
+    "SARSCoV_1200_6": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_6_LEFT",
+            "Sequence": "ACTTCTATTAAATGGGCAGATAACAACTG",
+            "Pool": "2",
+            "Length": "29",
+            "Tm": "60.18",
+            "GC%": "34.48",
+            "Start": "5257",
+            "End": "5286"
+          },
+          "start": 5257,
+          "end": 5285
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_6_RIGHT",
+            "Sequence": "GATTATCCATTCCCTGCGCGTC",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.75",
+            "GC%": "54.55",
+            "Start": "6380",
+            "End": "6358"
+          },
+          "start": 6358,
+          "end": 6379
+        }
+      ],
+      "start": 5257,
+      "end": 6379,
+      "left_primer_end": 5285,
+      "right_primer_start": 6358
+    },
+    "SARSCoV_1200_8": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_8_LEFT",
+            "Sequence": "CAATCATGCAATTGTTTTTCAGCTATTTTG",
+            "Pool": "2",
+            "Length": "30",
+            "Tm": "60.39",
+            "GC%": "30",
+            "Start": "7298",
+            "End": "7328"
+          },
+          "start": 7298,
+          "end": 7327
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_8_RIGHT",
+            "Sequence": "TGACTTTTTGCTACCTGCGCAT",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.39",
+            "GC%": "45.45",
+            "Start": "8385",
+            "End": "8363"
+          },
+          "start": 8363,
+          "end": 8384
+        }
+      ],
+      "start": 7298,
+      "end": 8384,
+      "left_primer_end": 7327,
+      "right_primer_start": 8363
+    },
+    "SARSCoV_1200_10": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_10_LEFT",
+            "Sequence": "TTTACCAGGAGTTTTCTGTGGTGT",
+            "Pool": "2",
+            "Length": "24",
+            "Tm": "60.32",
+            "GC%": "41.67",
+            "Start": "9303",
+            "End": "9327"
+          },
+          "start": 9303,
+          "end": 9326
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_10_RIGHT",
+            "Sequence": "TGGGCCTCATAGCACATTGGTA",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.5",
+            "GC%": "50",
+            "Start": "10451",
+            "End": "10429"
+          },
+          "start": 10429,
+          "end": 10450
+        }
+      ],
+      "start": 9303,
+      "end": 10450,
+      "left_primer_end": 9326,
+      "right_primer_start": 10429
+    },
+    "SARSCoV_1200_12": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_12_LEFT",
+            "Sequence": "ATGGTGCTAGGAGAGTGTGGAC",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.48",
+            "GC%": "54.55",
+            "Start": "11372",
+            "End": "11394"
+          },
+          "start": 11372,
+          "end": 11393
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_12_RIGHT",
+            "Sequence": "GGATTTCCCACAATGCTGATGC",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "60.48",
+            "GC%": "50",
+            "Start": "12560",
+            "End": "12538"
+          },
+          "start": 12538,
+          "end": 12559
+        }
+      ],
+      "start": 11372,
+      "end": 12559,
+      "left_primer_end": 11393,
+      "right_primer_start": 12538
+    },
+    "SARSCoV_1200_14": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_14_LEFT",
+            "Sequence": "ACAGGCACTAGTACTGATGTCGT",
+            "Pool": "2",
+            "Length": "23",
+            "Tm": "61.12",
+            "GC%": "47.83",
+            "Start": "13509",
+            "End": "13532"
+          },
+          "start": 13509,
+          "end": 13531
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_14_RIGHT",
+            "Sequence": "GTGCAGCTACTGAAAAGCACGT",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.94",
+            "GC%": "50",
+            "Start": "14641",
+            "End": "14619"
+          },
+          "start": 14619,
+          "end": 14640
+        }
+      ],
+      "start": 13509,
+      "end": 14640,
+      "left_primer_end": 13531,
+      "right_primer_start": 14619
+    },
+    "SARSCoV_1200_16": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_16_LEFT",
+            "Sequence": "ACAACACAGACTTTATGAGTGTCTCT",
+            "Pool": "2",
+            "Length": "26",
+            "Tm": "60.18",
+            "GC%": "38.46",
+            "Start": "15608",
+            "End": "15634"
+          },
+          "start": 15608,
+          "end": 15633
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_16_RIGHT",
+            "Sequence": "CTCTGTCAGACAGCACTTCACG",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.17",
+            "GC%": "54.55",
+            "Start": "16720",
+            "End": "16698"
+          },
+          "start": 16698,
+          "end": 16719
+        }
+      ],
+      "start": 15608,
+      "end": 16719,
+      "left_primer_end": 15633,
+      "right_primer_start": 16698
+    },
+    "SARSCoV_1200_18": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_18_LEFT",
+            "Sequence": "GCACATAAAGACAAATCAGCTCAATGC",
+            "Pool": "2",
+            "Length": "27",
+            "Tm": "62.03",
+            "GC%": "40.74",
+            "Start": "17622",
+            "End": "17649"
+          },
+          "start": 17622,
+          "end": 17648
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_18_RIGHT",
+            "Sequence": "TGTCTGAAGCAGTGGAAAAGCA",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "60.68",
+            "GC%": "45.45",
+            "Start": "18706",
+            "End": "18684"
+          },
+          "start": 18684,
+          "end": 18705
+        }
+      ],
+      "start": 17622,
+      "end": 18705,
+      "left_primer_end": 17648,
+      "right_primer_start": 18684
+    },
+    "SARSCoV_1200_20": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_20_LEFT",
+            "Sequence": "ACAATTTGATACTTATAACCTCTGGAACAC",
+            "Pool": "2",
+            "Length": "30",
+            "Tm": "60.15",
+            "GC%": "33.33",
+            "Start": "19574",
+            "End": "19604"
+          },
+          "start": 19574,
+          "end": 19603
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_20_RIGHT",
+            "Sequence": "GATTAGGCATAGCAACACCCGG",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.39",
+            "GC%": "54.55",
+            "Start": "20698",
+            "End": "20676"
+          },
+          "start": 20676,
+          "end": 20697
+        }
+      ],
+      "start": 19574,
+      "end": 20697,
+      "left_primer_end": 19603,
+      "right_primer_start": 20676
+    },
+    "SARSCoV_1200_22": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_22_LEFT",
+            "Sequence": "GTGATGTTCTTGTTAACAACTAAACGAACA",
+            "Pool": "2",
+            "Length": "30",
+            "Tm": "61.44",
+            "GC%": "33.33",
+            "Start": "21532",
+            "End": "21562"
+          },
+          "start": 21532,
+          "end": 21561
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_22_RIGHT",
+            "Sequence": "AACAGATGCAAATCTGGTGGCG",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "62.03",
+            "GC%": "50",
+            "Start": "22612",
+            "End": "22590"
+          },
+          "start": 22590,
+          "end": 22611
+        }
+      ],
+      "start": 21532,
+      "end": 22611,
+      "left_primer_end": 21561,
+      "right_primer_start": 22590
+    },
+    "SARSCoV_1200_24": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_24_LEFT",
+            "Sequence": "GCTGAACATGTCAACAACTCATATGA",
+            "Pool": "2",
+            "Length": "26",
+            "Tm": "60.13",
+            "GC%": "38.46",
+            "Start": "23518",
+            "End": "23544"
+          },
+          "start": 23518,
+          "end": 23543
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_24_RIGHT",
+            "Sequence": "ATGAGGTGCTGACTGAGGGAAG",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.74",
+            "GC%": "54.55",
+            "Start": "24736",
+            "End": "24714"
+          },
+          "start": 24714,
+          "end": 24735
+        }
+      ],
+      "start": 23518,
+      "end": 24735,
+      "left_primer_end": 23543,
+      "right_primer_start": 24714
+    },
+    "SARSCoV_1200_26": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_26_LEFT",
+            "Sequence": "GCCTTGAAGCCCCTTTTCTCTA",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "60.29",
+            "GC%": "50",
+            "Start": "25690",
+            "End": "25712"
+          },
+          "start": 25690,
+          "end": 25711
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_26_RIGHT",
+            "Sequence": "AATGACCACATGGAACGCGTAC",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.5",
+            "GC%": "50",
+            "Start": "26857",
+            "End": "26835"
+          },
+          "start": 26835,
+          "end": 26856
+        }
+      ],
+      "start": 25690,
+      "end": 26856,
+      "left_primer_end": 25711,
+      "right_primer_start": 26835
+    },
+    "SARSCoV_1200_28": {
+      "left_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_28_LEFT",
+            "Sequence": "TTTGTGCTTTTTAGCCTTTCTGCT",
+            "Pool": "2",
+            "Length": "24",
+            "Tm": "60.14",
+            "GC%": "37.5",
+            "Start": "27784",
+            "End": "27808"
+          },
+          "start": 27784,
+          "end": 27807
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": {
+            "Primer Name": "SARSCoV_1200_28_RIGHT",
+            "Sequence": "GTTTGGCCTTGTTGTTGTTGGC",
+            "Pool": "2",
+            "Length": "22",
+            "Tm": "61.82",
+            "GC%": "50",
+            "Start": "29007",
+            "End": "28985"
+          },
+          "start": 28985,
+          "end": 29006
+        }
+      ],
+      "start": 27784,
+      "end": 29006,
+      "left_primer_end": 27807,
+      "right_primer_start": 28985
+    }
+  }
+}

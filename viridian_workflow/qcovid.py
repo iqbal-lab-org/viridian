@@ -1,7 +1,6 @@
 """qcovid wrapper
 """
 import logging
-import subprocess
 import os
 import json
 from viridian_workflow.utils import (
@@ -20,7 +19,14 @@ def detect_primers_pe(outdir, ref_genome, fq1, fq2, primers=None):
     primer_string = ",".join(primers)
 
     primer_set = run_process_stdout(
-        ["detect_primers.py", "--json", ref_genome, primer_string, fq1, fq2,]
+        [
+            "detect_primers.py",
+            "--json",
+            ref_genome,
+            primer_string,
+            fq1,
+            fq2,
+        ]
     )
     logging.error(f"primer set: {primer_set}")
     primer_set = json.loads(primer_set)
@@ -42,7 +48,13 @@ def detect_primers_se(outdir, ref_genome, fq, primers=None):
 
     primer_set = json.loads(
         run_process_stdout(
-            ["detect_primers.py", "--json", ref_genome, primer_string, fq,]
+            [
+                "detect_primers.py",
+                "--json",
+                ref_genome,
+                primer_string,
+                fq,
+            ]
         )
     )
     if primer_set is None:

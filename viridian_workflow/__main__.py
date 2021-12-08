@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import sys
 import viridian_workflow
 
 
@@ -29,50 +30,103 @@ def main(args=None):
     parser.add_argument(
         "--version", action="version", version=viridian_workflow.__version__
     )
-    parser.add_argument(
+
+    subparsers = parser.add_subparsers(title="Available commands", help="", metavar="")
+
+    # ----------- general options common to all tasks ------------------------
+    common_parser = argparse.ArgumentParser(add_help=False)
+    common_parser.add_argument(
         "--debug",
         help="More verbose logging, and less file cleaning",
         action="store_true",
     )
-
-    subparsers = parser.add_subparsers(title="Available commands", help="", metavar="")
-
-    # ------------------------ run_one_sample ----------------------------
     tech_choices = ["illumina", "ont"]
-    subparser_run_one_sample = subparsers.add_parser(
-        "run_one_sample",
-        help="Help for run_one_sample",
-        usage=f"viridian_workflow run_one_sample --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)> [--amplicon_json amplicon.json]",
-        description="run_one_sample: runs the pipeline on one sample",
-        epilog="IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'.",
-    )
-    subparser_run_one_sample.add_argument(
+    common_parser.add_argument(
         "--tech",
         choices=tech_choices,
         help=f"Sequencing technology, currently supported: {','.join(tech_choices)}",
         required=True,
     )
-    subparser_run_one_sample.add_argument(
+
+    # -------------- amplicons options ---------------------------------------
+    amplicons_parser = argparse.ArgumentParser(add_help=False)
+    scheme_names = ",".join(
+        sorted(list(viridian_workflow.amplicon_schemes.get_built_in_schemes().keys()))
+    )
+    amplicons_parser.add_argument(
+        "--built_in_amp_schemes",
+        help=f"Comma-separated list of built in amplicon schemes to use [{scheme_names}]",
+        metavar="scheme1,scheme2,...",
+    )
+    amplicons_parser.add_argument(
+        "--amp_schemes_tsv",
+        help="Tab-delimited file of amplicon schemes to use. Must have header line that includes column names 'Name' and 'File'",
+        metavar="FILENAME",
+    )
+
+    # ----------------- reads and ref options --------------------------------
+    reads_ref_parser = argparse.ArgumentParser(add_help=False)
+    reads_ref_parser.add_argument(
+        "--reads1",
+        help="Illumina reads file 1",
+        metavar="FILENAME",
+    )
+    reads_ref_parser.add_argument(
+        "--reads2",
+        help="Illumina reads file 2",
+        metavar="FILENAME",
+    )
+    reads_ref_parser.add_argument(
+        "--reads",
+        help="Unpaired reads (eg nanopore) file",
+        metavar="FILENAME",
+    )
+    reads_ref_parser.add_argument(
         "--ref_fasta",
         help="REQUIRED. FASTA file of reference genome",
         required=True,
         metavar="FILENAME",
     )
-    subparser_run_one_sample.add_argument(
-        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
+    reads_ref_parser.add_argument(
+        "--sample_name",
+        default="sample",
+        help="Name of sample to put in header of final FASTA, VCF, and BAM files [%(default)s]",
+        metavar="STRING",
     )
-    subparser_run_one_sample.add_argument(
-        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
+    reads_ref_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'."
+
+    # ------------------------ detect_amplicon_scheme --------------------
+    subparser_detect_amp = subparsers.add_parser(
+        "detect_amplicon_scheme",
+        parents=[common_parser, amplicons_parser, reads_ref_parser],
+        help="Detect amplicon scheme that best fits input reads",
+        usage=f"viridian_workflow detect_amplicon_scheme [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outprefix out <reads options (see help)>",
+        description="Detect amplicon scheme that best fits input reads",
+        epilog=reads_ref_epilog,
     )
-    subparser_run_one_sample.add_argument(
-        "--amplicon_json",
-        help="OPTIONAL. JSON file of amplicons and primers",
-        required=False,
-        default=None,
+    subparser_detect_amp.add_argument(
+        "--outprefix",
+        help="REQUIRED. Prefix of output files, which will be outprefix.json, and (depending on options), outprefix.tmp.sam and outprefix.bam",
+        required=True,
         metavar="FILENAME",
     )
-    subparser_run_one_sample.add_argument(
-        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
+    subparser_detect_amp.add_argument(
+        "--make_bam",
+        help="Make a sorted by name BAM file of reads mapped to reference genome, with each read annotated with which amplicon(s) it belongs to",
+        metavar="FILENAME",
+    )
+    subparser_detect_amp.set_defaults(
+        func=viridian_workflow.tasks.detect_amplicon_scheme.run
+    )
+
+    # ------------------------ run_one_sample ----------------------------
+    subparser_run_one_sample = subparsers.add_parser(
+        "run_one_sample",
+        parents=[common_parser, amplicons_parser, reads_ref_parser],
+        help="Run the complete pipeline on one sample",
+        usage=f"viridian_workflow run_one_sample [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)>",
+        description="Run the complete pipeline on one sample",
+        epilog=reads_ref_epilog,
     )
     subparser_run_one_sample.add_argument(
         "--outdir",
@@ -91,24 +145,25 @@ def main(args=None):
         help="Keep BAM file of reads mapped to reference genome (it is deleted by default)",
     )
     subparser_run_one_sample.add_argument(
+        "--force_amp_scheme",
+        help="Force choice of amplicon scheme. The value provided must exactly match a built-in name or a name in file given by --amp_schemes_tsv",
+        metavar="STRING",
+    )
+    subparser_run_one_sample.add_argument(
         "--target_sample_depth",
         type=int,
         default=1000,
         help="Target coverage for amplicon depth normalisation [%(default)s]",
         metavar="INT",
     )
-    subparser_run_one_sample.add_argument(
-        "--sample_name",
-        default="sample",
-        help="Name of sample to put in header of final FASTA, VCF, and BAM files [%(default)s]",
-        metavar="STRING",
-    )
-
     subparser_run_one_sample.set_defaults(
         func=viridian_workflow.tasks.run_one_sample.run
     )
 
     args = parser.parse_args()
+    if not hasattr(args, "func"):
+        parser.print_help()
+        sys.exit()
     check_reads_args(args)
 
     logging.basicConfig(
