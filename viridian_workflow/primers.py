@@ -5,8 +5,29 @@ from intervaltree import IntervalTree
 Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
 
 
+def set_tags(amplicon_sets, read, matches):
+    tags = []
+    for amplicon_set in amplicon_sets:
+        if amplicon_set.name not in matches:
+            continue
+        shortname = amplicon_set.shortname
+        for amplicon in matches[amplicon_set.name]:
+            tags.append((f"Z{shortname}", amplicon.shortname, "i"))
+    read.set_tags(tags)
+    return read
+
+
+def get_tags(amplicon_sets, read):
+    matches = defaultdict(list)
+    for tag, value in read.get_tags():
+        if tag[0] == "Z":
+            matches[tag[1]].append(value)
+    return matches
+
+
 class Amplicon:
-    def __init__(self, name):
+    def __init__(self, name, shortname=0):
+        self.shortname = shortname
         self.name = name
         self.start = None
         self.end = None
@@ -46,10 +67,13 @@ class AmpliconSet:
         tolerance=5,
         amplicons=None,
         vwf_tsv_file=None,
+        shortname="A",
         tsv_file=None,
         json_file=None,
     ):
         """AmpliconSet supports various membership operations"""
+        print(shortname, tsv_file)
+        self.shortname = shortname
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
@@ -111,6 +135,7 @@ class AmpliconSet:
         """Import primer set from tsv (QCovid style)"""
         amplicons = {}
 
+        n = 0
         for l in open(fn):
             amplicon_name, name, seq, left, forward, pos = l.strip().split("\t")
             pos = int(pos)
@@ -118,7 +143,8 @@ class AmpliconSet:
             left = left.lower() in ["left", "true", "t"]
 
             if amplicon_name not in amplicons:
-                amplicons[amplicon_name] = Amplicon(amplicon_name)
+                amplicons[amplicon_name] = Amplicon(amplicon_name, shortname=n)
+                n += 1
 
             primer = Primer(name, seq, left, forward, pos)
             amplicons[amplicon_name].add(primer)
@@ -182,4 +208,4 @@ class AmpliconSet:
             # the primer set is parsed
             raise Exception
         else:
-            return hits
+            return [hit.data for hit in hits]
