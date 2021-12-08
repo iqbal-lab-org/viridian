@@ -19,19 +19,24 @@ Stats = namedtuple("Stats", ["alt_in_primer", "ref", "alts", "total"])
 
 class Stats:
     def __init__(self):
-        self.alt_in_primer = 0
-        self.alts = 0
+        self.alts_in_primer = 0
+        self.refs_in_primer = 0
+
         self.amps = defaultdict(int)
         self.amps_total = defaultdict(int)
+
+        self.alts_forward = 0
+        self.refs_forward = 0
+
         self.total = 0
 
-    def add_alt(self, alt, amplicon):
+    def add_alt(self, alt, amplicon, in_primer, strand):
         self.alts += 1
         self.amps[amplicon] += 1
         self.amps_total[amplicon] += 1
         self.total += 1
 
-    def add_ref(self, amplicon):
+    def add_ref(self, amplicon, in_primer, strand):
         self.total += 1
         self.amps_total[amplicon] += 1
 
@@ -118,12 +123,6 @@ if __name__ == "__main__":
     stats = {}
     for r in pysam.AlignmentFile(sys.argv[3]):
         a = ref.map(r.seq)
-        tags = get_tags(None, r)[sn]
-        if len(tags) < 1:
-            amplicon = "none"
-        else:
-            amplicon = amplicons[tags[0]].name
-
         alignment = None
         for x in a:
             if x.is_primary:
@@ -132,9 +131,21 @@ if __name__ == "__main__":
         if not alignment:
             continue
 
-        #            if alignment.strand != 1:
+        tags = get_tags(None, r)[sn]
+
+        amplicon = None
+        if len(tags) > 0:
+            amplicon = amplicons[tags[0]]
+
+        strand = False # strand is forward
+        if alignment.strand == 0:
+            # should be error
+            raise Exception()
+        elif alignment.strand == 1:
+            strand = True
 
         alts = cigar_to_alts(ref_seq[alignment.r_st : alignment.r_en], r.seq, r.cigar)
+
         for read_pos, base in alts:
             position = read_pos + alignment.r_st
 
