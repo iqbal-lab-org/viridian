@@ -1,6 +1,5 @@
 import argparse
 import datetime
-import json
 import logging
 import socket
 import subprocess
@@ -124,6 +123,9 @@ def run_one_sample(
                 f"Chose to force amplicons scheme to be {force_amp_scheme}, but scheme not found. Found these: {names}"
             )
     update_json_latest_stage(log_info, "Processed amplicon scheme files", json_log)
+    logging.info(
+        f"Processed amplicon scheme files. Amplicon scheme names: {','.join(sorted(list(amplicon_scheme_name_to_tsv.keys())))}"
+    )
 
     processing_dir = os.path.join(outdir, "Processing")
     os.mkdir(processing_dir)
@@ -157,7 +159,10 @@ def run_one_sample(
         log_info, "Gather read stats and detect primer scheme", json_log
     )
 
-    logging.info("Processing files for chosen amplicon scheme")
+    logging.info(
+        "Processing files for chosen amplicon scheme "
+        + log_info["amplicon_scheme_name"]
+    )
     amplicon_json = os.path.join(processing_dir, "amplicons.json")
     amplicon_schemes.convert_tsv_to_viridian_json(
         amplicon_tsv, amplicon_json, scheme_name=log_info["amplicon_scheme_name"]
@@ -233,9 +238,9 @@ def run_one_sample(
     logging.info("Running QC on Viridian consensus to make masked FASTA")
     # FIXME. This is a temporary hack while self qc is rewritten. We're
     # skipping self QC for now, but needs to be reinstated in the future.
-    #masked_fasta = qcovid.self_qc(processing_dir, assembly, self_map_bam)
+    # masked_fasta = qcovid.self_qc(processing_dir, assembly, self_map_bam)
     final_masked_fasta = os.path.join(outdir, "consensus.fa")
-    #utils.set_seq_name_in_fasta_file(masked_fasta, final_masked_fasta, sample_name)
+    # utils.set_seq_name_in_fasta_file(masked_fasta, final_masked_fasta, sample_name)
     utils.set_seq_name_in_fasta_file(assembly, final_masked_fasta, sample_name)
     update_json_latest_stage(log_info, "Ran QC on reads mapped to consensus", json_log)
 

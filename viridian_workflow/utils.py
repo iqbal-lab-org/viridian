@@ -155,3 +155,27 @@ def set_seq_name_in_fasta_file(infile, outfile, new_name):
     seq.id = new_name
     with open(outfile, "w") as f:
         print(seq, file=f)
+
+
+def check_tech_and_reads_opts_and_get_reads(options):
+    if options.tech == "ont":
+        if options.reads1 is not None or options.reads2 is not None:
+            raise Exception(
+                "Tech is 'ont'. Cannot use reads1 or reads2 options, use reads option instead"
+            )
+        if options.reads is None:
+            raise Exception("Tech is 'ont'. Must use reads option")
+        fq1 = options.reads
+        fq2 = None
+    elif options.tech == "illumina":
+        if options.reads is not None:
+            raise Exception(
+                "Tech is 'illumina'. Cannot use reads option, use both reads1 and reads2 instead"
+            )
+        if options.reads1 is None or options.reads2 is None:
+            raise Exception(
+                "Tech is 'illumina'. Must use both reads1 and reads2 instead"
+            )
+        fq1 = options.reads1
+        fq2 = options.reads2
+    return fq1, fq2
