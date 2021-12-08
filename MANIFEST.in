@@ -1,2 +1,3 @@
 include requirements.txt
 include LICENSE
+recursive-include amplicon_scheme_data *

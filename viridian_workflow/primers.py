@@ -1,5 +1,5 @@
-import sys
-from collections import namedtuple, defaultdict
+import csv
+from collections import namedtuple
 from intervaltree import IntervalTree
 
 Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
@@ -37,6 +37,11 @@ class Amplicon:
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
 
+    def __str__(self):
+        return ", ".join(
+            [self.name, str(self.start), str(self.end), str(self.left), str(self.right)]
+        )
+
     def add(self, primer):
         length = len(primer.seq)
         if primer.left:
@@ -59,9 +64,10 @@ class AmpliconSet:
     def __init__(
         self,
         name,
-        shortname="A",
         tolerance=5,
         amplicons=None,
+        vwf_tsv_file=None,
+        shortname="A",
         tsv_file=None,
         json_file=None,
     ):
@@ -71,11 +77,24 @@ class AmpliconSet:
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
-        if not len([x for x in (amplicons, tsv_file, json_file) if x is not None]) == 1:
-            raise Exception(
-                "Must provide exactly one of amplicons, tsv_file, json_file"
+        if (
+            not len(
+                [
+                    x
+                    for x in (amplicons, vwf_tsv_file, tsv_file, json_file)
+                    if x is not None
+                ]
             )
-        if tsv_file is not None:
+            == 1
+        ):
+            raise Exception(
+                "Must provide exactly one of amplicons, vwf_tsv_file, tsv_file, json_file"
+            )
+        if vwf_tsv_file is not None:
+            amplicons = AmpliconSet.from_tsv_viridian_workflow_format(
+                vwf_tsv_file, tolerance=tolerance
+            )
+        elif tsv_file is not None:
             amplicons = AmpliconSet.from_tsv(tsv_file, tolerance=tolerance)
         elif json_file is not None:
             amplicons = AmpliconSet.from_json(json_file, tolerance=tolerance)
@@ -104,6 +123,9 @@ class AmpliconSet:
         for k, v in sequences.items():
             self.seqs[k[: self.min_primer_length]] = v
 
+    def __eq__(self, other):
+        return type(other) is type(self) and self.__dict__ == other.__dict__
+
     @classmethod
     def from_json(cls, fn, tolerance=5):
         raise NotImplementedError
@@ -128,6 +150,37 @@ class AmpliconSet:
             amplicons[amplicon_name].add(primer)
             # exact matching: also store the reverse complement of the primer
 
+        return amplicons
+
+    @classmethod
+    def from_tsv_viridian_workflow_format(cs, fn, tolerance=5):
+        amplicons = {}
+        required_cols = {
+            "Amplicon_name",
+            "Primer_name",
+            "Left_or_right",
+            "Sequence",
+            "Position",
+        }
+        with open(fn) as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            missing_cols = required_cols.difference(set(reader.fieldnames))
+            if len(missing_cols) > 0:
+                missing_cols = ",".join(sorted(list(missing_cols)))
+                raise Exception(
+                    f"Amplicon scheme TSV missing these columns: {missing_cols}. Got these columns: {reader.fieldnames}"
+                )
+
+            for d in reader:
+                if d["Amplicon_name"] not in amplicons:
+                    amplicons[d["Amplicon_name"]] = Amplicon(d["Amplicon_name"])
+
+                left = d["Left_or_right"].lower() == "left"
+                # We assume that primer is always left+forward, or right+reverse
+                forward = left
+                pos = int(d["Position"])
+                primer = Primer(d["Primer_name"], d["Sequence"], left, forward, pos)
+                amplicons[d["Amplicon_name"]].add(primer)
         return amplicons
 
     def match(self, start, end):

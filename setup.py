@@ -10,6 +10,7 @@ setup(
     version="0.1.1",
     description="FIXME",
     packages=find_packages(),
+    package_data={'viridian_workflow': ['amplicon_scheme_data/*']},
     author="Jeff Knaggs,Martin Hunt",
     author_email="FIXME",
     url="https://github.com/iqbal-lab-org/viridian_workflow",

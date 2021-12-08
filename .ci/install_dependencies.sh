@@ -3,6 +3,7 @@ set -vexu
 
 install_root=$1
 
+apt-get update
 apt-get install -y software-properties-common
 apt-add-repository universe
 apt-get update
@@ -12,6 +13,8 @@ apt-get install -y \
   cmake \
   automake \
   gcc \
+  gcc-10 \
+  g++-10 \
   gdb \
   git \
   python3 \
@@ -30,6 +33,7 @@ apt-get install -y \
   libssl-dev \
   samtools
 
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
 pip3 install tox
 
 if [ ! -d $install_root ]; then
@@ -39,7 +43,7 @@ cd $install_root
 
 #_________________________ bcftools _________________________#
 cd $install_root
-wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
+wget -q https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2
 tar xf bcftools-1.10.2.tar.bz2
 cd bcftools-1.10.2/
 make
@@ -64,7 +68,7 @@ make
 cd ..
 cp -s minimap2_git/minimap2 .
 cp -s minimap2_git/misc/paftools.js .
-wget https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
+wget -q https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
 tar -jxvf k8-0.2.4.tar.bz2
 cp k8-0.2.4/k8-`uname -s` k8
 
@@ -75,7 +79,7 @@ cd racon-git
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make CC=gcc-10 CPP=g++-10 CXX=g++-10 LD=g++-10
 cd ../../
 cp -s racon-git/build/bin/racon .
 
@@ -88,7 +92,7 @@ pip3 install .
 
 #________________________ mummer ____________________________#
 cd $install_root
-wget https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-4.0.0rc1.tar.gz
+wget -q https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-4.0.0rc1.tar.gz
 tar -xvf mummer-4.0.0rc1.tar.gz
 cd mummer-4.0.0rc1
 ./configure LDFLAGS=-static
@@ -101,7 +105,7 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout 718a787fd8490ea33a79b5095884e66e12106399
+git checkout 9ad87db9d501e17c008716f53c386500d4ba8f63
 pip3 install .
 cd ..
 
