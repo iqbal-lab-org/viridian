@@ -20,10 +20,10 @@ def test_AmpliconSet_from_tsv():
     primer1_r = primers.Primer("amp1_right_primer", "TCTCTTCTCAG", False, False, 300)
     primer2_l = primers.Primer("amp2_left_primer", "GGGCGCGTAGTC", True, True, 290)
     primer2_r = primers.Primer("amp2_right_primer", "ATGCGCGTAAGCT", False, False, 500)
-    amp1 = primers.Amplicon("amp1")
+    amp1 = primers.Amplicon("amp1", shortname=0)
     amp1.add(primer1_l)
     amp1.add(primer1_r)
-    amp2 = primers.Amplicon("amp2")
+    amp2 = primers.Amplicon("amp2", shortname=1)
     amp2.add(primer2_l)
     amp2.add(primer2_r)
     expect = {
@@ -45,10 +45,10 @@ def test_AmpliconSet_from_tsv_viridian_workflow_format():
     primer2_r_alt = primers.Primer(
         "amp2_right_primer_alt", "TGCGCGTAAGCTA", False, False, 501
     )
-    amp1 = primers.Amplicon("amp1")
+    amp1 = primers.Amplicon("amp1", shortname=0)
     amp1.add(primer1_l)
     amp1.add(primer1_r)
-    amp2 = primers.Amplicon("amp2")
+    amp2 = primers.Amplicon("amp2", shortname=1)
     amp2.add(primer2_l)
     amp2.add(primer2_r)
     amp2.add(primer2_r_alt)
@@ -70,10 +70,12 @@ def test_AmpliconSet_match():
     assert f(90, 100) is None
     assert f(90, 150) is None
     assert f(94, 150) is None
-    assert f(95, 150) == {Interval(95, 316, amplicons["amp1"])}
-    assert f(96, 150) == {Interval(95, 316, amplicons["amp1"])}
-    assert f(96, 315) == {Interval(95, 316, amplicons["amp1"])}
+    print("f(95, 150)", f(95, 150))
+    print("amp1:", amplicons["amp1"])
+    assert f(95, 150) == [amplicons["amp1"]]
+    assert f(96, 150) == [amplicons["amp1"]]
+    assert f(96, 315) == [amplicons["amp1"]]
     assert f(96, 316) is None
-    assert f(110, 120) == {Interval(95, 316, amplicons["amp1"])}
+    assert f(110, 120) == [amplicons["amp1"]]
     assert f(150, 350) is None
-    assert f(300, 400) == {Interval(285, 518, amplicons["amp2"])}
+    assert f(300, 400) == [amplicons["amp2"]]

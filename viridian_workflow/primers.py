@@ -162,6 +162,7 @@ class AmpliconSet:
             "Sequence",
             "Position",
         }
+        n = 0
         with open(fn) as f:
             reader = csv.DictReader(f, delimiter="\t")
             missing_cols = required_cols.difference(set(reader.fieldnames))
@@ -173,7 +174,10 @@ class AmpliconSet:
 
             for d in reader:
                 if d["Amplicon_name"] not in amplicons:
-                    amplicons[d["Amplicon_name"]] = Amplicon(d["Amplicon_name"])
+                    amplicons[d["Amplicon_name"]] = Amplicon(
+                        d["Amplicon_name"], shortname=n
+                    )
+                    n += 1
 
                 left = d["Left_or_right"].lower() == "left"
                 # We assume that primer is always left+forward, or right+reverse

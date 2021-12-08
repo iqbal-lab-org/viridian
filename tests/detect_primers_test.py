@@ -60,8 +60,8 @@ def test_match_read_to_amplicons():
     read.reference_start = 100
     read.reference_end = 290
     assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {
-        "scheme1": {Interval(95, 316, amplicons1["amp1"])},
-        "scheme2": {Interval(95, 316, amplicons2["amp1"])},
+        "scheme1": [amplicons1["amp1"]],
+        "scheme2": [amplicons2["amp1"]],
     }
 
     read.reference_start = 250
@@ -75,7 +75,7 @@ def test_match_read_to_amplicons():
     read.reference_start = 400
     read.reference_end = 750
     assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {
-        "scheme1": {Interval(285, 818, amplicons1["amp2"])},
+        "scheme1": [amplicons1["amp2"]],
     }
 
 
