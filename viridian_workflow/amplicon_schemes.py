@@ -65,6 +65,8 @@ def convert_tsv_to_viridian_json(tsv_in, json_out, scheme_name=None):
 
 def load_list_of_amplicon_sets(built_in_names_to_use=None, tsv_others_to_use=None):
     assert built_in_names_to_use is not None or tsv_others_to_use is not None
+    if isinstance(built_in_names_to_use, str):
+        built_in_names_to_use = built_in_names_to_use.split(",")
     schemes = {}
     if built_in_names_to_use is not None:
         all_built_in_schemes = get_built_in_schemes()
