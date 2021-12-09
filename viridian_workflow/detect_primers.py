@@ -2,7 +2,7 @@
 from collections import defaultdict
 
 import pysam
-from primers import AmpliconSet, set_tags, get_tags
+from viridian_workflow.primers import AmpliconSet, set_tags, get_tags
 
 
 def score(matches):
@@ -101,6 +101,7 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
         "amplicon_scheme_set_matches": defaultdict(int),
     }
     infile_is_paired = None
+    amplicon_matches = None
 
     for read in aln_file_in:
         if read.is_secondary or read.is_supplementary:
