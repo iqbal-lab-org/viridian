@@ -83,36 +83,48 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
     return dict_out
 
 
-def syncronise_read_pairs(reads):
-    last_read1 = None
+def syncronise_fragments(reads, stats):
     infile_is_paired = None
+    reads_by_name = {}
 
     for read in reads:
         if infile_is_paired is None:
             infile_is_paired = read.is_paired
         else:
             if infile_is_paired != read.is_paired:
-                raise Exception
+                raise Exception("Mix of paired and unpaired reads.")
 
         if read.is_secondary or read.is_supplementary:
             continue
 
+        stats["total_reads"] += 1
+        if read.is_read1:
+            stats["reads1"] += 1
+        elif read.is_read2:
+            stats["reads2"] += 1
+
+        if read.is_unmapped:
+            continue
+
+        stats["read_lengths"][read.query_length] += 1
+        stats["mapped"] += 1
+
         if not read.is_paired:
-            yield read
+            stats["unpaired_reads"] += 1
+            stats["template_lengths"][abs(read.query_length)] += 1  # TODO: check this
+            yield (read, None)
 
         if not read.is_proper_pair:
             continue
 
         if read.is_read1:
-            last_read1 = read
-            continue
+            stats["template_lengths"][abs(read.template_length)] += 1
+            reads_by_name[read.query_name] = read
+
         elif read.is_read2:
-            # assure reads have the same id
-            if not last_read1.id != read.id:
-                raise Exception(f"bad read pairs: {last_read1.id}, {read.id}")
-            yield (last_read1, read)
-        else:
-            raise Exception
+            read1 = reads_by_name[read.query_name]
+            yield (read1, read)
+            del reads_by_name[read.query_name]
 
 
 def gather_stats_from_bam(infile, bam_out, amplicon_sets):
@@ -122,76 +134,48 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
         open_mode_out = "w" + pysam_open_mode(bam_out)
         aln_file_out = pysam.AlignmentFile(bam_out, open_mode_out, template=aln_file_in)
 
+    match_any_amplicon = 0
+    amplicon_scheme_set_matches = defaultdict(int)
+
     stats = {
         "unpaired_reads": 0,
         "reads1": 0,
         "reads2": 0,
         "total_reads": 0,
         "mapped": 0,
-        "match_any_amplicon": 0,
         "read_lengths": defaultdict(int),
-        "amplicon_scheme_set_matches": defaultdict(int),
+        "template_lengths": defaultdict(int),
     }
-    infile_is_paired = None
-    amplicon_matches = None
 
-    for read in aln_file_in:
-        if read.is_secondary or read.is_supplementary:
-            continue
+    for read, mate in syncronise_fragments(aln_file_in, stats):
+        amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
 
-        if infile_is_paired is None:
-            infile_is_paired = read.is_paired
-        elif read.is_paired != infile_is_paired:
-            raise Exception("Reads must be all paired or all unpaired")
+        if amplicon_matches:
+            match_any_amplicon += 1
+            read = set_tags(amplicon_sets, read, amplicon_matches)
 
-        stats["total_reads"] += 1
-        stats["read_lengths"][read.query_length] += 1
-        if not read.is_unmapped:
-            stats["mapped"] += 1
-
-        if read.is_paired:
-            if read.is_read1:
-                if amplicon_matches is not None:
-                    raise Exception(
-                        "Paired reads not in expected order. Cannot continue"
-                    )
-                stats["reads1"] += 1
-                amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
-                if amplicon_matches is not None:
-                    read = set_tags(amplicon_sets, read, amplicon_matches)
-
-            else:
-                stats["reads2"] += 1
-                if amplicon_matches is None:
-                    #    raise Exception(
-                    #        "Paired reads not in expected order. Cannot continue"
-                    #    )
-                    pass
-                else:
-                    read = set_tags(amplicon_sets, read, amplicon_matches)
-                    amplicon_matches = None
-        else:
-            stats["unpaired_reads"] += 1
-            amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
-            if amplicon_matches is not None:
-                read = set_tags(amplicon_sets, read, amplicon_matches)
-
-        if amplicon_matches is not None and len(amplicon_matches) > 0:
-            stats["match_any_amplicon"] += 1
-            key = tuple(sorted(list(amplicon_matches.keys())))
-            stats["amplicon_scheme_set_matches"][key] += 1
+            amplicon_key = tuple(sorted(list(amplicon_matches.keys())))
+            amplicon_scheme_set_matches[amplicon_key] += 1
+            if mate:
+                mate = set_tags(amplicon_sets, mate, amplicon_matches)
 
         if bam_out is not None:
             aln_file_out.write(read)
+            if mate:
+                aln_file_out.write(mate)
 
     aln_file_in.close()
     if bam_out is not None:
         aln_file_out.close()
 
+    stats["match_any_amplicon"] = match_any_amplicon
+    stats["amplicon_scheme_set_matches"] = amplicon_scheme_set_matches
     stats["amplicon_scheme_simple_counts"] = amplicon_set_counts_to_naive_total_counts(
         stats["amplicon_scheme_set_matches"]
     )
     stats["chosen_amplicon_scheme"] = score(stats["amplicon_scheme_simple_counts"])
+    print("STATSSSS")
+    print(stats)
     return stats
 
 
