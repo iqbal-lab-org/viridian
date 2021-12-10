@@ -17,6 +17,15 @@ amplicon_set = sys.argv[2]
 Stats = namedtuple("Stats", ["alt_in_primer", "ref", "alts", "total"])
 
 
+def mask_fasta(sequence, position_stats):
+    qc = []
+    for position, stats in position_stats.items():
+        if not stats.score():
+            sequence[position] = "N"
+            qc.append("rejected position")
+    return sequence, qc
+
+
 class Stats:
     def __init__(self):
         self.alts_in_primer = 0
@@ -137,7 +146,7 @@ if __name__ == "__main__":
         if len(tags) > 0:
             amplicon = amplicons[tags[0]]
 
-        strand = False # strand is forward
+        strand = False  # strand is forward
         if alignment.strand == 0:
             # should be error
             raise Exception()
