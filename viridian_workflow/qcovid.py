@@ -5,7 +5,6 @@ import os
 import json
 from viridian_workflow.utils import (
     run_process,
-    run_process_stdout,
     check_file,
     PrimerError,
 )
