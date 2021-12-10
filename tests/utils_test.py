@@ -3,6 +3,7 @@ import filecmp
 import os
 import pytest
 import subprocess
+from unittest import mock
 
 import pyfastaq
 
@@ -64,3 +65,45 @@ def test_set_seq_name_in_fasta_file():
     expect = os.path.join(data_dir, "set_seq_name_in_fasta_file.expect.fasta")
     assert filecmp.cmp(tmp_out, expect, shallow=False)
     os.unlink(tmp_out)
+
+
+def test_check_tech_and_reads_opts_and_get_reads():
+    f = utils.check_tech_and_reads_opts_and_get_reads
+    options = mock.Mock()
+    options.reads = options.reads1 = options.reads2 = options.tech = None
+    with pytest.raises(Exception):
+        f(options)
+    options.tech = "ont"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads1 = "r1.fq"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads1 = None
+    options.reads2 = "r2.fq"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads = "r.fq"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads2 = None
+    assert f(options) == ("r.fq", None)
+
+    options = mock.Mock()
+    options.reads = options.reads1 = options.reads2 = options.tech = None
+    with pytest.raises(Exception):
+        f(options)
+    options.tech = "illumina"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads = "r.fq"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads1 = "r1.fq"
+    with pytest.raises(Exception):
+        f(options)
+    options.reads = None
+    with pytest.raises(Exception):
+        f(options)
+    options.reads2 = "r2.fq"
+    assert f(options) == ("r1.fq", "r2.fq")
