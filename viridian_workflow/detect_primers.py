@@ -83,6 +83,38 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
     return dict_out
 
 
+def syncronise_read_pairs(reads):
+    last_read1 = None
+    infile_is_paired = None
+
+    for read in reads:
+        if infile_is_paired is None:
+            infile_is_paired = read.is_paired
+        else:
+            if infile_is_paired != read.is_paired:
+                raise Exception
+
+        if read.is_secondary or read.is_supplementary:
+            continue
+
+        if not read.is_paired:
+            yield read
+
+        if not read.is_proper_pair:
+            continue
+
+        if read.is_read1:
+            last_read1 = read
+            continue
+        elif read.is_read2:
+            # assure reads have the same id
+            if not last_read1.id != read.id:
+                raise Exception(f"bad read pairs: {last_read1.id}, {read.id}")
+            yield (last_read1, read)
+        else:
+            raise Exception
+
+
 def gather_stats_from_bam(infile, bam_out, amplicon_sets):
     open_mode_in = "r" + pysam_open_mode(infile)
     aln_file_in = pysam.AlignmentFile(infile, open_mode_in)
@@ -125,20 +157,24 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
                     )
                 stats["reads1"] += 1
                 amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
-                read = set_tags(amplicon_sets, read, amplicon_matches)
+                if amplicon_matches is not None:
+                    read = set_tags(amplicon_sets, read, amplicon_matches)
 
             else:
-                if amplicon_matches is None:
-                    raise Exception(
-                        "Paired reads not in expected order. Cannot continue"
-                    )
                 stats["reads2"] += 1
-                read = set_tags(amplicon_sets, read, amplicon_matches)
-                amplicon_matches = None
+                if amplicon_matches is None:
+                    #    raise Exception(
+                    #        "Paired reads not in expected order. Cannot continue"
+                    #    )
+                    pass
+                else:
+                    read = set_tags(amplicon_sets, read, amplicon_matches)
+                    amplicon_matches = None
         else:
             stats["unpaired_reads"] += 1
             amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
-            read = set_tags(amplicon_sets, read, amplicon_matches)
+            if amplicon_matches is not None:
+                read = set_tags(amplicon_sets, read, amplicon_matches)
 
         if amplicon_matches is not None and len(amplicon_matches) > 0:
             stats["match_any_amplicon"] += 1
