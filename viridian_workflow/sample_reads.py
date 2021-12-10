@@ -3,6 +3,7 @@ import logging
 import os
 import pysam
 import random
+import subprocess
 
 from viridian_workflow import utils
 
@@ -190,7 +191,17 @@ class ReadSampler:
             pysam.fastq("-N", "-1", self.fq_out1, "-2", self.fq_out2, tmp_bam)
             os.unlink(tmp_bam)
         else:
-            pysam.fastq("-0", self.fq_out, self.bam_out)
+            # pysam.fastq("-0", self.fq_out, self.bam_out)
+            # Note: using pysam.fastq results in error at the end of the pipeline:
+            #
+            # Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+            # OSError: [Errno 9] Bad file descriptor
+            #
+            # This error happens if the whole command has redirect at the end
+            # (like viridian_workflow run_one_sample ... > foo).
+            # Don't get the error if we use subprocess instead.
+            subprocess.check_output(f"samtools fastq -0 {self.fq_out} {self.bam_out}", shell=True)
+
 
     def run(self):
         logging.info(
