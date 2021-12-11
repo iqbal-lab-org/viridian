@@ -19,6 +19,7 @@ class ReadSampler:
         amplicons_bed,
         target_depth,
         min_read_overlap_proportion=0.5,
+        min_sampled_depth_for_pass=10,
     ):
         self.ref_genome = utils.load_single_seq_fasta(ref_fasta)
         self.amplicons = utils.load_amplicons_bed_file(amplicons_bed)
@@ -31,17 +32,23 @@ class ReadSampler:
         self.fq_out = self.outprefix + ".fastq"
         self.fq_out1 = self.outprefix + ".reads_1.fastq"
         self.fq_out2 = self.outprefix + ".reads_2.fastq"
+        self.failed_amps_file = self.outprefix + ".fails.txt"
         self.reads_are_paired = None
         self.target_depth = target_depth
         self.mates_wanted = None
         self.used_reads = None
+        self.failed_amplicons = None
         self.min_read_overlap_proportion = min_read_overlap_proportion
         self.read_cache = {}
+        self.min_sampled_depth_for_pass = min_sampled_depth_for_pass
         self.output_json_data = {}
 
     def bam_is_paired_reads(self, aln_file):
         for read in aln_file.fetch():
             return read.is_paired
+
+    def number_of_amplicons(self):
+        return len(self.amplicons)
 
     def read_overlap_length_with_amplicon(self, read, amplicon):
         if amplicon is None:
@@ -176,13 +183,18 @@ class ReadSampler:
                 "total_depth": 0,
                 "sampled_bases": 0,
                 "sampled_depth": 0,
+                "pass": False,
             }
 
     def finalise_output_json_data(self):
+        self.failed_amplicons = 0
         for name, data in self.output_json_data.items():
             amp_len = data["end"] - data["start"] + 1
             data["total_depth"] = round(data["total_mapped_bases"] / amp_len, 2)
             data["sampled_depth"] = round(data["sampled_bases"] / amp_len, 2)
+            data["pass"] = data["sampled_depth"] >= self.min_sampled_depth_for_pass
+            if not data["pass"]:
+                self.failed_amplicons += 1
 
     def write_fastq(self):
         if self.reads_are_paired:
@@ -200,8 +212,15 @@ class ReadSampler:
             # This error happens if the whole command has redirect at the end
             # (like viridian_workflow run_one_sample ... > foo).
             # Don't get the error if we use subprocess instead.
-            subprocess.check_output(f"samtools fastq -0 {self.fq_out} {self.bam_out}", shell=True)
+            subprocess.check_output(
+                f"samtools fastq -0 {self.fq_out} {self.bam_out}", shell=True
+            )
 
+    def write_failed_amplicons_file(self, outfile):
+        with open(outfile, "w") as f:
+            for name, data in self.output_json_data.items():
+                if not data["pass"]:
+                    print(name, file=f)
 
     def run(self):
         logging.info(
@@ -214,6 +233,7 @@ class ReadSampler:
             unsorted_bam, "wb", template=self.aln_file_in
         )
         self.mates_wanted = {}
+        self.total_amplicons = 0
         self.used_reads = set()
         self.initialise_output_json_data()
         self.read_cache = {i: {} for i in range(len(self.amplicons))}
@@ -251,6 +271,8 @@ class ReadSampler:
         pysam.index(self.bam_out)
         logging.info("Writing fastq file(s)")
         self.write_fastq()
+        logging.info("Writing file of failed amplicons")
+        self.write_failed_amplicons_file(self.failed_amps_file)
 
         logging.info(f"Writing summary JSON file {self.json_out}")
         with open(self.json_out, "w") as f:
@@ -266,6 +288,7 @@ def sample_reads(
     amplicons_bed,
     target_depth=1000,
     min_read_overlap_proportion=0.5,
+    min_sampled_depth_for_pass=10,
 ):
     sampler = ReadSampler(
         ref_fasta,
@@ -274,6 +297,7 @@ def sample_reads(
         amplicons_bed,
         target_depth,
         min_read_overlap_proportion=min_read_overlap_proportion,
+        min_sampled_depth_for_pass=min_sampled_depth_for_pass,
     )
     sampler.run()
     return sampler
