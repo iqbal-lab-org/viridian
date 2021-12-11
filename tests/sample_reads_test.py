@@ -120,6 +120,7 @@ def test_sample_unpaired_reads(test_data):
 
     # TODO: check contents of files, and add more cases to the type of
     # reads in the BAM we're sampling from.
+    assert sampler.number_of_amplicons() == 4
     assert os.path.exists(sampler.bam_out)
     assert os.path.exists(sampler.fq_out)
     assert not os.path.exists(sampler.fq_out1)
@@ -136,12 +137,19 @@ def test_sample_paired_reads(test_data):
         outprefix,
         test_data["amplicons_bed"],
         5,
+        min_sampled_depth_for_pass=5,
     )
 
     # TODO: check contents of files, and add more cases to the type of
     # reads in the BAM we're sampling from.
+    assert sampler.number_of_amplicons() == 4
     assert os.path.exists(sampler.bam_out)
     assert not os.path.exists(sampler.fq_out)
     assert os.path.exists(sampler.fq_out1)
     assert os.path.exists(sampler.fq_out2)
+    assert os.path.exists(sampler.failed_amps_file)
+    with open(sampler.failed_amps_file) as f:
+        got = [x.rstrip() for x in f]
+    assert got == ["amp2", "amp3", "amp4"]
+    assert sampler.failed_amplicons == 3
     subprocess.check_output(f"rm -f {outprefix}.*", shell=True)

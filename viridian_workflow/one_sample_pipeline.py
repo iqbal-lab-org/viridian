@@ -18,38 +18,377 @@ from viridian_workflow import (
 from viridian_workflow import __version__ as viridian_wf_version
 
 
-def check_tech(tech):
-    allowed_tech = {"ont", "illumina"}
-    if tech not in allowed_tech:
-        techs = ",".join(sorted(list(allowed_tech)))
-        raise Exception(f"Tech '{tech}' not allowed, must be one of: {techs}")
+class Pipeline:
+    def __init__(
+        self,
+        tech,
+        outdir,
+        ref_genome,
+        fq1,
+        fq2=None,
+        built_in_amp_schemes=None,
+        tsv_of_amp_schemes=None,
+        force_amp_scheme=None,
+        keep_intermediate=False,
+        keep_bam=False,
+        target_sample_depth=1000,
+        sample_name="sample",
+        command_line_args=None,
+    ):
+        self.tech = tech
+        self.outdir = outdir
+        self.ref_genome = ref_genome
+        self.fq1 = fq1
+        self.fq2 = fq2
+        self.built_in_amp_schemes = built_in_amp_schemes
+        self.tsv_of_amp_schemes = tsv_of_amp_schemes
+        self.force_amp_scheme = force_amp_scheme
+        self.keep_intermediate = keep_intermediate
+        self.keep_bam = keep_bam
+        self.target_sample_depth = target_sample_depth
+        self.sample_name = sample_name
+        self.viridian_cons_max_n_percent = 50.0
+        self.max_percent_amps_fail = 50.0
+        self.command_line_args = command_line_args
+        self.start_time = None
+        self.amplicon_scheme_name_to_tsv = None
+        self.amplicon_scheme_list = None
+        self.set_command_line_dict()
+        self.check_tech()
+        self.set_paired_and_check_reads()
+        self.json_log_file = os.path.join(self.outdir, "log.json")
+        self.processing_dir = os.path.join(self.outdir, "Processing")
+        self.unsorted_read_tagged_bam = os.path.join(
+            self.processing_dir, "map_reads.unsorted.read_tagged.bam"
+        )
+        self.amplicon_json = os.path.join(self.processing_dir, "amplicons.json")
+        self.amplicon_bed = os.path.join(self.processing_dir, "amplicons.bed")
+        self.all_reads_bam = os.path.join(self.outdir, "reference_mapped.bam")
+        self.viridian_outdir = os.path.join(self.processing_dir, "viridian")
+        self.viridian_fasta = os.path.join(
+            self.viridian_outdir, "consensus.final_assembly.fa"
+        )
+        self.bam_reads_v_viridian = os.path.join(self.processing_dir, "self_qc.bam")
+        self.final_masked_fasta = os.path.join(self.outdir, "consensus.fa")
+        self.varifier_vcf = None
+        self.final_vcf = os.path.join(self.outdir, "variants.vcf")
+        self.sampler = None
+        self.amplicons_start = None
+        self.amplicons_end = None
+        self.sampled_bam = None
+        self.amplicon_tsv = None
+        self.log_dict = None
 
+    def check_tech(self):
+        allowed_tech = {"ont", "illumina"}
+        if self.tech not in allowed_tech:
+            techs = ",".join(sorted(list(allowed_tech)))
+            raise Exception(f"Tech '{self.tech}' not allowed, must be one of: {techs}")
 
-def run_viridian(tech, outdir, ref_genome, amplicon_json, bam, bad_amplicons):
-    check_tech(tech)
-    viridian_cmd = " ".join(
-        [
-            "viridian",
-            "assemble",
-            "--bam",
-            bam,
-            tech,
-            "--amplicons_to_fail_file",
-            bad_amplicons,
-            ref_genome,
-            amplicon_json,
-            outdir,
+    def set_paired_and_check_reads(self):
+        if self.tech == "ont":
+            assert self.fq2 is None
+            self.paired = False
+        elif self.tech == "illumina":
+            assert self.fq2 is not None
+            self.paired = True
+        else:
+            raise NotImplementedError(f"tech not implemented: {self.tech}")
+
+    def set_command_line_dict(self):
+        # Make a dict of the command line options to go in the JSON output file.
+        # The tests don't use argparse (they use Mock), which means convert to dict
+        # doesn't work. Don't care about that case anyway in the final output, so
+        # just set to None
+        if isinstance(self.command_line_args, argparse.Namespace):
+            self.command_line_dict = {
+                k: v for k, v in vars(self.command_line_args).items() if k != "func"
+            }
+        else:
+            self.command_line_dict = None
+
+    def update_json_latest_stage(self, latest_stage):
+        self.log_dict["run_summary"]["last_stage_completed"] = latest_stage
+        utils.write_json(self.json_log_file, self.log_dict)
+
+    def process_amplicon_schemes(self):
+        if self.built_in_amp_schemes is None and self.tsv_of_amp_schemes is None:
+            logging.info("No primer schemes provided. Using all built in schemes")
+            self.built_in_amp_schemes = list(
+                amplicon_schemes.get_built_in_schemes().keys()
+            )
+        (
+            self.amplicon_scheme_name_to_tsv,
+            self.amplicon_scheme_list,
+        ) = amplicon_schemes.load_list_of_amplicon_sets(
+            built_in_names_to_use=self.built_in_amp_schemes,
+            tsv_others_to_use=self.tsv_of_amp_schemes,
+        )
+        if self.force_amp_scheme is not None:
+            if self.force_amp_scheme not in self.amplicon_scheme_name_to_tsv:
+                names = ",".join(sorted(list(self.amplicon_scheme_name_to_tsv.keys())))
+                raise Exception(
+                    f"Chose to force amplicons scheme to be {force_amp_scheme}, but scheme not found. Found these: {names}"
+                )
+        self.update_json_latest_stage("Processed amplicon scheme files")
+        logging.info(
+            f"Processed amplicon scheme files. Amplicon scheme names: {','.join(sorted(list(self.amplicon_scheme_name_to_tsv.keys())))}"
+        )
+
+    def initial_read_map_and_detect_amplicon_scheme(self):
+        logging.info("Mapping reads to reference")
+        unsorted_bam = os.path.join(self.processing_dir, "map_reads.unsorted.bam")
+        minimap.run(
+            unsorted_bam,
+            self.ref_genome,
+            self.fq1,
+            fq2=self.fq2,
+            sample_name=self.sample_name,
+            sort=False,
+        )
+        self.update_json_latest_stage("Initial map reads")
+        logging.info("Detecting amplicon scheme and gathering read statistics")
+        self.log_dict["read_and_primer_stats"] = detect_primers.gather_stats_from_bam(
+            unsorted_bam, self.unsorted_read_tagged_bam, self.amplicon_scheme_list
+        )
+        self.log_dict["read_and_primer_stats"][
+            "amplicon_scheme_set_matches"
+        ] = detect_primers.amplicon_set_counts_to_json_friendly(
+            self.log_dict["read_and_primer_stats"]["amplicon_scheme_set_matches"]
+        )
+        if self.force_amp_scheme is None:
+            self.log_dict["amplicon_scheme_name"] = self.log_dict[
+                "read_and_primer_stats"
+            ]["chosen_amplicon_scheme"]
+        else:
+            self.log_dict["amplicon_scheme_name"] = self.force_amp_scheme
+        self.amplicon_tsv = self.amplicon_scheme_name_to_tsv[
+            self.log_dict["amplicon_scheme_name"]
         ]
-    )
-    assembly = os.path.join(outdir, "consensus.final_assembly.fa")
-    utils.run_process(viridian_cmd)
-    utils.check_file(assembly)
-    return assembly
+        self.update_json_latest_stage("Gather read stats and detect primer scheme")
 
+    def process_chosen_amplicon_scheme_files(self):
+        scheme_name = self.log_dict["amplicon_scheme_name"]
+        logging.info(f"Processing files for chosen amplicon scheme {scheme_name}")
+        amplicon_schemes.convert_tsv_to_viridian_json(
+            self.amplicon_tsv, self.amplicon_json, scheme_name=scheme_name
+        )
+        (
+            self.amplicons_start,
+            self.amplicons_end,
+        ) = utils.amplicons_json_to_bed_and_range(self.amplicon_json, self.amplicon_bed)
+        self.update_json_latest_stage("Processed chosen amplicon scheme files")
 
-def update_json_latest_stage(log_dict, latest_stage, outfile):
-    log_dict["run_summary"]["last_stage_completed"] = latest_stage
-    utils.write_json(outfile, log_dict)
+    def sample_the_reads(self):
+        logging.info("Sampling reads")
+        sample_outprefix = os.path.join(self.processing_dir, "sample_reads")
+        self.sampler = sample_reads.sample_reads(
+            self.ref_genome,
+            self.all_reads_bam,
+            sample_outprefix,
+            self.amplicon_bed,
+            target_depth=self.target_sample_depth,
+        )
+        self.log_dict["read_sampling"] = utils.load_json(f"{sample_outprefix}.json")
+        self.sampled_bam = self.sampler.bam_out
+        self.update_json_latest_stage("Sampled reads")
+        if (
+            100 * self.sampler.failed_amplicons / self.sampler.number_of_amplicons()
+            >= self.max_percent_amps_fail
+        ):
+            message = "Too many amplicons are too low depth. STOPPING"
+            logging.info(message)
+            self.update_json_latest_stage(
+                "Sampled reads, too many low coverage amplicons"
+            )
+            self.finalise_json_log([message])
+            return False
+        else:
+            return True
+
+    def check_viridian(self):
+        try:
+            self.log_dict["viridian"] = utils.load_json(
+                os.path.join(self.viridian_outdir, "run_info.json")
+            )
+        except:
+            return "Error getting viridian JSON file"
+
+        try:
+            consensus = self.log_dict["viridian"]["run_summary"]["consensus"]
+            percent_n = consensus.count("N") / len(consensus)
+            if percent_n > self.viridian_cons_max_n_percent:
+                return f"Too many Ns in Viridian consensus: {percent_n}"
+        except:
+            return "Error getting viridian consensus sequence and/or counting Ns"
+
+        if not os.path.exists(self.viridian_fasta):
+            return "No FASTA file made by Viridian"
+
+        try:
+            total_amps = self.log_dict["viridian"]["run_summary"]["total_amplicons"]
+            bad_amps = (
+                total_amps
+                - self.log_dict["viridian"]["run_summary"]["successful_amplicons"]
+            )
+            if 100 * bad_amps / total_amps >= self.max_percent_amps_fail:
+                return "Too many failed amplicons from Viridian"
+        except:
+            pass
+
+    def run_viridian(self):
+        logging.info("Making initial unmasked consensus using Viridian")
+        viridian_cmd = " ".join(
+            [
+                "viridian",
+                "assemble",
+                "--bam",
+                self.sampled_bam,
+                self.tech,
+                "--amplicons_to_fail_file",
+                self.sampler.failed_amps_file,
+                self.ref_genome,
+                self.amplicon_json,
+                self.viridian_outdir,
+            ]
+        )
+        utils.run_process(viridian_cmd)
+        message = self.check_viridian()
+
+        if message is not None:
+            self.update_json_latest_stage("Viridian. " + message)
+            message += ". STOPPING"
+            logging.info(message)
+            self.finalise_json_log([message])
+            return False
+
+        self.update_json_latest_stage("Viridian")
+        return True
+
+    def map_reads_to_viridian_consensus(self):
+        logging.info("Mapping reads to consensus from Viridian")
+        if self.paired:
+            fq1 = self.sampler.fq_out1
+            fq2 = self.sampler.fq_out2
+        else:
+            fq1 = self.sampler.fq_out
+            fq2 = None
+        minimap.run(
+            self.bam_reads_v_viridian,
+            self.viridian_fasta,
+            fq1,
+            fq2=fq2,
+            sample_name=self.sample_name,
+            sort=True,
+        )
+        self.update_json_latest_stage("Map reads to Viridian consensus")
+
+    def self_qc_and_make_masked_consensus(self):
+        logging.info("Running QC on Viridian consensus to make masked FASTA")
+        # FIXME. We've got self.viridian_fasta, and all reads mapped to
+        # it in self.bam_reads_v_viridian. Need to use those to make
+        # final masked consensus sequence, to replace the line below that
+        # just copies self.viridian_fasta -> self.final_masked_fasta with
+        # the header line fixed.
+        utils.set_seq_name_in_fasta_file(
+            self.viridian_fasta, self.final_masked_fasta, self.sample_name
+        )
+        self.log_dict["self_qc"] = "To be implemented"
+        self.update_json_latest_stage(
+            "Ran QC on reads mapped to consensus and made final masked FASTA"
+        )
+
+    def make_vcf_wrt_reference(self):
+        logging.info("Making VCF file of variants")
+        varifier_out = os.path.join(self.processing_dir, "varifier")
+        self.varifier_vcf = varifier.run(
+            varifier_out,
+            self.ref_genome,
+            self.final_masked_fasta,
+            min_coord=self.amplicons_start,
+            max_coord=self.amplicons_end,
+        )
+        utils.check_file(self.varifier_vcf)
+        utils.set_sample_name_in_vcf_file(
+            self.varifier_vcf, self.final_vcf, self.sample_name
+        )
+        utils.check_file(self.final_vcf)
+        self.update_json_latest_stage("Made VCF of variants")
+
+    def clean_intermediate_files(self):
+        if not self.keep_intermediate:
+            logging.info("Deleting temporary files")
+            if self.keep_bam:
+                logging.info(
+                    f"Keeping BAM file {self.all_reads_bam} because --keep_bam option used"
+                )
+            else:
+                bai = f"{self.all_reads_bam}.bai"
+                subprocess.check_output(f"rm -f {self.all_reads_bam} {bai}", shell=True)
+            logging.info(f"Removing processing directory {self.processing_dir}")
+            subprocess.check_output(f"rm -rf {self.processing_dir}", shell=True)
+        else:
+            logging.info("Debug mode: not deleting temporary files")
+
+    def finalise_json_log(self, result):
+        logging.info(f"Writing JSON log file {self.json_log_file}")
+        end_time = datetime.datetime.now()
+        self.log_dict["run_summary"]["end_time"] = end_time.replace(
+            microsecond=0
+        ).isoformat()
+        self.log_dict["run_summary"]["run_time"] = str(end_time - self.start_time)
+        self.log_dict["run_summary"]["finished_running"] = True
+        self.log_dict["run_summary"]["result"] = result
+        self.update_json_latest_stage("Finished")
+        logging.info(f"Finished running viridian_workflow")
+
+    def run(self):
+        logging.info(f"Start running viridian_workflow, output dir: {self.outdir}")
+        os.mkdir(self.outdir)
+        self.start_time = datetime.datetime.now()
+        self.log_dict = {
+            "run_summary": {
+                "last_stage_completed": "start",
+                "command": " ".join(sys.argv),
+                "options": self.command_line_dict,
+                "cwd": os.getcwd(),
+                "version": viridian_wf_version,
+                "finished_running": False,
+                "start_time": self.start_time.replace(microsecond=0).isoformat(),
+                "end_time": None,
+                "hostname": socket.gethostname(),
+                "result": "Unknown",
+            },
+            "read_and_primer_stats": None,
+            "read_sampling": None,
+            "viridian": None,
+            "self_qc": None,
+        }
+        self.update_json_latest_stage("start")
+        self.process_amplicon_schemes()
+        os.mkdir(self.processing_dir)
+        self.initial_read_map_and_detect_amplicon_scheme()
+        self.process_chosen_amplicon_scheme_files()
+
+        logging.info("Sorting and indexing BAM file of all reads mapped to reference")
+        utils.run_process(
+            f"samtools sort -O BAM -o {self.all_reads_bam} {self.unsorted_read_tagged_bam}"
+        )
+        utils.run_process(f"samtools index {self.all_reads_bam}")
+        self.update_json_latest_stage("Sorted and indexed all reads BAM file")
+        if not self.sample_the_reads():
+            self.clean_intermediate_files()
+            return
+
+        if not self.run_viridian():
+            self.clean_intermediate_files()
+            return
+
+        self.map_reads_to_viridian_consensus()
+        self.self_qc_and_make_masked_consensus()
+        self.make_vcf_wrt_reference()
+        self.clean_intermediate_files()
+        self.finalise_json_log("Success")
 
 
 def run_one_sample(
@@ -57,227 +396,7 @@ def run_one_sample(
     outdir,
     ref_genome,
     fq1,
-    fq2=None,
-    built_in_amp_schemes=None,
-    tsv_of_amp_schemes=None,
-    force_amp_scheme=None,
-    keep_intermediate=False,
-    keep_bam=False,
-    target_sample_depth=1000,
-    sample_name="sample",
-    command_line_args=None,
+    **kw,
 ):
-    check_tech(tech)
-    if tech == "ont":
-        assert fq2 is None
-        paired = False
-    elif tech == "illumina":
-        assert fq2 is not None
-        paired = True
-    else:
-        raise NotImplementedError(f"tech not implemented: {tech}")
-
-    logging.info(f"Start running viridian_workflow, output dir: {outdir}")
-    os.mkdir(outdir)
-    json_log = os.path.join(outdir, "log.json")
-    # Make a dict of the command line options to go in the JSON output file.
-    # The tests don't use argparse (they use Mock), which means convert to dict
-    # doesn't work. Don't care about that case anyway in the final output, so
-    # just set to None
-    if isinstance(command_line_args, argparse.Namespace):
-        options_dict = {k: v for k, v in vars(command_line_args).items() if k != "func"}
-    else:
-        options_dict = None
-    start_time = datetime.datetime.now()
-    log_info = {
-        "run_summary": {
-            "last_stage_completed": "start",
-            "command": " ".join(sys.argv),
-            "options": options_dict,
-            "cwd": os.getcwd(),
-            "version": viridian_wf_version,
-            "finished_running": False,
-            "start_time": start_time.replace(microsecond=0).isoformat(),
-            "end_time": None,
-            "hostname": socket.gethostname(),
-        },
-        "read_and_primer_stats": None,
-        "read_sampling": None,
-        "viridian": None,
-    }
-    utils.write_json(json_log, log_info)
-
-    if built_in_amp_schemes is None and tsv_of_amp_schemes is None:
-        logging.info("No primer schemes provided. Using all built in schemes")
-        built_in_amp_schemes = list(amplicon_schemes.get_built_in_schemes().keys())
-    (
-        amplicon_scheme_name_to_tsv,
-        amplicon_scheme_list,
-    ) = amplicon_schemes.load_list_of_amplicon_sets(
-        built_in_names_to_use=built_in_amp_schemes, tsv_others_to_use=tsv_of_amp_schemes
-    )
-    if force_amp_scheme is not None:
-        if force_amp_scheme not in amplicon_scheme_name_to_tsv:
-            names = ",".join(sorted(list(amplicon_scheme_name_to_tsv.keys())))
-            raise Exception(
-                f"Chose to force amplicons scheme to be {force_amp_scheme}, but scheme not found. Found these: {names}"
-            )
-    update_json_latest_stage(log_info, "Processed amplicon scheme files", json_log)
-    logging.info(
-        f"Processed amplicon scheme files. Amplicon scheme names: {','.join(sorted(list(amplicon_scheme_name_to_tsv.keys())))}"
-    )
-
-    processing_dir = os.path.join(outdir, "Processing")
-    os.mkdir(processing_dir)
-    logging.info("Mapping reads to reference")
-    unsorted_bam = os.path.join(processing_dir, "map_reads.unsorted.bam")
-    minimap.run(
-        unsorted_bam, ref_genome, fq1, fq2=fq2, sample_name=sample_name, sort=False
-    )
-    update_json_latest_stage(log_info, "Initial map reads", json_log)
-
-    logging.info("Detecting amplicon scheme and gathering read statistics")
-    unsorted_read_tagged_bam = os.path.join(
-        processing_dir, "map_reads.unsorted.read_tagged.bam"
-    )
-    log_info["read_and_primer_stats"] = detect_primers.gather_stats_from_bam(
-        unsorted_bam, unsorted_read_tagged_bam, amplicon_scheme_list
-    )
-    log_info["read_and_primer_stats"][
-        "amplicon_scheme_set_matches"
-    ] = detect_primers.amplicon_set_counts_to_json_friendly(
-        log_info["read_and_primer_stats"]["amplicon_scheme_set_matches"]
-    )
-    if force_amp_scheme is None:
-        log_info["amplicon_scheme_name"] = log_info["read_and_primer_stats"][
-            "chosen_amplicon_scheme"
-        ]
-    else:
-        log_info["amplicon_scheme_name"] = force_amp_scheme
-    amplicon_tsv = amplicon_scheme_name_to_tsv[log_info["amplicon_scheme_name"]]
-    update_json_latest_stage(
-        log_info, "Gather read stats and detect primer scheme", json_log
-    )
-
-    logging.info(
-        "Processing files for chosen amplicon scheme "
-        + log_info["amplicon_scheme_name"]
-    )
-    amplicon_json = os.path.join(processing_dir, "amplicons.json")
-    amplicon_schemes.convert_tsv_to_viridian_json(
-        amplicon_tsv, amplicon_json, scheme_name=log_info["amplicon_scheme_name"]
-    )
-    amplicon_bed = os.path.join(processing_dir, "amplicons.bed")
-    amplicons_start, amplicons_end = utils.amplicons_json_to_bed_and_range(
-        amplicon_json, amplicon_bed
-    )
-    update_json_latest_stage(
-        log_info, "Processed chosen amplicon scheme files", json_log
-    )
-
-    logging.info("Sorting and indexing BAM file of all reads mapped to reference")
-    all_reads_bam = os.path.join(outdir, "reference_mapped.bam")
-    utils.run_process(
-        f"samtools sort -O BAM -o {all_reads_bam} {unsorted_read_tagged_bam}"
-    )
-    utils.run_process(f"samtools index {all_reads_bam}")
-    update_json_latest_stage(
-        log_info, "Sorted and indexed all reads BAM file", json_log
-    )
-
-    logging.info("Sampling reads")
-    sample_outprefix = os.path.join(processing_dir, "sample_reads")
-    sampler = sample_reads.sample_reads(
-        ref_genome,
-        all_reads_bam,
-        sample_outprefix,
-        amplicon_bed,
-        target_depth=target_sample_depth,
-    )
-    log_info["read_sampling"] = utils.load_json(f"{sample_outprefix}.json")
-    bam = sampler.bam_out
-    update_json_latest_stage(log_info, "Sampled reads", json_log)
-
-    logging.info(f"Running QC on all mapped reads in {bam}")
-    if paired:
-        bad_amplicons = qcovid.bin_amplicons(
-            processing_dir, ref_genome, amplicon_bed, bam
-        )
-    else:
-        bad_amplicons = qcovid.bin_amplicons_se(
-            processing_dir, ref_genome, amplicon_bed, bam
-        )
-    update_json_latest_stage(log_info, "QC on all mapped reads", json_log)
-
-    logging.info("Making initial unmasked consensus using Viridian")
-    viridian_out = os.path.join(processing_dir, "viridian")
-    assembly = run_viridian(
-        tech, viridian_out, ref_genome, amplicon_json, bam, bad_amplicons
-    )
-    log_info["viridian"] = utils.load_json(os.path.join(viridian_out, "run_info.json"))
-    update_json_latest_stage(log_info, "Viridian", json_log)
-
-    logging.info("Mapping reads to consensus from Viridian")
-    self_map_bam = os.path.join(processing_dir, "self_qc.bam")
-    if paired:
-        fq1 = sampler.fq_out1
-        fq2 = sampler.fq_out2
-    else:
-        fq1 = sampler.fq_out
-        fq2 = None
-    minimap.run(
-        self_map_bam,
-        assembly,
-        fq1,
-        fq2=fq2,
-        sample_name=sample_name,
-        sort=True,
-    )
-    update_json_latest_stage(log_info, "Map reads to Viridian consensus", json_log)
-
-    logging.info("Running QC on Viridian consensus to make masked FASTA")
-    # FIXME. This is a temporary hack while self qc is rewritten. We're
-    # skipping self QC for now, but needs to be reinstated in the future.
-    # masked_fasta = qcovid.self_qc(processing_dir, assembly, self_map_bam)
-    final_masked_fasta = os.path.join(outdir, "consensus.fa")
-    # utils.set_seq_name_in_fasta_file(masked_fasta, final_masked_fasta, sample_name)
-    utils.set_seq_name_in_fasta_file(assembly, final_masked_fasta, sample_name)
-    update_json_latest_stage(log_info, "Ran QC on reads mapped to consensus", json_log)
-
-    logging.info("Making VCF file of variants")
-    varifier_out = os.path.join(processing_dir, "varifier")
-    varifier_vcf = varifier.run(
-        varifier_out,
-        ref_genome,
-        final_masked_fasta,
-        min_coord=amplicons_start,
-        max_coord=amplicons_end,
-    )
-    utils.check_file(varifier_vcf)
-    final_vcf = os.path.join(outdir, "variants.vcf")
-    utils.set_sample_name_in_vcf_file(varifier_vcf, final_vcf, sample_name)
-    utils.check_file(final_vcf)
-    update_json_latest_stage(log_info, "Made VCF of variants", json_log)
-
-    # clean up intermediate files
-    if not keep_intermediate:
-        logging.info("Deleting temporary files")
-        if keep_bam:
-            logging.info(
-                f"Keeping BAM file {all_reads_bam} because --keep_bam option used"
-            )
-        else:
-            utils.rm(all_reads_bam)
-            utils.rm(all_reads_bam + ".bai")
-        logging.info(f"Removing processing directory {processing_dir}")
-        subprocess.check_output(f"rm -rf {processing_dir}", shell=True)
-    else:
-        logging.info("Debug mode: not deleting temporary files")
-
-    logging.info(f"Writing JSON log file {json_log}")
-    end_time = datetime.datetime.now()
-    log_info["run_summary"]["end_time"] = end_time.replace(microsecond=0).isoformat()
-    log_info["run_summary"]["run_time"] = str(end_time - start_time)
-    log_info["run_summary"]["finished_running"] = True
-    update_json_latest_stage(log_info, "Finished", json_log)
-    logging.info(f"Finished running viridian_workflow, output dir: {outdir}")
+    pipeline = Pipeline(tech, outdir, ref_genome, fq1, **kw)
+    pipeline.run()
