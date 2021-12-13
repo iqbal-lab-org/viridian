@@ -72,7 +72,6 @@ class AmpliconSet:
         json_file=None,
     ):
         """AmpliconSet supports various membership operations"""
-        print(shortname, tsv_file)
         self.shortname = shortname
         self.tree = IntervalTree()
         self.name = name
