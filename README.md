@@ -42,7 +42,7 @@ viridian_workflow run_one_sample \
    --outdir OUT
 ```
 
-The FASTA file in those commands can be found in the `data/`
+The FASTA file in those commands can be found in the `viridian_workflow/amplicon_scheme_data/`
 directory of this repository.
 
 Other options:
