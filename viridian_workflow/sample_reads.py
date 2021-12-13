@@ -197,21 +197,24 @@ class ReadSampler:
                 self.failed_amplicons += 1
 
     def write_fastq(self):
+        # Note: using pysam.fastq results in error at the end of the pipeline:
+        #
+        # Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+        # OSError: [Errno 9] Bad file descriptor
+        #
+        # This error happens if the whole command has redirect at the end
+        # (like viridian_workflow run_one_sample ... > foo).
+        # Don't get the error if we use subprocess instead. Leaving this comment
+        # and the old pysam.fastq lines there to stop someone in the future
+        # thinking using them might be a good idea.
         if self.reads_are_paired:
             tmp_bam = self.bam_out + ".tmp.sort_by_name.bam"
             pysam.sort("-n", "-o", tmp_bam, self.bam_out)
-            pysam.fastq("-N", "-1", self.fq_out1, "-2", self.fq_out2, tmp_bam)
+            #pysam.fastq("-N", "-1", self.fq_out1, "-2", self.fq_out2, tmp_bam)
+            subprocess.check_output(f"samtools fastq -N -1 {self.fq_out1} -2 {self.fq_out2} {tmp_bam}", shell=True)
             os.unlink(tmp_bam)
         else:
             # pysam.fastq("-0", self.fq_out, self.bam_out)
-            # Note: using pysam.fastq results in error at the end of the pipeline:
-            #
-            # Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
-            # OSError: [Errno 9] Bad file descriptor
-            #
-            # This error happens if the whole command has redirect at the end
-            # (like viridian_workflow run_one_sample ... > foo).
-            # Don't get the error if we use subprocess instead.
             subprocess.check_output(
                 f"samtools fastq -0 {self.fq_out} {self.bam_out}", shell=True
             )
