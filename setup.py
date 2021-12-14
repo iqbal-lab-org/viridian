@@ -7,7 +7,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="viridian_workflow",
-    version="0.1.1",
+    version="0.3.0",
     description="FIXME",
     packages=find_packages(),
     package_data={'viridian_workflow': ['amplicon_scheme_data/*']},

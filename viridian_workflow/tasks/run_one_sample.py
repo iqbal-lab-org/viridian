@@ -15,7 +15,7 @@ def run(options):
         options.outdir,
         options.ref_fasta,
         fq1,
-        fq2,
+        fq2=fq2,
         built_in_amp_schemes=options.built_in_amp_schemes,
         tsv_of_amp_schemes=options.amp_schemes_tsv,
         force_amp_scheme=options.force_amp_scheme,
