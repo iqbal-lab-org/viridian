@@ -33,6 +33,9 @@ class Pipeline:
         keep_bam=False,
         target_sample_depth=1000,
         sample_name="sample",
+        min_sample_depth=10,
+        max_percent_amps_fail=50.0,
+        viridian_cons_max_n_percent=50.0,
         command_line_args=None,
     ):
         self.tech = tech
@@ -47,8 +50,9 @@ class Pipeline:
         self.keep_bam = keep_bam
         self.target_sample_depth = target_sample_depth
         self.sample_name = sample_name
-        self.viridian_cons_max_n_percent = 50.0
-        self.max_percent_amps_fail = 50.0
+        self.max_percent_amps_fail = max_percent_amps_fail
+        self.min_sample_depth = min_sample_depth
+        self.viridian_cons_max_n_percent = viridian_cons_max_n_percent
         self.command_line_args = command_line_args
         self.start_time = None
         self.amplicon_scheme_name_to_tsv = None
@@ -188,6 +192,7 @@ class Pipeline:
             sample_outprefix,
             self.amplicon_bed,
             target_depth=self.target_sample_depth,
+            min_sampled_depth_for_pass=self.min_sample_depth,
         )
         self.log_dict["read_sampling"] = utils.load_json(f"{sample_outprefix}.json")
         self.sampled_bam = self.sampler.bam_out

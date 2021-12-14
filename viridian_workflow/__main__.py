@@ -156,6 +156,27 @@ def main(args=None):
         help="Target coverage for amplicon depth normalisation [%(default)s]",
         metavar="INT",
     )
+    subparser_run_one_sample.add_argument(
+        "--min_sample_depth",
+        type=int,
+        default=10,
+        help="Minimum coverage required during amplicon depth normalisation. Any amplicon with depth below this is failed and it will have no consensus sequence generated [%(default)s]",
+        metavar="INT",
+    )
+    subparser_run_one_sample.add_argument(
+        "--max_percent_amps_fail",
+        type=float,
+        default=50.0,
+        help="Maximum percent of amplicons allowed to fail during read sampling or making consensus for each amplicon. The pipeline is stopped as soon as too many failed amplicons are detected [%(default)s]",
+        metavar="FLOAT",
+    )
+    subparser_run_one_sample.add_argument(
+        "--max_cons_n_percent",
+        type=float,
+        default=50.0,
+        help="Maximum allowed percentage of Ns in the consensus sequence from Viridian. Pipeline is stopped if too many Ns [%(default)s]",
+        metavar="FLOAT",
+    )
     subparser_run_one_sample.set_defaults(
         func=viridian_workflow.tasks.run_one_sample.run
     )
