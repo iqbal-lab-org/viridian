@@ -51,6 +51,11 @@ class Amplicon:
             [self.name, str(self.start), str(self.end), str(self.left), str(self.right)]
         )
 
+    def position_in_primer(self, position):
+        """Test wheter a reference position falls inside the primer
+        """
+        return position > self.start and position < self.end
+
     def add(self, primer):
         length = len(primer.seq)
         if primer.left:

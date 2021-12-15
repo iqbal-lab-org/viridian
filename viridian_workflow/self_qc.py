@@ -20,6 +20,17 @@ def mask_sequence(sequence, position_stats):
     return sequence, qc
 
 
+def test_bias(n, trials, threshold=0.3):
+    """Test whether a number of boolean trials fit the binomial
+    distribution
+    """
+
+    # TODO: decide whether to include scipy to use binom_test
+    # or a pure python implementation.
+    bias = abs(0.5 - (n / trials))
+    return bias > threshold
+
+
 class Stats:
     def __init__(self):
         self.alts_in_primer = 0
@@ -71,19 +82,23 @@ class Stats:
 
         # look for overrepresentation of alt alleles in regions covered
         # by primer sequences
-        if self.alts_in_primer / self.alts < 0.3:
-            self.log.append("alts in primer")
+        if test_bias(self.alts_in_primer, self.alts):
+            self.log.append("alternative alleles biased in primer region")
             position_failed = True
 
         # strand bias in alt calls
-        if self.alts_forward / self.alts < 0.3:
-            self.log.append("strand bias in alt calls")
+        if test_bias(self.alts_forward, self.alts):
+            self.log.append("strand bias in alternative alleles")
             position_failed = True
 
         # amplicon bias
         for amplicon, total in amplicon_totals:
-            if self.alts_in_amplicons[amplicon] / self.alts < 0.3:
-                self.log.append(f"amplicon bias in alt cals, amplicon {amplicon}")
+            if test_bias(
+                self.alts_in_amplicons[amplicon], self.amplicon_totals[amplicon]
+            ):
+                self.log.append(
+                    f"amplicon bias in alternative allele calls, amplicon {amplicon}"
+                )
                 position_failed = True
 
         return position_failed
@@ -164,18 +179,24 @@ def remap(ref, minimap_presets, amplicon_set, tagged_bam):
         elif alignment.strand == 1:
             strand = True
 
-        base_profile = BaseProfile(in_primer, strand, amplicon)
         alts = cigar_to_alts(ref_seq[alignment.r_st : alignment.r_en], r.seq, r.cigar)
 
         for read_pos, base in alts:
-            position = read_pos + alignment.r_st
+            ref_position = read_pos + alignment.r_st
 
-            if position not in stats:
-                stats[position] = Stats()
-            if base != ref_seq[position]:
-                stats[position].add_alt(base_profile)
+            # TODO resolve assumption: if there is an ambiguous amplicon id, in_primer is false
+            in_primer = False
+            if amplicon:
+                in_primer = amplicon.position_in_primer(ref_position)
+
+            base_profile = ReadProfile(in_primer, strand, amplicon)
+
+            if ref_position not in stats:
+                stats[ref_position] = Stats()
+            if base != ref_seq[ref_position]:
+                stats[ref_position].add_alt(base_profile)
             else:
-                stats[position].add_ref(base_profile)
+                stats[ref_position].add_ref(base_profile)
     return stats
 
 
