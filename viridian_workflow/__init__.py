@@ -12,6 +12,7 @@ __all__ = [
     "minimap",
     "one_sample_pipeline",
     "primers",
+    "self_qc",
     "qcovid",
     "sample_reads",
     "tasks",

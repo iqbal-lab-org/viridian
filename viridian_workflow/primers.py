@@ -5,6 +5,15 @@ from intervaltree import IntervalTree
 Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
 
 
+def load_amplicon_schemes(amplicon_tsvs):
+    return dict(
+        [
+            (s, AmpliconSet(tsv, tsv_file=tsv, shortname=s))
+            for tsv, s in zip(amplicon_tsvs, ["a", "b", "c"])
+        ]
+    )
+
+
 def set_tags(amplicon_sets, read, matches):
     tags = []
     for amplicon_set in amplicon_sets:
