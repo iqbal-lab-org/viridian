@@ -7,11 +7,6 @@ from primers import AmpliconSet, get_tags
 
 from collections import namedtuple, defaultdict
 
-ref = mp.Aligner(sys.argv[1], preset="sr")
-ref_seq = None
-for s in mp.fastx_read(sys.argv[1]):
-    ref_seq = s[1]
-
 amplicon_set = sys.argv[2]
 
 Stats = namedtuple("Stats", ["alt_in_primer", "ref", "alts", "total"])
@@ -121,6 +116,13 @@ if __name__ == "__main__":
         ]
     )
     sn = None
+    ref = mp.Aligner(sys.argv[1], preset=sys.argv[3])
+    ref_seq = None
+    for s in mp.fastx_read(sys.argv[1]):
+        ref_seq = s[1]
+
+
+
     amplicons = {}
     for a, aset in amplicon_sets.items():
         if aset.name == sys.argv[2]:
@@ -130,7 +132,7 @@ if __name__ == "__main__":
                 amplicons[amplicon.shortname] = amplicon
 
     stats = {}
-    for r in pysam.AlignmentFile(sys.argv[3]):
+    for r in pysam.AlignmentFile(sys.argv[4]):
         a = ref.map(r.seq)
         alignment = None
         for x in a:
