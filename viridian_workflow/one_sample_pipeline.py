@@ -221,9 +221,9 @@ class Pipeline:
 
         try:
             consensus = self.log_dict["viridian"]["run_summary"]["consensus"]
-            percent_n = consensus.count("N") / len(consensus)
+            percent_n = 100.0 * consensus.count("N") / len(consensus)
             if percent_n > self.viridian_cons_max_n_percent:
-                return f"Too many Ns in Viridian consensus: {percent_n}"
+                return f"Too many Ns in Viridian consensus: {round(percent_n, 2)}%"
         except:
             return "Error getting viridian consensus sequence and/or counting Ns"
 
