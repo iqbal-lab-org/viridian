@@ -3,21 +3,23 @@ import sys
 import mappy as mp
 import pysam
 
-from primers import AmpliconSet, get_tags, load_amplicon_sets
+from viridian_workflow.primers import AmpliconSet, get_tags, load_amplicon_schemes
 
 from collections import namedtuple, defaultdict
 
-Stats = namedtuple("Stats", ["alt_in_primer", "ref", "alts", "total"])
-BaseProfile = namedtuple("BaseProfile", ["in_primer", "forward_strand", "amplicon"])
+BaseProfile = namedtuple(
+    "BaseProfile", ["in_primer", "forward_strand", "amplicon_name"]
+)
 
 
 def mask_sequence(sequence, position_stats):
+    sequence = list(sequence)
     qc = {}
     for position, stats in position_stats.items():
         if stats.check_for_failure():
             sequence[position] = "N"
             qc[position] = stats.log
-    return sequence, qc
+    return "".join(sequence), qc
 
 
 def test_bias(n, trials, threshold=0.3):
@@ -48,11 +50,11 @@ class Stats:
     def add_alt(self, profile, alt=None):
         self.alts += 1
 
-        if profile.amplicon:
+        if profile.amplicon_name:
             # when unambiguous amplicon call cannot be made, do not
             # consider (or consider differently)
-            self.alts_in_amplicons[profile.amplicon] += 1
-            self.amplicon_totals[profile.amplicon] += 1
+            self.alts_in_amplicons[profile.amplicon_name] += 1
+            self.amplicon_totals[profile.amplicon_name] += 1
 
         if profile.forward_strand:
             self.alts_forward += 1
@@ -63,8 +65,8 @@ class Stats:
         self.total += 1
 
     def add_ref(self, profile):
-        if profile.amplicon:
-            self.amplicon_totals[profile.amplicon] += 1
+        if profile.amplicon_name:
+            self.amplicon_totals[profile.amplicon_name] += 1
 
         if profile.forward_strand:
             self.refs_forward += 1
@@ -128,11 +130,11 @@ def cigar_to_alts(ref, query, cigar):
         elif op == 1:
             # insertion
             positions.append((q_pos, query[q_pos : q_pos + count]))
-            q_pos += count
+            # q_pos += count
 
         elif op == 2:
             # deletion
-            pass
+            q_pos += count
 
         elif op == 3:
             # ref_skip
@@ -189,7 +191,7 @@ def remap(ref, minimap_presets, amplicon_set, tagged_bam):
             if amplicon:
                 in_primer = amplicon.position_in_primer(ref_position)
 
-            base_profile = ReadProfile(in_primer, strand, amplicon)
+            base_profile = ReadProfile(in_primer, strand, amplicon.name)
 
             if ref_position not in stats:
                 stats[ref_position] = Stats()
