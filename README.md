@@ -2,6 +2,9 @@
 
 # Viridian Workflow
 
+Please see the [Viridian Workflow Wiki](https://github.com/iqbal-lab-org/viridian_workflow/wiki)
+for full documentation.
+
 ## Installation
 
 Clone this repository and then from its root, build either a Singularity
