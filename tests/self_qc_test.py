@@ -14,7 +14,7 @@ class StatsTest:
         self.log = []
 
     def check_for_failure(self):
-        return fail
+        return self.fail
 
 
 def test_cigar_tuple_construction():
@@ -30,15 +30,21 @@ def test_cigar_tuple_construction():
     cigar = [(0, 1), (1, 2), (0, 2)]
     assert self_qc.cigar_to_alts(ref, query, cigar) == [
         (0, "A"),
-        (1, "TT"),
+        #        (1, "TT"),
+        (1, "A"),
         (2, "A"),
-        (3, "A"),
     ]
 
     ref = "ATTAA"
     query = "AAA"
     cigar = [(0, 1), (2, 2), (0, 2)]
-    assert self_qc.cigar_to_alts(ref, query, cigar) == [(0, "A"), (4, "A"), (5, "A")]
+    assert self_qc.cigar_to_alts(ref, query, cigar) == [
+        (0, "A"),
+        (1, "-"),
+        (2, "-"),
+        (3, "A"),
+        (4, "A"),
+    ]
 
 
 def test_mappy_cigar_liftover():
@@ -55,11 +61,8 @@ def test_bias_test():
 
 def test_stat_evaluation():
 
-    test_amplicon1 = primers.Amplicon("test_amplicon1")
-    test_amplicon2 = primers.Amplicon("test_amplicon2")
-
-    fwd = self_qc.BaseProfile(False, True, test_amplicon1)
-    rev = self_qc.BaseProfile(False, False, test_amplicon2)
+    fwd = self_qc.BaseProfile(False, True, "test_amplicon1")
+    rev = self_qc.BaseProfile(False, False, "test_amplicon2")
     # 20% alt alleles
     pileup20 = ["A", "A", "C", "T", "A", "A", "A", "A", "A", "A"]
     # 0% alt alleles
@@ -87,10 +90,10 @@ def test_masking():
 
     sequence = "ATCATC"
     stats = {0: succeed, 4: fail}
-    masked, _ = self_qc.mask_sequence(sequence, stats) == "NTCANC"
+    masked, _ = self_qc.mask_sequence(sequence, stats)
     assert masked == "ATCANC"
 
     sequence = "ATCATC"
     stats = {0: fail, 4: fail}
-    masked, _ = self_qc.mask_sequence(sequence, stats) == "NTCANC"
+    masked, _ = self_qc.mask_sequence(sequence, stats)
     assert masked == "NTCANC"

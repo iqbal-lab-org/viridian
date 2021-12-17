@@ -1,8 +1,12 @@
 import os
 import pytest
 
+from collections import defaultdict
+
 from intervaltree import Interval
-from viridian_workflow import primers
+from viridian_workflow import primers, detect_primers
+
+import pysam
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "primers")
@@ -79,3 +83,22 @@ def test_AmpliconSet_match():
     assert f(110, 120) == [amplicons["amp1"]]
     assert f(150, 350) is None
     assert f(300, 400) == [amplicons["amp2"]]
+
+
+def test_fragment_syncronisation():
+    stats = {
+        "unpaired_reads": 0,
+        "reads1": 0,
+        "reads2": 0,
+        "total_reads": 0,
+        "mapped": 0,
+        "read_lengths": defaultdict(int),
+        "template_lengths": defaultdict(int),
+    }
+
+    name_sorted_paired_reads = pysam.AlignmentFile(
+        os.path.join(data_dir, "truncated_name_sorted_40_reads.bam")
+    )
+    for r1, r2 in detect_primers.syncronise_fragments(name_sorted_paired_reads, stats):
+        assert r1.qname == r2.qname
+        assert r1.is_reverse != r2.is_reverse

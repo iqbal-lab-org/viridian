@@ -174,8 +174,6 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
         stats["amplicon_scheme_set_matches"]
     )
     stats["chosen_amplicon_scheme"] = score(stats["amplicon_scheme_simple_counts"])
-    print("STATSSSS")
-    print(stats)
     return stats
 
 

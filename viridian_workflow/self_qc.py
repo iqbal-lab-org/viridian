@@ -39,15 +39,21 @@ class Stats:
         self.refs_in_primer = 0
 
         self.alts_in_amplicons = defaultdict(int)
+        self.refs_in_amplicons = defaultdict(int)
         self.amplicon_totals = defaultdict(int)
 
         self.alts_forward = 0
         self.refs_forward = 0
 
+        self.alts = 0
         self.total = 0
         self.log = []
 
     def add_alt(self, profile, alt=None):
+        if profile.in_primer:
+            self.alts_in_primer += 1
+            return
+
         self.alts += 1
 
         if profile.amplicon_name:
@@ -59,20 +65,19 @@ class Stats:
         if profile.forward_strand:
             self.alts_forward += 1
 
-        if profile.in_primer:
-            self.alts_in_primer += 1
-
         self.total += 1
 
     def add_ref(self, profile):
+        if profile.in_primer:
+            self.refs_in_primer += 1
+            return
+
         if profile.amplicon_name:
+            self.refs_in_amplicons[profile.amplicon_name] += 1
             self.amplicon_totals[profile.amplicon_name] += 1
 
         if profile.forward_strand:
             self.refs_forward += 1
-
-        if profile.in_primer:
-            self.refs_in_primer += 1
 
         self.total += 1
 
@@ -83,23 +88,20 @@ class Stats:
         position_failed = False
 
         # look for overrepresentation of alt alleles in regions covered
-        # by primer sequences
-        if test_bias(self.alts_in_primer, self.alts):
-            self.log.append("alternative alleles biased in primer region")
-            position_failed = True
+        # by primer sequences. This is reported but not as a failure
+        if test_bias(self.refs_in_primer, self.total - self.alts):
+            self.log.append("Consensus base calls are biased in primer region")
 
         # strand bias in alt calls
-        if test_bias(self.alts_forward, self.alts):
-            self.log.append("strand bias in alternative alleles")
+        if test_bias(self.alts_forward, self.total - self.alts):
+            self.log.append("Strand bias for reads with reference alleles")
             position_failed = True
 
         # amplicon bias
-        for amplicon, total in amplicon_totals:
-            if test_bias(
-                self.alts_in_amplicons[amplicon], self.amplicon_totals[amplicon]
-            ):
+        for amplicon, total in self.amplicon_totals.items():
+            if test_bias(self.refs_in_amplicons[amplicon], total):
                 self.log.append(
-                    f"amplicon bias in alternative allele calls, amplicon {amplicon}"
+                    f"Amplicon bias in consensus allele calls, amplicon {amplicon}"
                 )
                 position_failed = True
 
@@ -120,21 +122,27 @@ def cigar_to_alts(ref, query, cigar):
     """
     positions = []
     q_pos = 0
+    r_pos = 0
     for op, count in cigar:
         if op == 0:
             # match/mismatch
-            for i in range(q_pos, q_pos + count):
-                positions.append((q_pos + i, query[i]))
+            for i in range(count):
+                positions.append((r_pos + i, query[q_pos + i]))
             q_pos += count
+            r_pos += count
 
         elif op == 1:
+            pass
             # insertion
-            positions.append((q_pos, query[q_pos : q_pos + count]))
-            # q_pos += count
+            #            positions.append((q_pos, query[q_pos : q_pos + count]))
+            q_pos += count
+            r_pos += 0
 
         elif op == 2:
             # deletion
-            q_pos += count
+            for n in range(count):
+                positions.append((r_pos + n, "-"))
+            r_pos += count
 
         elif op == 3:
             # ref_skip
