@@ -4,8 +4,13 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
-jobs:  
+jobs:
   build:
     name: Build
     runs-on: ubuntu-20.04
@@ -52,15 +57,20 @@ jobs:
     - name: Check out code for the container build
       uses: actions/checkout@v2
 
-    - name: Set release version
+    - name: Set release version if is a release
+      if: startsWith(github.event.ref, 'refs/tags/v')
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+    - name: Set release version if not a release
+      if: false == startsWith(github.event.ref, 'refs/tags/v')
+      run: echo "RELEASE_VERSION=test" >> $GITHUB_ENV
 
     - name: Build Container
       env:
         SINGULARITY_RECIPE: Singularity.def
         OUTPUT_CONTAINER: viridian_workflow_${{env.RELEASE_VERSION}}.img
       run: |
-        ls 
+        ls
         if [ -f "${SINGULARITY_RECIPE}" ]; then
             sudo -E singularity build ${OUTPUT_CONTAINER} ${SINGULARITY_RECIPE}
         else
@@ -68,8 +78,9 @@ jobs:
             echo "Present working directory: $PWD"
             ls
         fi
-    
+
     - name: Release
+      if: startsWith(github.event.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
         files: viridian_workflow*.img
