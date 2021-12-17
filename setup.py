@@ -9,7 +9,7 @@ setup(
     name="viridian_workflow",
     version="0.3.0",
     description="FIXME",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests"]),
     package_data={'viridian_workflow': ['amplicon_scheme_data/*']},
     author="Jeff Knaggs,Martin Hunt",
     author_email="FIXME",
