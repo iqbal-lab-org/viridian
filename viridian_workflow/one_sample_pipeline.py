@@ -9,6 +9,7 @@ import os
 from viridian_workflow import (
     amplicon_schemes,
     detect_primers,
+    primers,
     minimap,
     qcovid,
     self_qc,
@@ -78,6 +79,7 @@ class Pipeline:
         self.amplicons_end = None
         self.sampled_bam = None
         self.amplicon_tsv = None
+        self.amplicon_set = None
         self.log_dict = None
 
     def check_tech(self):
@@ -155,9 +157,13 @@ class Pipeline:
         )
         self.update_json_latest_stage("Initial map reads")
         logging.info("Detecting amplicon scheme and gathering read statistics")
-        self.log_dict["read_and_primer_stats"] = detect_primers.gather_stats_from_bam(
+
+        primer_stats = detect_primers.gather_stats_from_bam(
             unsorted_bam, self.unsorted_read_tagged_bam, self.amplicon_scheme_list
         )
+
+        self.log_dict["read_and_primer_stats"] = primer_stats
+
         self.log_dict["read_and_primer_stats"][
             "amplicon_scheme_set_matches"
         ] = detect_primers.amplicon_set_counts_to_json_friendly(
@@ -168,10 +174,10 @@ class Pipeline:
                 "read_and_primer_stats"
             ]["chosen_amplicon_scheme"]
         else:
-            self.log_dict["amplicon_scheme_name"] = self.force_amp_scheme
-        self.amplicon_tsv = self.amplicon_scheme_name_to_tsv[
-            self.log_dict["amplicon_scheme_name"]
-        ]
+            self.log_dict["chosen_amplicon_scheme"] = self.force_amp_scheme
+
+        self.amplicon_tsv = primer_stats["chosen_amplicon_scheme"]
+        self.amplicon_set = primers.AmpliconSet.from_tsv(self.amplicon_tsv)
         self.update_json_latest_stage("Gather read stats and detect primer scheme")
 
     def process_chosen_amplicon_scheme_files(self):
@@ -394,7 +400,7 @@ class Pipeline:
             return
 
         self.self_qc_and_make_masked_consensus(
-            self.viridian_fasta, self.amplicon_set, self.all_reads_bam
+            self.viridian_fasta, self.amplicon_set, self.unsorted_read_tagged_bam
         )
         self.make_vcf_wrt_reference()
         self.clean_intermediate_files()

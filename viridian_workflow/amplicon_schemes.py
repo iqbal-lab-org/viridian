@@ -91,6 +91,7 @@ def load_list_of_amplicon_sets(built_in_names_to_use=None, tsv_others_to_use=Non
                 schemes[d["Name"]] = d["File"]
 
     assert len(schemes) > 0
-    return schemes, [
-        primers.AmpliconSet(k, vwf_tsv_file=v) for k, v in sorted(schemes.items())
-    ]
+    return (
+        schemes,
+        [primers.AmpliconSet.from_tsv(v, name=k) for k, v in sorted(schemes.items())],
+    )

@@ -46,6 +46,7 @@ class Stats:
         self.refs_forward = 0
 
         self.alts = 0
+        self.refs = 0
         self.total = 0
         self.log = []
 
@@ -72,6 +73,8 @@ class Stats:
             self.refs_in_primer += 1
             return
 
+        self.alts += 1
+
         if profile.amplicon_name:
             self.refs_in_amplicons[profile.amplicon_name] += 1
             self.amplicon_totals[profile.amplicon_name] += 1
@@ -81,19 +84,30 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self):
+    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7):
         """return whether a position should be masked
         """
 
         position_failed = False
 
+        if self.total < minimum_depth:
+            self.log.append(f"Insufficient depth to evaluate consensus")
+            return True  # position failed
+
+        # test total percentage of bases supporting consensus
+        if self.refs / self.total < minimum_frs:
+            self.log.append(f"Insufficient support of consensus base")
+            position_failed = True
+            if self.refs == 0:
+                return position_failed
+
         # look for overrepresentation of alt alleles in regions covered
         # by primer sequences. This is reported but not as a failure
-        if test_bias(self.refs_in_primer, self.total - self.alts):
+        if test_bias(self.refs_in_primer, self.refs):
             self.log.append("Consensus base calls are biased in primer region")
 
         # strand bias in alt calls
-        if test_bias(self.alts_forward, self.total - self.alts):
+        if test_bias(self.refs_forward, self.refs):
             self.log.append("Strand bias for reads with reference alleles")
             position_failed = True
 
@@ -163,10 +177,10 @@ def cigar_to_alts(ref, query, cigar):
     return positions
 
 
-def remap(ref, minimap_presets, amplicon_set, tagged_bam):
+def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
     stats = {}
-    ref = mp.Aligner(sys.argv[1], preset=sys.argv[3])
-    for r in pysam.AlignmentFile(sys.argv[4]):
+    ref = mp.Aligner(reference_fasta, preset=minimap_presets)
+    for r in pysam.AlignmentFile(tagged_bam):
         a = ref.map(r.seq)
         alignment = None
         for x in a:
@@ -176,7 +190,7 @@ def remap(ref, minimap_presets, amplicon_set, tagged_bam):
         if not alignment:
             continue
 
-        tags = get_tags(None, r)[amplicon_set.shortname]
+        tags = get_tags(r, amplicon_set.shortname)
 
         amplicon = None
         if len(tags) == 1:

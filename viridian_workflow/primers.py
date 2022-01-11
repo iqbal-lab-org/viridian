@@ -1,5 +1,6 @@
 import csv
-from collections import namedtuple
+import sys
+from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
 
 Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
@@ -8,7 +9,7 @@ Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
 def load_amplicon_schemes(amplicon_tsvs):
     return dict(
         [
-            (s, AmpliconSet(tsv, tsv_file=tsv, shortname=s))
+            (s, AmpliconSet.from_tsv(tsv, shortname=s))
             for tsv, s in zip(amplicon_tsvs, ["a", "b", "c"])
         ]
     )
@@ -26,11 +27,11 @@ def set_tags(amplicon_sets, read, matches):
     return read
 
 
-def get_tags(amplicon_sets, read):
-    matches = defaultdict(list)
+def get_tags(read, shortname):
+    matches = []
     for tag, value in read.get_tags():
-        if tag[0] == "Z":
-            matches[tag[1]].append(value)
+        if tag[0] == "Z" and tag[1] == shortname:
+            matches.append(value)
     return matches
 
 
@@ -76,42 +77,15 @@ class Amplicon:
 
 class AmpliconSet:
     def __init__(
-        self,
-        name,
-        tolerance=5,
-        amplicons=None,
-        vwf_tsv_file=None,
-        shortname="A",
-        tsv_file=None,
-        json_file=None,
+        self, name, amplicons, tolerance=5, shortname=None,
     ):
         """AmpliconSet supports various membership operations"""
-        self.shortname = shortname
+        if not shortname and name:
+            self.shortname = chr((sum(map(ord, name)) - ord("A")) % 54)
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
-        if (
-            not len(
-                [
-                    x
-                    for x in (amplicons, vwf_tsv_file, tsv_file, json_file)
-                    if x is not None
-                ]
-            )
-            == 1
-        ):
-            raise Exception(
-                "Must provide exactly one of amplicons, vwf_tsv_file, tsv_file, json_file"
-            )
-        if vwf_tsv_file is not None:
-            amplicons = AmpliconSet.from_tsv_viridian_workflow_format(
-                vwf_tsv_file, tolerance=tolerance
-            )
-        elif tsv_file is not None:
-            amplicons = AmpliconSet.from_tsv(tsv_file, tolerance=tolerance)
-        elif json_file is not None:
-            amplicons = AmpliconSet.from_json(json_file, tolerance=tolerance)
-        assert amplicons is not None
+        self.amplicons = amplicons
 
         primer_lengths = set()
         sequences = {}
@@ -144,29 +118,7 @@ class AmpliconSet:
         raise NotImplementedError
 
     @classmethod
-    def from_tsv(cls, fn, tolerance=5):
-        """Import primer set from tsv (QCovid style)"""
-        amplicons = {}
-
-        n = 0
-        for l in open(fn):
-            amplicon_name, name, seq, left, forward, pos = l.strip().split("\t")
-            pos = int(pos)
-            forward = forward.lower() in ["t", "+", "forward", "true"]
-            left = left.lower() in ["left", "true", "t"]
-
-            if amplicon_name not in amplicons:
-                amplicons[amplicon_name] = Amplicon(amplicon_name, shortname=n)
-                n += 1
-
-            primer = Primer(name, seq, left, forward, pos)
-            amplicons[amplicon_name].add(primer)
-            # exact matching: also store the reverse complement of the primer
-
-        return amplicons
-
-    @classmethod
-    def from_tsv_viridian_workflow_format(cs, fn, tolerance=5):
+    def from_tsv(cls, fn, name=None, **kwargs):
         amplicons = {}
         required_cols = {
             "Amplicon_name",
@@ -198,7 +150,9 @@ class AmpliconSet:
                 pos = int(d["Position"])
                 primer = Primer(d["Primer_name"], d["Sequence"], left, forward, pos)
                 amplicons[d["Amplicon_name"]].add(primer)
-        return amplicons
+
+        name = fn if not "name" in kwargs else kwargs["name"]
+        return cls(name, amplicons, **kwargs)
 
     def match(self, start, end):
         """Identify a template's mapped interval based on the start and end

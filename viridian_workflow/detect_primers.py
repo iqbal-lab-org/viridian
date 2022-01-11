@@ -2,7 +2,7 @@
 from collections import defaultdict
 
 import pysam
-from viridian_workflow.primers import AmpliconSet, set_tags, get_tags
+from viridian_workflow.primers import AmpliconSet, set_tags
 
 
 def score(matches):

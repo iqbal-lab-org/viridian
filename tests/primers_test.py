@@ -34,14 +34,14 @@ def test_AmpliconSet_from_tsv():
         "amp1": amp1,
         "amp2": amp2,
     }
-    assert got == expect
+    assert got.amplicons == expect
 
 
 def test_AmpliconSet_from_tsv_viridian_workflow_format():
     tsv_file = os.path.join(
         data_dir, "AmpliconSet_from_tsv_viridian_workflow_format.tsv"
     )
-    got = primers.AmpliconSet.from_tsv_viridian_workflow_format(tsv_file)
+    got = primers.AmpliconSet.from_tsv(tsv_file)
     primer1_l = primers.Primer("amp1_left_primer", "ACGTACGTAC", True, True, 100)
     primer1_r = primers.Primer("amp1_right_primer", "TCTCTTCTCAG", False, False, 300)
     primer2_l = primers.Primer("amp2_left_primer", "GGGCGCGTAGTC", True, True, 290)
@@ -60,13 +60,13 @@ def test_AmpliconSet_from_tsv_viridian_workflow_format():
         "amp1": amp1,
         "amp2": amp2,
     }
-    assert got == expect
+    assert got.amplicons == expect
 
 
 def test_AmpliconSet_match():
     tsv_file = os.path.join(data_dir, "AmpliconSet_match.amplicons.tsv")
     amplicons = primers.AmpliconSet.from_tsv(tsv_file)
-    amplicon_set = primers.AmpliconSet("NAME", tolerance=5, tsv_file=tsv_file)
+    amplicon_set = primers.AmpliconSet.from_tsv(tsv_file, name="NAME", tolerance=5)
     f = amplicon_set.match
     assert f(0, 0) is None
     assert f(0, 10000) is None
@@ -75,14 +75,14 @@ def test_AmpliconSet_match():
     assert f(90, 150) is None
     assert f(94, 150) is None
     print("f(95, 150)", f(95, 150))
-    print("amp1:", amplicons["amp1"])
-    assert f(95, 150) == [amplicons["amp1"]]
-    assert f(96, 150) == [amplicons["amp1"]]
-    assert f(96, 315) == [amplicons["amp1"]]
+    print("amp1:", amplicons.amplicons["amp1"])
+    assert f(95, 150) == [amplicons.amplicons["amp1"]]
+    assert f(96, 150) == [amplicons.amplicons["amp1"]]
+    assert f(96, 315) == [amplicons.amplicons["amp1"]]
     assert f(96, 316) is None
-    assert f(110, 120) == [amplicons["amp1"]]
+    assert f(110, 120) == [amplicons.amplicons["amp1"]]
     assert f(150, 350) is None
-    assert f(300, 400) == [amplicons["amp2"]]
+    assert f(300, 400) == [amplicons.amplicons["amp2"]]
 
 
 def test_fragment_syncronisation():
