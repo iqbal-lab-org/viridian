@@ -16,6 +16,12 @@ def mask_sequence(sequence, position_stats):
     sequence = list(sequence)
     qc = {}
     for position, stats in position_stats.items():
+        if position >= len(sequence):
+            print(
+                f"Invalid condition: mapped position {position} greater than reference length {len(sequence)}",
+                file=sys.stderr,
+            )
+            continue
         if stats.check_for_failure():
             sequence[position] = "N"
             qc[position] = stats.log
@@ -132,12 +138,12 @@ class Stats:
 
 def cigar_to_alts(ref, query, cigar):
     """Interpret cigar string and query sequence in reference
-    coords
+    coords from mappy (count, op)
     """
     positions = []
     q_pos = 0
     r_pos = 0
-    for op, count in cigar:
+    for count, op in cigar:
         if op == 0:
             # match/mismatch
             for i in range(count):
@@ -180,6 +186,14 @@ def cigar_to_alts(ref, query, cigar):
 def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
     stats = {}
     ref = mp.Aligner(reference_fasta, preset=minimap_presets)
+    if len(ref.seq_names) != 1:
+        Exception(f"Reference fasta {reference_fasta} has more than one sequence")
+    ref_seq = ref.seq(ref.seq_names[0])
+
+    multi_amplicons = 0
+    no_amplicons = 0
+    tagged = 0
+
     for r in pysam.AlignmentFile(tagged_bam):
         a = ref.map(r.seq)
         alignment = None
@@ -190,11 +204,18 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
         if not alignment:
             continue
 
-        tags = get_tags(r, amplicon_set.shortname)
+        amplicons = get_tags(amplicon_set, r)
 
         amplicon = None
-        if len(tags) == 1:
-            amplicon = amplicons[tags[0]]
+        if len(amplicons) == 1:
+            amplicon = amplicons[0]
+            tagged += 1
+        elif len(amplicons) > 1:
+            multi_amplicons += 1
+            continue
+        else:
+            no_amplicons += 1
+            continue
 
         strand = False  # strand is forward
         if alignment.strand == 0:
@@ -203,17 +224,23 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
         elif alignment.strand == 1:
             strand = True
 
-        alts = cigar_to_alts(ref_seq[alignment.r_st : alignment.r_en], r.seq, r.cigar)
+        alts = cigar_to_alts(
+            ref_seq[alignment.r_st : alignment.r_en], r.seq, alignment.cigar
+        )
 
         for read_pos, base in alts:
             ref_position = read_pos + alignment.r_st
+            if ref_position >= len(ref_seq):
+                print(
+                    f"Position {ref_position} extends beyond length of reference ({len(ref_seq)}) {alignment.q_st} ({read_pos}: {base})",
+                    file=sys.stderr,
+                )
+                continue
 
             # TODO resolve assumption: if there is an ambiguous amplicon id, in_primer is false
-            in_primer = False
-            if amplicon:
-                in_primer = amplicon.position_in_primer(ref_position)
+            in_primer = amplicon.position_in_primer(ref_position)
 
-            base_profile = ReadProfile(in_primer, strand, amplicon.name)
+            base_profile = BaseProfile(in_primer, strand, amplicon.name)
 
             if ref_position not in stats:
                 stats[ref_position] = Stats()
@@ -221,16 +248,27 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
                 stats[ref_position].add_alt(base_profile)
             else:
                 stats[ref_position].add_ref(base_profile)
+
+    print(
+        f"reads with more than one amplicon: {multi_amplicons}, with zero: {no_amplicons}. tagged: {tagged}",
+        file=sys.stderr,
+    )
     return stats
 
 
 def mask(fasta, stats, name=None, prefix=None):
-    seq = ""
-    masked, log = mask_sequence(seq, stats)
+    ref = mp.Aligner(fasta)
+    if len(ref.seq_names) != 1:
+        Exception(f"Reference fasta {fasta} has more than one sequence")
+    sequence = ref.seq(ref.seq_names[0])
+    if not name:
+        name = ref.seq_names[0]
+
+    masked, log = mask_sequence(sequence, stats)
 
     # write masked fasta
     with open(outpath, "w") as maskfd:
-        print(">{name}\n{seq}", file=maskfd, end="")
+        print(">{name}\n{masked}", file=maskfd, end="")
     return outpath, log
 
 

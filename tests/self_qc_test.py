@@ -21,13 +21,13 @@ def test_cigar_tuple_construction():
     ref = "AAA"
     query = "AAA"
     cigar = [
-        (0, 3),
+        (3, 0),
     ]
     assert self_qc.cigar_to_alts(ref, query, cigar) == [(0, "A"), (1, "A"), (2, "A")]
 
     ref = "AAA"
     query = "ATTAA"
-    cigar = [(0, 1), (1, 2), (0, 2)]
+    cigar = [(1, 0), (2, 1), (2, 0)]
     assert self_qc.cigar_to_alts(ref, query, cigar) == [
         (0, "A"),
         #        (1, "TT"),
@@ -37,7 +37,7 @@ def test_cigar_tuple_construction():
 
     ref = "ATTAA"
     query = "AAA"
-    cigar = [(0, 1), (2, 2), (0, 2)]
+    cigar = [(1, 0), (2, 2), (2, 0)]
     assert self_qc.cigar_to_alts(ref, query, cigar) == [
         (0, "A"),
         (1, "-"),

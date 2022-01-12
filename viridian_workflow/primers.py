@@ -17,7 +17,13 @@ def load_amplicon_schemes(amplicon_tsvs):
 
 def set_tags(amplicon_sets, read, matches):
     tags = []
+    shortnames = set()
     for amplicon_set in amplicon_sets:
+        if amplicon_set.shortname in shortnames:
+            Exception(
+                f"Multiple amplicon sets of the same shortname: {amplicon_set.shortname}"
+            )
+        shortnames.add(amplicon_set.shortname)
         if amplicon_set.name not in matches:
             continue
         shortname = amplicon_set.shortname
@@ -27,11 +33,11 @@ def set_tags(amplicon_sets, read, matches):
     return read
 
 
-def get_tags(read, shortname):
+def get_tags(amplicon_set, read):
     matches = []
-    for tag, value in read.get_tags():
-        if tag[0] == "Z" and tag[1] == shortname:
-            matches.append(value)
+    for tag, amplicon_id in read.get_tags():
+        if tag[0] == "Z" and tag[1] == amplicon_set.shortname:
+            matches.append(amplicon_set.amplicon_ids[amplicon_id])
     return matches
 
 
@@ -81,16 +87,19 @@ class AmpliconSet:
     ):
         """AmpliconSet supports various membership operations"""
         if not shortname and name:
-            self.shortname = chr((sum(map(ord, name)) - ord("A")) % 54)
+            # base-54 hash
+            self.shortname = chr(((sum(map(ord, name)) - ord("A")) % 54) + 65)
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
         self.amplicons = amplicons
+        self.amplicon_ids = {}
 
         primer_lengths = set()
         sequences = {}
         for amplicon_name in amplicons:
             amplicon = amplicons[amplicon_name]
+            self.amplicon_ids[amplicon.shortname] = amplicon
 
             for primer in amplicon.left:
                 sequences[primer.seq] = amplicon
@@ -180,3 +189,9 @@ class AmpliconSet:
             raise Exception
         else:
             return [hit.data for hit in hits]
+
+    def get_tags(self, read):
+        pass
+
+    def set_tags(self, read):
+        pass
