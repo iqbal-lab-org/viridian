@@ -175,9 +175,10 @@ class Pipeline:
             ]["chosen_amplicon_scheme"]
         else:
             self.log_dict["chosen_amplicon_scheme"] = self.force_amp_scheme
-
-        self.amplicon_tsv = primer_stats["chosen_amplicon_scheme"]
-        self.amplicon_set = primers.AmpliconSet.from_tsv(self.amplicon_tsv)
+        chosen_scheme = primer_stats["chosen_amplicon_scheme"]
+        self.amplicon_set = primers.AmpliconSet.from_tsv(
+            self.amplicon_tsv, name=chosen_scheme
+        )
         self.update_json_latest_stage("Gather read stats and detect primer scheme")
 
     def process_chosen_amplicon_scheme_files(self):
@@ -305,7 +306,10 @@ class Pipeline:
             self.viridian_fasta, self.get_minimap_presets(), amplicon_set, tagged_reads
         )
         masked_fasta, masking_log = self_qc.mask(
-            self.viridian_fasta, position_stats, name=self.sample_name
+            self.viridian_fasta,
+            position_stats,
+            outpath=self.final_masked_fasta,
+            name=self.sample_name,
         )
 
         self.log_dict["self_qc"] = masking_log

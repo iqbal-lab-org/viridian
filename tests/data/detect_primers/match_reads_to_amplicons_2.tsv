@@ -1,8 +1,9 @@
-amp1	amp1_left_primer	ACGTACGTAC	True	True	100
-amp1	amp1_right_primer	TCTCTTCTCAG	False	False	300
-amp2	amp2_left_primer	GGGCGCGTAGTC	True	True	290
-amp2	amp2_right_primer	ATGCGCGTAAGCT	False	False	500
-amp3	amp3_left_primer	AAAAACCCCCCC	True	True	490
-amp3	amp3_right_primer	GTGTGTGTGTGTG	False	False	700
-amp4	amp4_left_primer	CCGCCGCCGCCC	True	True	790
-amp4	amp4_right_primer	TTTTAATTTAGCA	False	False	1001
+Amplicon_name	Primer_name	Left_or_right	Sequence	Position
+amp1	amp1_left_primer	left	ACGTACGTAC	100
+amp1	amp1_right_primer	right	TCTCTTCTCAG	300
+amp2	amp2_left_primer	left	GGGCGCGTAGTC	290
+amp2	amp2_right_primer	right	ATGCGCGTAAGCT	500
+amp3	amp3_left_primer	left	AAAAACCCCCCC	490
+amp3	amp3_right_primer	right	GTGTGTGTGTGTG	700
+amp4	amp4_left_primer	left	CCGCCGCCGCCC	790
+amp4	amp4_right_primer	right	TTTTAATTTAGCA	1001

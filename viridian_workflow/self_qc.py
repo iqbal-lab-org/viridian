@@ -256,7 +256,9 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
     return stats
 
 
-def mask(fasta, stats, name=None, prefix=None):
+def mask(fasta, stats, outpath=None, name=None):
+    if not outpath:
+        output = f"{name}.masked.fasta"
     ref = mp.Aligner(fasta)
     if len(ref.seq_names) != 1:
         Exception(f"Reference fasta {fasta} has more than one sequence")

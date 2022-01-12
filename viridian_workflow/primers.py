@@ -86,7 +86,7 @@ class AmpliconSet:
         self, name, amplicons, tolerance=5, shortname=None,
     ):
         """AmpliconSet supports various membership operations"""
-        if not shortname and name:
+        if not shortname:
             # base-54 hash
             self.shortname = chr(((sum(map(ord, name)) - ord("A")) % 54) + 65)
         self.tree = IntervalTree()
@@ -160,7 +160,7 @@ class AmpliconSet:
                 primer = Primer(d["Primer_name"], d["Sequence"], left, forward, pos)
                 amplicons[d["Amplicon_name"]].add(primer)
 
-        name = fn if not "name" in kwargs else kwargs["name"]
+        name = fn if not name else name
         return cls(name, amplicons, **kwargs)
 
     def match(self, start, end):
