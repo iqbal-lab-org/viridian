@@ -1,3 +1,4 @@
 intervaltree
 pyfastaq
 pysam
+mappy
