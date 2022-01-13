@@ -323,6 +323,7 @@ class Pipeline:
     def make_vcf_wrt_reference(self):
         logging.info("Making VCF file of variants")
         varifier_out = os.path.join(self.processing_dir, "varifier")
+        print(varifier_out)
         self.varifier_vcf = varifier.run(
             varifier_out,
             self.ref_genome,

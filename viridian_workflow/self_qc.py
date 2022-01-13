@@ -28,7 +28,7 @@ def mask_sequence(sequence, position_stats):
     return "".join(sequence), qc
 
 
-def test_bias(n, trials, threshold=0.3):
+def test_bias(n, trials, threshold=3.0):
     """Test whether a number of boolean trials fit the binomial
     distribution
     """
@@ -90,7 +90,7 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7):
+    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=1.0):
         """return whether a position should be masked
         """
 
@@ -107,28 +107,31 @@ class Stats:
             self.log.append(
                 f"Insufficient support of consensus base; {self.refs} / {self.total} < {minimum_frs}"
             )
-            position_failed = True
-            if self.refs == 0:
-                return position_failed
+            return True
 
         # look for overrepresentation of alt alleles in regions covered
         # by primer sequences. This is reported but not as a failure
-        if test_bias(self.refs_in_primer, self.refs):
-            self.log.append("Consensus base calls are biased in primer region")
+        if test_bias(self.refs_in_primer, self.refs, threshold=bias_threshold):
+            self.log.append(
+                f"Consensus base calls are biased in primer region; {self.refs_in_primer} / {self.refs}"
+            )
 
         # strand bias in alt calls
-        if test_bias(self.refs_forward, self.refs):
-            self.log.append("Strand bias for reads with reference alleles")
+        if test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
+            self.log.append(
+                f"Strand bias for reads with reference alleles; {self.refs_forward} / {self.refs}"
+            )
             position_failed = True
 
         # amplicon bias
         for amplicon, total in self.amplicon_totals.items():
-            if test_bias(self.refs_in_amplicons[amplicon], total):
+            if test_bias(
+                self.refs_in_amplicons[amplicon], total, threshold=bias_threshold
+            ):
                 self.log.append(
-                    f"Amplicon bias in consensus allele calls, amplicon {amplicon}"
+                    f"Amplicon bias in consensus allele calls, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
                 )
                 position_failed = True
-        #
         return position_failed
 
     def __str__(self):

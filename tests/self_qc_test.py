@@ -80,7 +80,7 @@ def test_stat_evaluation():
             stats.add_ref(fwd)
             stats.add_ref(rev)
 
-    assert stats.check_for_failure()
+    assert stats.check_for_failure(bias_threshold=0.3)
 
 
 def test_masking():
