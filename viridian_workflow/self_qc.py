@@ -79,7 +79,7 @@ class Stats:
             self.refs_in_primer += 1
             return
 
-        self.alts += 1
+        self.refs += 1
 
         if profile.amplicon_name:
             self.refs_in_amplicons[profile.amplicon_name] += 1
@@ -97,12 +97,16 @@ class Stats:
         position_failed = False
 
         if self.total < minimum_depth:
-            self.log.append(f"Insufficient depth to evaluate consensus")
+            self.log.append(
+                f"Insufficient depth to evaluate consensus; {self.total} < {minimum_depth}"
+            )
             return True  # position failed
 
         # test total percentage of bases supporting consensus
         if self.refs / self.total < minimum_frs:
-            self.log.append(f"Insufficient support of consensus base")
+            self.log.append(
+                f"Insufficient support of consensus base; {self.refs} / {self.total} < {minimum_frs}"
+            )
             position_failed = True
             if self.refs == 0:
                 return position_failed
@@ -124,7 +128,7 @@ class Stats:
                     f"Amplicon bias in consensus allele calls, amplicon {amplicon}"
                 )
                 position_failed = True
-
+        #
         return position_failed
 
     def __str__(self):
@@ -207,6 +211,7 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
         amplicons = get_tags(amplicon_set, r)
 
         amplicon = None
+
         if len(amplicons) == 1:
             amplicon = amplicons[0]
             tagged += 1
@@ -230,6 +235,7 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
 
         for read_pos, base in alts:
             ref_position = read_pos + alignment.r_st
+            # print(f"{read_pos}, {alignment.r_st} {base} {ref_seq[ref_position]}")
             if ref_position >= len(ref_seq):
                 print(
                     f"Position {ref_position} extends beyond length of reference ({len(ref_seq)}) {alignment.q_st} ({read_pos}: {base})",
@@ -244,13 +250,14 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
 
             if ref_position not in stats:
                 stats[ref_position] = Stats()
+
             if base != ref_seq[ref_position]:
                 stats[ref_position].add_alt(base_profile)
             else:
                 stats[ref_position].add_ref(base_profile)
 
     print(
-        f"reads with more than one amplicon: {multi_amplicons}, with zero: {no_amplicons}. tagged: {tagged}",
+        f"reads tagged with more than one amplicon: {multi_amplicons}, with zero: {no_amplicons}. tagged: {tagged}.",
         file=sys.stderr,
     )
     return stats
@@ -270,7 +277,7 @@ def mask(fasta, stats, outpath=None, name=None):
 
     # write masked fasta
     with open(outpath, "w") as maskfd:
-        print(">{name}\n{masked}", file=maskfd, end="")
+        print(f">{name}\n{masked}", file=maskfd, end="")
     return outpath, log
 
 

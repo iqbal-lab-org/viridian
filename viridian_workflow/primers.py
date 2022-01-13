@@ -41,6 +41,11 @@ def get_tags(amplicon_set, read):
     return matches
 
 
+def in_range(range_tuple, position):
+    start, end = range_tuple
+    return position < end and position > start
+
+
 class Amplicon:
     def __init__(self, name, shortname=0):
         self.shortname = shortname
@@ -49,6 +54,8 @@ class Amplicon:
         self.end = None
         self.left = []
         self.right = []
+        self.left_primer_region = None
+        self.right_primer_region = None
 
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
@@ -61,24 +68,36 @@ class Amplicon:
     def position_in_primer(self, position):
         """Test wheter a reference position falls inside the primer
         """
-        return position > self.start and position < self.end
+        return in_range(self.left_primer_region, position) or in_range(
+            self.right_primer_region, position
+        )
 
     def add(self, primer):
-        length = len(primer.seq)
+        primer_end = primer.pos + len(primer.seq)
         if primer.left:
             self.left.append(primer)
+            if not self.left_primer_region:
+                self.left_primer_region = (primer.pos, primer_end)
+                self.start = primer.pos
+            else:
+                left_start, left_end = self.left_primer_region
+                self.left_primer_region = (
+                    min(primer.pos, left_start),
+                    max(primer_end, left_end),
+                )
+                self.start = min(self.start, primer.pos)
         else:
             self.right.append(primer)
-
-        if self.start is None and self.end is None:
-            self.start = primer.pos
-            self.end = primer.pos + length
-
-        if primer.left and primer.pos < self.start:
-            self.start = primer.pos
-
-        if not primer.left and (primer.pos + length) > self.end:
-            self.end = primer.pos + length
+            if not self.right_primer_region:
+                self.right_primer_region = (primer.pos, primer_end)
+                self.end = primer_end
+            else:
+                right_start, right_end = self.right_primer_region
+                self.right_primer_region = (
+                    min(primer.pos, right_start),
+                    max(primer_end, right_end),
+                )
+                self.end = max(self.end, primer_end)
 
 
 class AmpliconSet:
