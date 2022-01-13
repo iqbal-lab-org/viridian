@@ -11,7 +11,6 @@ def score(matches):
     # naive: take max of all bins
     m = 0
     winner = None
-    print(matches.items())
     for k, v in matches.items():
         if v >= m:
             m = v

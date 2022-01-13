@@ -175,7 +175,10 @@ class Pipeline:
             ]["chosen_amplicon_scheme"]
         else:
             self.log_dict["chosen_amplicon_scheme"] = self.force_amp_scheme
+
         chosen_scheme = primer_stats["chosen_amplicon_scheme"]
+        self.amplicon_tsv = self.amplicon_scheme_name_to_tsv[chosen_scheme]
+
         self.amplicon_set = primers.AmpliconSet.from_tsv(
             self.amplicon_tsv, name=chosen_scheme
         )
