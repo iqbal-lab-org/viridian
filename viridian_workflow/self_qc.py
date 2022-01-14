@@ -28,15 +28,18 @@ def mask_sequence(sequence, position_stats):
     return "".join(sequence), qc
 
 
-def test_bias(n, trials, threshold=8.0):
+def test_bias(n, trials, threshold=0.3):
     """Test whether a number of boolean trials fit the binomial
-    distribution
+    distribution (returns true if unbiased)
     """
+    if trials == 0:
+        return False
 
     # TODO: decide whether to include scipy to use binom_test
     # or a pure python implementation.
     bias = abs(0.5 - (n / trials))
-    return bias > threshold
+
+    return bias >= threshold
 
 
 class Stats:
@@ -55,6 +58,7 @@ class Stats:
         self.refs = 0
         self.total = 0
         self.log = []
+        self.total_reads = 0
 
     def add_alt(self, profile, alt=None):
         if profile.in_primer:
@@ -90,7 +94,7 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=0.8):
+    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=0.3):
         """return whether a position should be masked
         """
 
@@ -98,41 +102,48 @@ class Stats:
 
         if self.total < minimum_depth:
             self.log.append(
-                f"Insufficient depth to evaluate consensus; {self.total} < {minimum_depth}"
+                f"Insufficient depth to evaluate consensus; {self.total} < {minimum_depth}. {self.total_reads} including primer regions."
             )
             return True  # position failed
 
         # test total percentage of bases supporting consensus
         if self.refs / self.total < minimum_frs:
             self.log.append(
-                f"Insufficient support of consensus base; {self.refs} / {self.total} < {minimum_frs}"
+                f"Insufficient support of consensus base; {self.refs} / {self.total} < {minimum_frs}. {self.total_reads} including primer regions."
             )
             return True
 
         # look for overrepresentation of alt alleles in regions covered
         # by primer sequences. This is reported but not as a failure
-        if test_bias(self.refs_in_primer, self.refs, threshold=bias_threshold):
-            self.log.append(
-                f"Consensus base calls are biased in primer region; {self.refs_in_primer} / {self.refs}"
-            )
-            position_failed = True
+
+        if not self.alts_in_primer + self.refs_in_primer == 0:
+
+            if not test_bias(
+                self.refs_in_primer / (self.alts_in_primer + self.refs_in_primer),
+                self.refs / (self.alts + self.refs),
+                threshold=bias_threshold,
+            ):
+                self.log.append(
+                    f"Consensus base calls are biased in primer region; {self.refs_in_primer}/{self.alts_in_primer}+{self.refs_in_primer} vs. {self.refs}/{self.alts}+{self.refs}"
+                )
+                # position_failed = True
 
         # strand bias in alt calls
-        if test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
+        if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
             self.log.append(
                 f"Strand bias for reads with reference alleles; {self.refs_forward} / {self.refs}"
             )
-            position_failed = True
+            # position_failed = True
 
         # amplicon bias
         for amplicon, total in self.amplicon_totals.items():
-            if test_bias(
+            if not test_bias(
                 self.refs_in_amplicons[amplicon], total, threshold=bias_threshold
             ):
                 self.log.append(
                     f"Amplicon bias in consensus allele calls, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
                 )
-                position_failed = True
+                # position_failed = True
         return position_failed
 
     def __str__(self):
@@ -265,6 +276,7 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
 
             if ref_position not in stats:
                 stats[ref_position] = Stats()
+            stats[ref_position].total_reads += 1
 
             if base != ref_seq[ref_position]:
                 stats[ref_position].add_alt(base_profile)
