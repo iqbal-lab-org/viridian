@@ -270,7 +270,11 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
                 continue
 
             # TODO resolve assumption: if there is an ambiguous amplicon id, in_primer is false
-            in_primer = amplicon.position_in_primer(ref_position)
+            # in_primer = amplicon.position_in_primer(ref_position)
+            in_primer = False
+
+            # if in_primer and ref_position < 200:
+            #    print(f"ref: {ref_position}, start: {alignment.r_st}, amplicon: {amplicon.name}, left: {amplicon.left_primer_region}, right: {amplicon.right_primer_region}", file=sys.stderr)
 
             base_profile = BaseProfile(in_primer, strand, amplicon.name)
 
