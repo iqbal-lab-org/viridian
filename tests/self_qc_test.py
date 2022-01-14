@@ -46,6 +46,16 @@ def test_cigar_tuple_construction():
         (4, "A"),
     ]
 
+    ref = "AAAA"
+    query = "GGGAAAA"
+    cigar = [(3, 4), (4, 0)]
+    assert self_qc.cigar_to_alts(ref, query, cigar) == [
+        (0, "A"),
+        (1, "A"),
+        (2, "A"),
+        (3, "A"),
+    ]
+
 
 def test_mappy_cigar_liftover():
     amplicon = primers.Amplicon("test_amplicon")

@@ -28,7 +28,7 @@ def mask_sequence(sequence, position_stats):
     return "".join(sequence), qc
 
 
-def test_bias(n, trials, threshold=3.0):
+def test_bias(n, trials, threshold=8.0):
     """Test whether a number of boolean trials fit the binomial
     distribution
     """
@@ -90,7 +90,7 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=1.0):
+    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=0.8):
         """return whether a position should be masked
         """
 
@@ -115,6 +115,7 @@ class Stats:
             self.log.append(
                 f"Consensus base calls are biased in primer region; {self.refs_in_primer} / {self.refs}"
             )
+            position_failed = True
 
         # strand bias in alt calls
         if test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
@@ -143,12 +144,11 @@ class Stats:
         return "-"
 
 
-def cigar_to_alts(ref, query, cigar):
+def cigar_to_alts(ref, query, cigar, q_pos=0):
     """Interpret cigar string and query sequence in reference
     coords from mappy (count, op)
     """
     positions = []
-    q_pos = 0
     r_pos = 0
     for count, op in cigar:
         if op == 0:
@@ -211,6 +211,9 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
         if not alignment:
             continue
 
+        assert alignment.q_en > alignment.q_st
+        assert alignment.r_en > alignment.r_st
+
         amplicons = get_tags(amplicon_set, r)
 
         amplicon = None
@@ -233,8 +236,17 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
             strand = True
 
         alts = cigar_to_alts(
-            ref_seq[alignment.r_st : alignment.r_en], r.seq, alignment.cigar
+            ref_seq[alignment.r_st : alignment.r_en],
+            r.seq,
+            alignment.cigar,
+            q_pos=alignment.q_st,
         )
+
+        # TODO test softclip
+
+        # print(ref_seq[alignment.r_st : alignment.r_en], file=sys.stderr)
+        # print(r.seq, file=sys.stderr)
+        # print(alignment.cigar, file=sys.stderr)
 
         for read_pos, base in alts:
             ref_position = read_pos + alignment.r_st
