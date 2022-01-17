@@ -43,9 +43,11 @@ def test_match_read_to_amplicons():
         "scheme1": os.path.join(data_dir, "match_reads_to_amplicons_1.tsv"),
         "scheme2": os.path.join(data_dir, "match_reads_to_amplicons_2.tsv"),
     }
-    amplicon_sets = [primers.AmpliconSet(k, tsv_file=v) for k, v in tsv_files.items()]
-    amplicons1 = primers.AmpliconSet.from_tsv(tsv_files["scheme1"])
-    amplicons2 = primers.AmpliconSet.from_tsv(tsv_files["scheme2"])
+    amplicon_sets = [
+        primers.AmpliconSet.from_tsv(v, name=k) for k, v in tsv_files.items()
+    ]
+    amplicons1 = primers.AmpliconSet.from_tsv(tsv_files["scheme1"], name="scheme1")
+    amplicons2 = primers.AmpliconSet.from_tsv(tsv_files["scheme2"], name="scheme2")
 
     # scheme1:
     # 100-300, 290-800, 790-1000
@@ -60,8 +62,8 @@ def test_match_read_to_amplicons():
     read.reference_start = 100
     read.reference_end = 290
     assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {
-        "scheme1": [amplicons1["amp1"]],
-        "scheme2": [amplicons2["amp1"]],
+        "scheme1": [amplicons1.amplicons["amp1"]],
+        "scheme2": [amplicons2.amplicons["amp1"]],
     }
 
     read.reference_start = 250
@@ -75,7 +77,7 @@ def test_match_read_to_amplicons():
     read.reference_start = 400
     read.reference_end = 750
     assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {
-        "scheme1": [amplicons1["amp2"]],
+        "scheme1": [amplicons1.amplicons["amp2"]],
     }
 
 
@@ -155,7 +157,9 @@ def test_gather_stats_from_bam():
     paired_bam = "tmp.gather_stats_from_bam.paired.bam"
     minimap.run(paired_bam, ref_fasta, reads1_fa, fq2=reads2_fa, sort=False)
 
-    amplicon_sets = [primers.AmpliconSet(k, tsv_file=v) for k, v in tsv_files.items()]
+    amplicon_sets = [
+        primers.AmpliconSet.from_tsv(v, name=k) for k, v in tsv_files.items()
+    ]
     tmp_bam_out = "tmp.bam"
     subprocess.check_output(f"rm -f {tmp_bam_out}", shell=True)
     got = detect_primers.gather_stats_from_bam(unpaired_bam, tmp_bam_out, amplicon_sets)
@@ -167,6 +171,7 @@ def test_gather_stats_from_bam():
         "mapped": 4,
         "match_any_amplicon": 3,
         "read_lengths": {190: 1, 180: 1, 500: 1, 150: 1},
+        "template_lengths": {190: 1, 180: 1, 500: 1, 150: 1},  # TODO: check this
         "amplicon_scheme_set_matches": {("scheme1",): 1, ("scheme1", "scheme2"): 2},
         "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
         "chosen_amplicon_scheme": "scheme1",
@@ -183,6 +188,7 @@ def test_gather_stats_from_bam():
         "mapped": 6,
         "match_any_amplicon": 2,
         "read_lengths": {100: 6},
+        "template_lengths": {200: 1, 190: 1, 690: 1},  # TODO: check this
         "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
         "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},
         "chosen_amplicon_scheme": "scheme2",

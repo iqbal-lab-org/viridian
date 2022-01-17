@@ -1,13 +1,29 @@
 import csv
-from collections import namedtuple
+import sys
+from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
 
 Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
 
 
+def load_amplicon_schemes(amplicon_tsvs):
+    return dict(
+        [
+            (s, AmpliconSet.from_tsv(tsv, shortname=s))
+            for tsv, s in zip(amplicon_tsvs, ["a", "b", "c"])
+        ]
+    )
+
+
 def set_tags(amplicon_sets, read, matches):
     tags = []
+    shortnames = set()
     for amplicon_set in amplicon_sets:
+        if amplicon_set.shortname in shortnames:
+            Exception(
+                f"Multiple amplicon sets of the same shortname: {amplicon_set.shortname}"
+            )
+        shortnames.add(amplicon_set.shortname)
         if amplicon_set.name not in matches:
             continue
         shortname = amplicon_set.shortname
@@ -17,12 +33,17 @@ def set_tags(amplicon_sets, read, matches):
     return read
 
 
-def get_tags(amplicon_sets, read):
-    matches = defaultdict(list)
-    for tag, value in read.get_tags():
-        if tag[0] == "Z":
-            matches[tag[1]].append(value)
+def get_tags(amplicon_set, read):
+    matches = []
+    for tag, amplicon_id in read.get_tags():
+        if tag[0] == "Z" and tag[1] == amplicon_set.shortname:
+            matches.append(amplicon_set.amplicon_ids[amplicon_id])
     return matches
+
+
+def in_range(range_tuple, position):
+    start, end = range_tuple
+    return position < end and position > start
 
 
 class Amplicon:
@@ -33,6 +54,8 @@ class Amplicon:
         self.end = None
         self.left = []
         self.right = []
+        self.left_primer_region = None
+        self.right_primer_region = None
 
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
@@ -42,67 +65,60 @@ class Amplicon:
             [self.name, str(self.start), str(self.end), str(self.left), str(self.right)]
         )
 
+    def position_in_primer(self, position):
+        """Test wheter a reference position falls inside the primer
+        """
+        return in_range(self.left_primer_region, position) or in_range(
+            self.right_primer_region, position
+        )
+
     def add(self, primer):
-        length = len(primer.seq)
+        primer_end = primer.pos + len(primer.seq)
         if primer.left:
             self.left.append(primer)
+            if not self.left_primer_region:
+                self.left_primer_region = (primer.pos, primer_end)
+                self.start = primer.pos
+            else:
+                left_start, left_end = self.left_primer_region
+                self.left_primer_region = (
+                    min(primer.pos, left_start),
+                    max(primer_end, left_end),
+                )
+                self.start = min(self.start, primer.pos)
         else:
             self.right.append(primer)
-
-        if self.start is None and self.end is None:
-            self.start = primer.pos
-            self.end = primer.pos + length
-
-        if primer.left and primer.pos < self.start:
-            self.start = primer.pos
-
-        if not primer.left and (primer.pos + length) > self.end:
-            self.end = primer.pos + length
+            if not self.right_primer_region:
+                self.right_primer_region = (primer.pos, primer_end)
+                self.end = primer_end
+            else:
+                right_start, right_end = self.right_primer_region
+                self.right_primer_region = (
+                    min(primer.pos, right_start),
+                    max(primer_end, right_end),
+                )
+                self.end = max(self.end, primer_end)
 
 
 class AmpliconSet:
     def __init__(
-        self,
-        name,
-        tolerance=5,
-        amplicons=None,
-        vwf_tsv_file=None,
-        shortname="A",
-        tsv_file=None,
-        json_file=None,
+        self, name, amplicons, tolerance=5, shortname=None,
     ):
         """AmpliconSet supports various membership operations"""
-        self.shortname = shortname
+        if not shortname:
+            # base-54 hash
+            self.shortname = chr(((sum(map(ord, name)) - ord("A")) % 54) + 65)
         self.tree = IntervalTree()
         self.name = name
         self.seqs = {}
-        if (
-            not len(
-                [
-                    x
-                    for x in (amplicons, vwf_tsv_file, tsv_file, json_file)
-                    if x is not None
-                ]
-            )
-            == 1
-        ):
-            raise Exception(
-                "Must provide exactly one of amplicons, vwf_tsv_file, tsv_file, json_file"
-            )
-        if vwf_tsv_file is not None:
-            amplicons = AmpliconSet.from_tsv_viridian_workflow_format(
-                vwf_tsv_file, tolerance=tolerance
-            )
-        elif tsv_file is not None:
-            amplicons = AmpliconSet.from_tsv(tsv_file, tolerance=tolerance)
-        elif json_file is not None:
-            amplicons = AmpliconSet.from_json(json_file, tolerance=tolerance)
-        assert amplicons is not None
+        self.amplicons = amplicons
+        self.amplicon_ids = {}
 
         primer_lengths = set()
         sequences = {}
         for amplicon_name in amplicons:
             amplicon = amplicons[amplicon_name]
+            self.amplicon_ids[amplicon.shortname] = amplicon
 
             for primer in amplicon.left:
                 sequences[primer.seq] = amplicon
@@ -130,29 +146,7 @@ class AmpliconSet:
         raise NotImplementedError
 
     @classmethod
-    def from_tsv(cls, fn, tolerance=5):
-        """Import primer set from tsv (QCovid style)"""
-        amplicons = {}
-
-        n = 0
-        for l in open(fn):
-            amplicon_name, name, seq, left, forward, pos = l.strip().split("\t")
-            pos = int(pos)
-            forward = forward.lower() in ["t", "+", "forward", "true"]
-            left = left.lower() in ["left", "true", "t"]
-
-            if amplicon_name not in amplicons:
-                amplicons[amplicon_name] = Amplicon(amplicon_name, shortname=n)
-                n += 1
-
-            primer = Primer(name, seq, left, forward, pos)
-            amplicons[amplicon_name].add(primer)
-            # exact matching: also store the reverse complement of the primer
-
-        return amplicons
-
-    @classmethod
-    def from_tsv_viridian_workflow_format(cs, fn, tolerance=5):
+    def from_tsv(cls, fn, name=None, **kwargs):
         amplicons = {}
         required_cols = {
             "Amplicon_name",
@@ -184,7 +178,9 @@ class AmpliconSet:
                 pos = int(d["Position"])
                 primer = Primer(d["Primer_name"], d["Sequence"], left, forward, pos)
                 amplicons[d["Amplicon_name"]].add(primer)
-        return amplicons
+
+        name = fn if not name else name
+        return cls(name, amplicons, **kwargs)
 
     def match(self, start, end):
         """Identify a template's mapped interval based on the start and end
@@ -212,3 +208,9 @@ class AmpliconSet:
             raise Exception
         else:
             return [hit.data for hit in hits]
+
+    def get_tags(self, read):
+        pass
+
+    def set_tags(self, read):
+        pass

@@ -14,7 +14,7 @@ def test_get_built_in_schemes():
     assert len(found_schemes) > 0
     for filename in found_schemes.values():
         assert os.path.exists(filename)
-        primers.AmpliconSet.from_tsv_viridian_workflow_format(filename)
+        primers.AmpliconSet.from_tsv(filename)
 
 
 def test_convert_tsv_to_viridian_json():
@@ -50,7 +50,7 @@ def test_load_list_of_amplicon_sets():
     with open(tmp_tsv, "w") as f:
         print("Name", "File", sep="\t", file=f)
         print("Scheme1", scheme1_tsv, sep="\t", file=f)
-    expect_list = [primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv)]
+    expect_list = [primers.AmpliconSet.from_tsv(scheme1_tsv, name="Scheme1")]
     expect_dict = {"Scheme1": scheme1_tsv}
     got_dict, got_list = amplicon_schemes.load_list_of_amplicon_sets(
         tsv_others_to_use=tmp_tsv
@@ -66,10 +66,8 @@ def test_load_list_of_amplicon_sets():
     built_in_schemes = amplicon_schemes.get_built_in_schemes()
     expect_dict["COVID-ARTIC-V4"] = built_in_schemes["COVID-ARTIC-V4"]
     expect_list = [
-        primers.AmpliconSet(
-            "COVID-ARTIC-V4", vwf_tsv_file=built_in_schemes["COVID-ARTIC-V4"]
-        ),
-        primers.AmpliconSet("Scheme1", vwf_tsv_file=scheme1_tsv),
+        primers.AmpliconSet.from_tsv(built_in_schemes["COVID-ARTIC-V4"], name="COVID-ARTIC-V4"),
+        primers.AmpliconSet.from_tsv(scheme1_tsv, name="Scheme1"),
     ]
     got_dict, got_list = amplicon_schemes.load_list_of_amplicon_sets(
         built_in_names_to_use={"COVID-ARTIC-V4"}, tsv_others_to_use=tmp_tsv

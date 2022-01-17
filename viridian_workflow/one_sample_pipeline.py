@@ -9,8 +9,10 @@ import os
 from viridian_workflow import (
     amplicon_schemes,
     detect_primers,
+    primers,
     minimap,
     qcovid,
+    self_qc,
     sample_reads,
     utils,
     varifier,
@@ -81,6 +83,7 @@ class Pipeline:
         self.amplicons_end = None
         self.sampled_bam = None
         self.amplicon_tsv = None
+        self.amplicon_set = None
         self.log_dict = None
 
     def check_tech(self):
@@ -88,6 +91,12 @@ class Pipeline:
         if self.tech not in allowed_tech:
             techs = ",".join(sorted(list(allowed_tech)))
             raise Exception(f"Tech '{self.tech}' not allowed, must be one of: {techs}")
+
+    def get_minimap_presets(self):
+        if self.tech == "ont":
+            return "map-ont"
+        elif self.tech == "illumina":
+            return "sr"
 
     def set_paired_and_check_reads(self):
         if self.tech == "ont":
@@ -152,9 +161,13 @@ class Pipeline:
         )
         self.update_json_latest_stage("Initial map reads")
         logging.info("Detecting amplicon scheme and gathering read statistics")
-        self.log_dict["read_and_primer_stats"] = detect_primers.gather_stats_from_bam(
+
+        primer_stats = detect_primers.gather_stats_from_bam(
             unsorted_bam, self.unsorted_read_tagged_bam, self.amplicon_scheme_list
         )
+
+        self.log_dict["read_and_primer_stats"] = primer_stats
+
         self.log_dict["read_and_primer_stats"][
             "amplicon_scheme_set_matches"
         ] = detect_primers.amplicon_set_counts_to_json_friendly(
@@ -165,10 +178,14 @@ class Pipeline:
                 "read_and_primer_stats"
             ]["chosen_amplicon_scheme"]
         else:
-            self.log_dict["amplicon_scheme_name"] = self.force_amp_scheme
-        self.amplicon_tsv = self.amplicon_scheme_name_to_tsv[
-            self.log_dict["amplicon_scheme_name"]
-        ]
+            self.log_dict["chosen_amplicon_scheme"] = self.force_amp_scheme
+
+        chosen_scheme = primer_stats["chosen_amplicon_scheme"]
+        self.amplicon_tsv = self.amplicon_scheme_name_to_tsv[chosen_scheme]
+
+        self.amplicon_set = primers.AmpliconSet.from_tsv(
+            self.amplicon_tsv, name=chosen_scheme
+        )
         self.update_json_latest_stage("Gather read stats and detect primer scheme")
 
     def process_chosen_amplicon_scheme_files(self):
@@ -288,17 +305,22 @@ class Pipeline:
         )
         self.update_json_latest_stage("Map reads to Viridian consensus")
 
-    def self_qc_and_make_masked_consensus(self):
+    def self_qc_and_make_masked_consensus(
+        self, minimap_presets, amplicon_set, tagged_reads
+    ):
         logging.info("Running QC on Viridian consensus to make masked FASTA")
-        # FIXME. We've got self.viridian_fasta, and all reads mapped to
-        # it in self.bam_reads_v_viridian. Need to use those to make
-        # final masked consensus sequence, to replace the line below that
-        # just copies self.viridian_fasta -> self.final_masked_fasta with
-        # the header line fixed.
-        utils.set_seq_name_in_fasta_file(
-            self.viridian_fasta, self.final_masked_fasta, self.sample_name
+
+        position_stats = self_qc.remap(
+            self.viridian_fasta, self.get_minimap_presets(), amplicon_set, tagged_reads
         )
-        self.log_dict["self_qc"] = "To be implemented"
+        masked_fasta, masking_log = self_qc.mask(
+            self.viridian_fasta,
+            position_stats,
+            outpath=self.final_masked_fasta,
+            name=self.sample_name,
+        )
+
+        self.log_dict["self_qc"] = masking_log
         self.update_json_latest_stage(
             "Ran QC on reads mapped to consensus and made final masked FASTA"
         )
@@ -306,6 +328,7 @@ class Pipeline:
     def make_vcf_wrt_reference(self):
         logging.info("Making VCF file of variants")
         varifier_out = os.path.join(self.processing_dir, "varifier")
+        print(varifier_out)
         self.varifier_vcf = varifier.run(
             varifier_out,
             self.ref_genome,
@@ -389,19 +412,16 @@ class Pipeline:
             self.clean_intermediate_files()
             return
 
-        self.map_reads_to_viridian_consensus()
-        self.self_qc_and_make_masked_consensus()
+        self.self_qc_and_make_masked_consensus(
+            self.viridian_fasta, self.amplicon_set, self.unsorted_read_tagged_bam
+        )
         self.make_vcf_wrt_reference()
         self.clean_intermediate_files()
         self.finalise_json_log("Success")
 
 
 def run_one_sample(
-    tech,
-    outdir,
-    ref_genome,
-    fq1,
-    **kw,
+    tech, outdir, ref_genome, fq1, **kw,
 ):
     pipeline = Pipeline(tech, outdir, ref_genome, fq1, **kw)
     pipeline.run()

@@ -102,3 +102,6 @@ ENV/
 
 # vim
 *~
+
+# viridian_workflow unit test tmp files
+tmp.*
