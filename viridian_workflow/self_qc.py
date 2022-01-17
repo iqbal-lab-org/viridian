@@ -22,7 +22,11 @@ def mask_sequence(sequence, position_stats):
                 file=sys.stderr,
             )
             continue
-        if stats.check_for_failure():
+
+        if sequence[position] == "N":
+            # if a position is already masked by an upstream process skip it
+            continue
+        elif stats.check_for_failure():
             sequence[position] = "N"
             qc[position] = stats.log
     return "".join(sequence), qc
