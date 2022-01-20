@@ -8,7 +8,16 @@ from viridian_workflow.primers import AmpliconSet, get_tags, load_amplicon_schem
 from collections import namedtuple, defaultdict
 
 BaseProfile = namedtuple(
-    "BaseProfile", ["in_primer", "forward_strand", "amplicon_name"]
+    "BaseProfile",
+    [
+        "base",
+        "cons_base",
+        "ref_base",
+        "in_primer",
+        "forward_strand",
+        "amplicon_name",
+        "reference_pos",
+    ],
 )
 
 
@@ -18,7 +27,7 @@ def mask_sequence(sequence, position_stats):
     for position, stats in position_stats.items():
         if position >= len(sequence):
             print(
-                f"Invalid condition: mapped position {position} greater than reference length {len(sequence)}",
+                f"Invalid condition: mapped position {position} greater than consensus length {len(sequence)}",
                 file=sys.stderr,
             )
             continue
@@ -64,12 +73,23 @@ class Stats:
         self.log = []
         self.total_reads = 0
 
+        self.alts_matching_refs = 0
+        self.reference_pos = None
+        self.ref_base = None
+        self.cons_base = None
+
     def add_alt(self, profile, alt=None):
+        if not self.reference_pos:
+            self.reference_pos = profile.reference_pos
+        assert self.reference_pos == profile.reference_pos
+
         if profile.in_primer:
             self.alts_in_primer += 1
             return
 
         self.alts += 1
+        if profile.base == profile.ref_base:
+            self.alts_matching_refs += 1
 
         if profile.amplicon_name:
             # when unambiguous amplicon call cannot be made, do not
@@ -83,6 +103,14 @@ class Stats:
         self.total += 1
 
     def add_ref(self, profile):
+        if not self.reference_pos:
+            self.reference_pos = profile.reference_pos
+        if self.reference_pos != profile.reference_pos:
+            print(
+                f"expected to be the same {self.reference_pos} {profile.reference_pos}"
+            )
+            assert False
+
         if profile.in_primer:
             self.refs_in_primer += 1
             return
@@ -135,7 +163,7 @@ class Stats:
         # strand bias in alt calls
         if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
             self.log.append(
-                f"Strand bias for reads with reference alleles; {self.refs_forward} / {self.refs}"
+                f"Strand bias for reads with consensus alleles; {self.refs_forward} / {self.refs}"
             )
             # position_failed = True
 
@@ -159,13 +187,16 @@ class Stats:
         return "-"
 
 
-def cigar_to_alts(ref, query, cigar, q_pos=0):
+def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
     """Interpret cigar string and query sequence in reference
-    coords from mappy (count, op)
+    coords from mappy (count, op) or pysam (op, count)
     """
     positions = []
     r_pos = 0
+
     for count, op in cigar:
+        if pysam:
+            count, op = op, count  # this makes me sad
         if op == 0:
             # match/mismatch
             for i in range(count):
@@ -205,19 +236,22 @@ def cigar_to_alts(ref, query, cigar, q_pos=0):
     return positions
 
 
-def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
+def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam):
     stats = {}
-    ref = mp.Aligner(reference_fasta, preset=minimap_presets)
-    if len(ref.seq_names) != 1:
-        Exception(f"Reference fasta {reference_fasta} has more than one sequence")
-    ref_seq = ref.seq(ref.seq_names[0])
+    cons = mp.Aligner(consensus_fasta, preset=minimap_presets)
+    if len(cons.seq_names) != 1:
+        Exception(f"Consensus fasta {consensus_fasta} has more than one sequence")
+    consensus_seq = cons.seq(cons.seq_names[0])
+
+    ref = mp.Aligner(ref_genome)
+    reference_seq = ref.seq(ref.seq_names[0])
 
     multi_amplicons = 0
     no_amplicons = 0
     tagged = 0
 
     for r in pysam.AlignmentFile(tagged_bam):
-        a = ref.map(r.seq)
+        a = cons.map(r.seq)  # remap to consensus
         alignment = None
         for x in a:
             if x.is_primary:
@@ -250,46 +284,63 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
         elif alignment.strand == 1:
             strand = True
 
-        alts = cigar_to_alts(
-            ref_seq[alignment.r_st : alignment.r_en],
+        cons_alts = cigar_to_alts(
+            consensus_seq[alignment.r_st : alignment.r_en],
             r.seq,
             alignment.cigar,
             q_pos=alignment.q_st,
         )
 
+        ref_alts = cigar_to_alts(
+            reference_seq[r.reference_start : r.reference_end],
+            r.query_alignment_sequence,
+            r.cigar,
+            q_pos=r.query_alignment_start,
+            pysam=True,
+        )
+
         # TODO test softclip
 
-        # print(ref_seq[alignment.r_st : alignment.r_en], file=sys.stderr)
+        # print(consensus_seq[alignment.r_st : alignment.r_en], file=sys.stderr)
         # print(r.seq, file=sys.stderr)
         # print(alignment.cigar, file=sys.stderr)
 
-        for read_pos, base in alts:
-            ref_position = read_pos + alignment.r_st
-            # print(f"{read_pos}, {alignment.r_st} {base} {ref_seq[ref_position]}")
-            if ref_position >= len(ref_seq):
+        for (read_pos, base), (ref_pos, _) in zip(cons_alts, ref_alts):
+            consensus_position = read_pos + alignment.r_st
+            reference_position = ref_pos + r.reference_start
+
+            if consensus_position >= len(consensus_seq):
                 print(
-                    f"Position {ref_position} extends beyond length of reference ({len(ref_seq)}) {alignment.q_st} ({read_pos}: {base})",
+                    f"Position {read_pos}+{alignment.r_st} extends beyond length of consensus ({len(consensus_seq)}) {consensus_position}:{reference_position} ({read_pos}: {base})",
                     file=sys.stderr,
                 )
                 continue
 
+            cons_base = consensus_seq[consensus_position]
+            ref_base = reference_seq[reference_position]
+
             # TODO resolve assumption: if there is an ambiguous amplicon id, in_primer is false
-            # in_primer = amplicon.position_in_primer(ref_position)
+            # in_primer = amplicon.position_in_primer(reference_position)
             in_primer = False
 
-            # if in_primer and ref_position < 200:
-            #    print(f"ref: {ref_position}, start: {alignment.r_st}, amplicon: {amplicon.name}, left: {amplicon.left_primer_region}, right: {amplicon.right_primer_region}", file=sys.stderr)
+            base_profile = BaseProfile(
+                base,
+                cons_base,
+                ref_base,
+                in_primer,
+                strand,
+                amplicon.name,
+                reference_position,
+            )
 
-            base_profile = BaseProfile(in_primer, strand, amplicon.name)
+            if consensus_position not in stats:
+                stats[consensus_position] = Stats()
+            stats[consensus_position].total_reads += 1
 
-            if ref_position not in stats:
-                stats[ref_position] = Stats()
-            stats[ref_position].total_reads += 1
-
-            if base != ref_seq[ref_position]:
-                stats[ref_position].add_alt(base_profile)
+            if base != cons_base:
+                stats[consensus_position].add_alt(base_profile)
             else:
-                stats[ref_position].add_ref(base_profile)
+                stats[consensus_position].add_ref(base_profile)
 
     print(
         f"reads tagged with more than one amplicon: {multi_amplicons}, with zero: {no_amplicons}. tagged: {tagged}.",
@@ -303,7 +354,7 @@ def mask(fasta, stats, outpath=None, name=None):
         output = f"{name}.masked.fasta"
     ref = mp.Aligner(fasta)
     if len(ref.seq_names) != 1:
-        Exception(f"Reference fasta {fasta} has more than one sequence")
+        Exception(f"Consensus fasta {fasta} has more than one sequence")
     sequence = ref.seq(ref.seq_names[0])
     if not name:
         name = ref.seq_names[0]

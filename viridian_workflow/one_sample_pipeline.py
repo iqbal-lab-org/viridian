@@ -306,7 +306,11 @@ class Pipeline:
         logging.info("Running QC on Viridian consensus to make masked FASTA")
 
         position_stats = self_qc.remap(
-            self.viridian_fasta, self.get_minimap_presets(), amplicon_set, tagged_reads
+            self.ref_genome,
+            self.viridian_fasta,
+            self.get_minimap_presets(),
+            amplicon_set,
+            tagged_reads,
         )
         masked_fasta, masking_log = self_qc.mask(
             self.viridian_fasta,
