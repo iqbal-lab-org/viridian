@@ -67,19 +67,13 @@ def main(args=None):
     # ----------------- reads and ref options --------------------------------
     reads_ref_parser = argparse.ArgumentParser(add_help=False)
     reads_ref_parser.add_argument(
-        "--reads1",
-        help="Illumina reads file 1",
-        metavar="FILENAME",
+        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads2",
-        help="Illumina reads file 2",
-        metavar="FILENAME",
+        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads",
-        help="Unpaired reads (eg nanopore) file",
-        metavar="FILENAME",
+        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
         "--ref_fasta",
@@ -155,6 +149,30 @@ def main(args=None):
         default=1000,
         help="Target coverage for amplicon depth normalisation [%(default)s]",
         metavar="INT",
+    )
+    subparser_run_one_sample.add_argument(
+        "--frs_threshold",
+        type=float,
+        default=0.7,
+        help="Masking threshold for consensus base support",
+        metavar="FLOAT",
+    )
+    subparser_run_one_sample.add_argument(
+        "--self_qc_depth",
+        type=int,
+        default=10,
+        help="Masking threshold for consensus base depth",
+        metavar="INT",
+    )
+    subparser_run_one_sample.add_argument(
+        "--log_liftover",
+        action="store_true",
+        help="EXERIMENTAL: record the coordinate transformation between the reference and consensus",
+    )
+    subparser_run_one_sample.add_argument(
+        "--trim_5prime",
+        action="store_true",
+        help="Trim the amplicon's primer length from all 5' read ends. This will reduce coverage for nanopore samples.",
     )
     subparser_run_one_sample.set_defaults(
         func=viridian_workflow.tasks.run_one_sample.run

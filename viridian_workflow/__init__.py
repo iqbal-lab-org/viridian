@@ -7,13 +7,11 @@ except:
 
 __all__ = [
     "amplicon_schemes",
-    "config",
     "detect_primers",
     "minimap",
     "one_sample_pipeline",
     "primers",
     "self_qc",
-    "qcovid",
     "sample_reads",
     "tasks",
     "utils",
