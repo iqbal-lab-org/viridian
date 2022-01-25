@@ -12,17 +12,10 @@ class config:
         pass
 
 
-varifier = config()
-qcovid = config()
+detect_primers = config()
+self_qc = config()
 
-qcovid.min_template_match_75 = float(0.5)
-qcovid.min_coverage = 10
-qcovid.variant_freq = float(0.5)
+detect_primers.min_template_match_75 = float(0.5)
 
-primer_dir = Path(__file__).parent.resolve()
-
-qcovid.primers = [
-    str(primer_dir / "../data/artic-v3.qcovid.tsv"),
-    str(primer_dir / "../data/artic-v4.qcovid.tsv"),
-    str(primer_dir / "../data/midnight-1200.qcovid.tsv"),
-]
+self_qc.min_frs_threshold = 0.7
+self_qc.min_depth_threshold = 10
