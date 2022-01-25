@@ -27,7 +27,7 @@ default_config = Config(
 )
 
 
-def mask_sequence(sequence, position_stats, config):
+def mask_sequence(sequence, position_stats, config=default_config):
     sequence = list(sequence)
     qc = {}
     for position, stats in position_stats.items():
@@ -41,7 +41,7 @@ def mask_sequence(sequence, position_stats, config):
         if sequence[position] == "N":
             # if a position is already masked by an upstream process skip it
             continue
-        elif stats.check_for_failure(config=config):
+        elif stats.check_for_failure():
             sequence[position] = "N"
             qc[position] = stats.log
     return "".join(sequence), qc
@@ -62,7 +62,13 @@ def test_bias(n, trials, threshold=0.3):
 
 
 class Stats:
-    def __init__(self, ref_base=None, cons_base=None, reference_position=None):
+    def __init__(
+        self,
+        ref_base=None,
+        cons_base=None,
+        reference_position=None,
+        config=default_config,
+    ):
         self.alts_in_primer = 0
         self.refs_in_primer = 0
 
@@ -84,10 +90,11 @@ class Stats:
         self.ref_base = ref_base
         self.cons_base = cons_base
 
+        self.config = config
+
     def add_alt(self, profile, alt=None):
         if not self.reference_pos:
             self.reference_pos = profile.reference_pos
-        assert self.reference_pos == profile.reference_pos
 
         if profile.in_primer:
             self.alts_in_primer += 1
@@ -111,11 +118,6 @@ class Stats:
     def add_ref(self, profile):
         if not self.reference_pos:
             self.reference_pos = profile.reference_pos
-        if self.reference_pos != profile.reference_pos:
-            print(
-                f"expected to be the same {self.reference_pos} {profile.reference_pos}"
-            )
-            assert False
 
         if profile.in_primer:
             self.refs_in_primer += 1
@@ -132,22 +134,23 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, config=default_config):
+    def check_for_failure(self):
         """return whether a position should be masked
         """
 
         position_failed = False
+        bias_threshold = 0.3
 
-        if self.total < config.minimum_depth:
+        if self.total < self.config.min_depth:
             self.log.append(
-                f"Insufficient depth to evaluate consensus; {self.total} < {config.minimum_depth}. {self.total_reads} including primer regions."
+                f"Insufficient depth to evaluate consensus; {self.total} < {self.config.min_depth}. {self.total_reads} including primer regions."
             )
             return True  # position failed
 
         # test total percentage of bases supporting consensus
-        if self.refs / self.total < config.minimum_frs:
+        if self.refs / self.total < self.config.min_frs:
             self.log.append(
-                f"Insufficient support of consensus base; {self.refs} / {self.total} < {config.minimum_frs}. {self.total_reads} including primer regions."
+                f"Insufficient support of consensus base; {self.refs} / {self.total} < {self.config.min_frs}. {self.total_reads} including primer regions."
             )
             return True
 
@@ -300,8 +303,8 @@ def remap(
             strand = True
 
         # problem: if the consensus is shorter than ref (like if a primer sequence is ellided) then we can't zip the cigar_to_alt lists
-        slice_start = max(alignnment.r_st, r.reference_start)
-        slice_end = min(alignment.r_en, r.reference_end)
+        # slice_start = max(alignment.r_st, r.reference_start)
+        # slice_end = min(alignment.r_en, r.reference_end)
         # but the start and end coords in both cases are in different reference frames
 
         cons_alts = cigar_to_alts(
@@ -323,8 +326,7 @@ def remap(
 
         for (
             read_pos,
-            (read_cons_pos, read_cons_base),
-            (read_ref_pos, read_ref_base),
+            ((read_cons_pos, read_cons_base), (read_ref_pos, read_ref_base)),
         ) in enumerate(zip(cons_alts, ref_alts)):
             consensus_position = read_cons_pos + alignment.r_st
             reference_position = read_ref_pos + r.reference_start
@@ -363,13 +365,16 @@ def remap(
                     ref_base=ref_base,
                     cons_base=cons_base,
                     reference_position=reference_position,
+                    config=config,
                 )
             stats[consensus_position].total_reads += 1
 
-            if ref_base != stats[consensus_position].ref_base and config.log_liftover:
-
+            if (
+                config.log_liftover
+                and reference_position != stats[consensus_position].reference_pos
+            ):
                 print(
-                    f"WARNING: liftover error; Ref:{reference_position}:{read_ref_base}\t{r.cigarstring}\tCons:{consensus_position}:{read_cons_base}\t{alignment.cigar_str}\t{ref_base}/{cons_base}\t{r.seq}",
+                    f"{config} {config.min_frs} {config.trim_5prime} {config.log_liftover} WARNING: liftover error; Ref:{reference_position}:{read_ref_base} (expected {stats[consensus_position].reference_pos})\t{r.cigarstring}\tCons:{consensus_position}:{read_cons_base}\t{alignment.cigar_str}\t{ref_base}/{cons_base}\t{r.seq}",
                     file=sys.stderr,
                 )
 
@@ -395,7 +400,7 @@ def mask(fasta, stats, outpath=None, name=None, config=default_config):
     if not name:
         name = ref.seq_names[0]
 
-    masked, log = mask_sequence(sequence, stats, config)
+    masked, log = mask_sequence(sequence, stats, config=default_config)
 
     # write masked fasta
     with open(outpath, "w") as maskfd:

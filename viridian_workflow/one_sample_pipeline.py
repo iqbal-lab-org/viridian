@@ -51,10 +51,10 @@ class Pipeline:
         self.keep_intermediate = keep_intermediate
         self.keep_bam = keep_bam
         self.target_sample_depth = target_sample_depth
-        self.frs_threshold = (frs_threshold,)
-        self.self_qc_depth = (self_qc_depth,)
-        self.log_liftover = (log_liftover,)
-        self.trim_5prime = (trim_5prime,)
+        self.frs_threshold = frs_threshold
+        self.self_qc_depth = self_qc_depth
+        self.log_liftover = log_liftover
+        self.trim_5prime = trim_5prime
         self.sample_name = sample_name
         self.viridian_cons_max_n_percent = 50.0
         self.max_percent_amps_fail = 50.0

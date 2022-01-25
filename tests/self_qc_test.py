@@ -12,6 +12,7 @@ class StatsTest:
     def __init__(self, fail):
         self.fail = fail
         self.log = []
+        self.config = self_qc.default_config
 
     def check_for_failure(self):
         return self.fail
