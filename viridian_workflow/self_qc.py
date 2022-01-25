@@ -189,6 +189,10 @@ class Stats:
 
         # amplicon bias
         for amplicon, total in self.amplicon_totals.items():
+            if (
+                total < self.config.min_depth
+            ):  # only evaluate per amplicon frs if there're enough reads
+                continue
             amplicon_frs = self.refs_in_amplicons[amplicon] / total
             if amplicon_frs < self.config.min_frs:
                 self.log.append(
@@ -197,6 +201,7 @@ class Stats:
                 if summary:
                     summary["low_amplicon_specific_frs"] += 1
                 position_failed = True
+                break  # to prevent over-counting if both amplicons fail
         return position_failed
 
     def __str__(self):
@@ -221,6 +226,10 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
         if op == 0:
             # match/mismatch
             for i in range(count):
+                if len(query) <= q_pos + i:
+                    # TODO this condition is being hit when there's soft-clipping at the end of the read (I think)
+                    # print(f"WARNING: invalid cigar string. {query}, index {q_pos + i}. cigar: {cigar}", file=sys.stderr)
+                    continue
                 positions.append((r_pos + i, query[q_pos + i]))
             q_pos += count
             r_pos += count
