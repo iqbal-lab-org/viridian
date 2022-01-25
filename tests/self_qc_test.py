@@ -46,10 +46,21 @@ def test_cigar_tuple_construction():
         (4, "A"),
     ]
 
+    ref = "ATTAA"
+    query = "AAA"
+    cigar = [(0, 1), (2, 2), (0, 2)]
+    assert self_qc.cigar_to_alts(ref, query, cigar, pysam=True) == [
+        (0, "A"),
+        (1, "-"),
+        (2, "-"),
+        (3, "A"),
+        (4, "A"),
+    ]
+
     ref = "AAAA"
     query = "GGGAAAA"
     cigar = [(3, 4), (4, 0)]
-    assert self_qc.cigar_to_alts(ref, query, cigar) == [
+    assert self_qc.cigar_to_alts(ref, query, cigar, q_pos=3) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
