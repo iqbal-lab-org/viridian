@@ -20,8 +20,14 @@ BaseProfile = namedtuple(
     ],
 )
 
+Config = namedtuple("Config", ["min_frs", "min_depth", "trim_5prime", "log_liftover"])
 
-def mask_sequence(sequence, position_stats):
+default_config = Config(
+    min_frs=0.7, min_depth=10, trim_5prime=False, log_liftover=False
+)
+
+
+def mask_sequence(sequence, position_stats, config):
     sequence = list(sequence)
     qc = {}
     for position, stats in position_stats.items():
@@ -35,7 +41,7 @@ def mask_sequence(sequence, position_stats):
         if sequence[position] == "N":
             # if a position is already masked by an upstream process skip it
             continue
-        elif stats.check_for_failure():
+        elif stats.check_for_failure(config=config):
             sequence[position] = "N"
             qc[position] = stats.log
     return "".join(sequence), qc
@@ -56,7 +62,7 @@ def test_bias(n, trials, threshold=0.3):
 
 
 class Stats:
-    def __init__(self):
+    def __init__(self, ref_base=None, cons_base=None, reference_position=None):
         self.alts_in_primer = 0
         self.refs_in_primer = 0
 
@@ -74,9 +80,9 @@ class Stats:
         self.total_reads = 0
 
         self.alts_matching_refs = 0
-        self.reference_pos = None
-        self.ref_base = None
-        self.cons_base = None
+        self.reference_pos = reference_position
+        self.ref_base = ref_base
+        self.cons_base = cons_base
 
     def add_alt(self, profile, alt=None):
         if not self.reference_pos:
@@ -126,22 +132,22 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=0.3):
+    def check_for_failure(self, config=default_config):
         """return whether a position should be masked
         """
 
         position_failed = False
 
-        if self.total < minimum_depth:
+        if self.total < config.minimum_depth:
             self.log.append(
-                f"Insufficient depth to evaluate consensus; {self.total} < {minimum_depth}. {self.total_reads} including primer regions."
+                f"Insufficient depth to evaluate consensus; {self.total} < {config.minimum_depth}. {self.total_reads} including primer regions."
             )
             return True  # position failed
 
         # test total percentage of bases supporting consensus
-        if self.refs / self.total < minimum_frs:
+        if self.refs / self.total < config.minimum_frs:
             self.log.append(
-                f"Insufficient support of consensus base; {self.refs} / {self.total} < {minimum_frs}. {self.total_reads} including primer regions."
+                f"Insufficient support of consensus base; {self.refs} / {self.total} < {config.minimum_frs}. {self.total_reads} including primer regions."
             )
             return True
 
@@ -223,7 +229,9 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
 
         elif op == 4:
             # soft clip
-            q_pos += count
+            # q_pos += count
+            # may not need to be considered if q_pos offset is set
+            # TODO verify
             pass
 
         elif op == 5:
@@ -236,7 +244,14 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
     return positions
 
 
-def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam):
+def remap(
+    ref_genome,
+    consensus_fasta,
+    minimap_presets,
+    amplicon_set,
+    tagged_bam,
+    config=default_config,
+):
     stats = {}
     cons = mp.Aligner(consensus_fasta, preset=minimap_presets)
     if len(cons.seq_names) != 1:
@@ -284,6 +299,11 @@ def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam
         elif alignment.strand == 1:
             strand = True
 
+        # problem: if the consensus is shorter than ref (like if a primer sequence is ellided) then we can't zip the cigar_to_alt lists
+        slice_start = max(alignnment.r_st, r.reference_start)
+        slice_end = min(alignment.r_en, r.reference_end)
+        # but the start and end coords in both cases are in different reference frames
+
         cons_alts = cigar_to_alts(
             consensus_seq[alignment.r_st : alignment.r_en],
             r.seq,
@@ -301,17 +321,17 @@ def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam
 
         # TODO test softclip
 
-        # print(consensus_seq[alignment.r_st : alignment.r_en], file=sys.stderr)
-        # print(r.seq, file=sys.stderr)
-        # print(alignment.cigar, file=sys.stderr)
-
-        for (read_pos, base), (ref_pos, _) in zip(cons_alts, ref_alts):
-            consensus_position = read_pos + alignment.r_st
-            reference_position = ref_pos + r.reference_start
+        for (
+            read_pos,
+            (read_cons_pos, read_cons_base),
+            (read_ref_pos, read_ref_base),
+        ) in enumerate(zip(cons_alts, ref_alts)):
+            consensus_position = read_cons_pos + alignment.r_st
+            reference_position = read_ref_pos + r.reference_start
 
             if consensus_position >= len(consensus_seq):
                 print(
-                    f"Position {read_pos}+{alignment.r_st} extends beyond length of consensus ({len(consensus_seq)}) {consensus_position}:{reference_position} ({read_pos}: {base})",
+                    f"Warning: Position {read_pos}+{alignment.r_st} extends beyond length of consensus ({len(consensus_seq)}) {consensus_position}:{reference_position} ({read_pos}: {read_cons_base})",
                     file=sys.stderr,
                 )
                 continue
@@ -323,8 +343,13 @@ def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam
             # in_primer = amplicon.position_in_primer(reference_position)
             in_primer = False
 
+            # the trim 5' option assumes that all bases max_primer_len from the 5' end of the read are
+            # guaranteed to be inside of a primer
+            if config.trim_5prime and read_pos < amplicon.max_length:
+                in_primer = True
+
             base_profile = BaseProfile(
-                base,
+                read_cons_pos,
                 cons_base,
                 ref_base,
                 in_primer,
@@ -334,10 +359,21 @@ def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam
             )
 
             if consensus_position not in stats:
-                stats[consensus_position] = Stats()
+                stats[consensus_position] = Stats(
+                    ref_base=ref_base,
+                    cons_base=cons_base,
+                    reference_position=reference_position,
+                )
             stats[consensus_position].total_reads += 1
 
-            if base != cons_base:
+            if ref_base != stats[consensus_position].ref_base and config.log_liftover:
+
+                print(
+                    f"WARNING: liftover error; Ref:{reference_position}:{read_ref_base}\t{r.cigarstring}\tCons:{consensus_position}:{read_cons_base}\t{alignment.cigar_str}\t{ref_base}/{cons_base}\t{r.seq}",
+                    file=sys.stderr,
+                )
+
+            if read_cons_base != cons_base:
                 stats[consensus_position].add_alt(base_profile)
             else:
                 stats[consensus_position].add_ref(base_profile)
@@ -349,7 +385,7 @@ def remap(ref_genome, consensus_fasta, minimap_presets, amplicon_set, tagged_bam
     return stats
 
 
-def mask(fasta, stats, outpath=None, name=None):
+def mask(fasta, stats, outpath=None, name=None, config=default_config):
     if not outpath:
         output = f"{name}.masked.fasta"
     ref = mp.Aligner(fasta)
@@ -359,37 +395,9 @@ def mask(fasta, stats, outpath=None, name=None):
     if not name:
         name = ref.seq_names[0]
 
-    masked, log = mask_sequence(sequence, stats)
+    masked, log = mask_sequence(sequence, stats, config)
 
     # write masked fasta
     with open(outpath, "w") as maskfd:
         print(f">{name}\n{masked}", file=maskfd, end="")
     return outpath, log
-
-
-if __name__ == "__main__":
-    amplicon_sets = load_amplicon_sets(sys.argv[1])
-
-    shortname = None
-    ref_seq = None
-    for s in mp.fastx_read(sys.argv[1]):
-        ref_seq = s[1]
-
-    amplicon_set = sys.argv[2]
-
-    amplicons = {}
-    for a, aset in amplicon_sets.items():
-        if aset.name == sys.argv[2]:
-            shortname = aset.shortname
-            for amplicon in aset.tree:
-                amplicon = amplicon.data
-                amplicons[amplicon.shortname] = amplicon
-
-    stats = remap(sys.argv[3], amplicon_set, sys.argv[4])
-
-    for p in sorted(stats.keys()):
-        if stats[p].total < 5:
-            continue
-        if str(stats[p]) == "-":
-            continue
-        print(p, stats[p])

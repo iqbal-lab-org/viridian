@@ -56,6 +56,7 @@ class Amplicon:
         self.right = []
         self.left_primer_region = None
         self.right_primer_region = None
+        self.max_length = 0
 
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
@@ -74,6 +75,9 @@ class Amplicon:
 
     def add(self, primer):
         primer_end = primer.pos + len(primer.seq)
+        if len(primer.seq) > self.max_length:
+            self.max_length = len(primer.seq)
+
         if primer.left:
             self.left.append(primer)
             if not self.left_primer_region:
