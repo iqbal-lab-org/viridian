@@ -29,6 +29,7 @@ default_config = Config(
 
 def mask_sequence(sequence, position_stats, config=default_config):
     sequence = list(sequence)
+    summary = defaultdict(int)
     qc = {}
     for position, stats in position_stats.items():
         if position >= len(sequence):
@@ -37,13 +38,17 @@ def mask_sequence(sequence, position_stats, config=default_config):
                 file=sys.stderr,
             )
             continue
-
+        summary["consensus_length"] += 1
         if sequence[position] == "N":
             # if a position is already masked by an upstream process skip it
+            summary["already_masked"] += 1
+            summary["total_masked"] += 1
             continue
-        elif stats.check_for_failure():
+        elif stats.check_for_failure(summary=summary):
+            summary["total_masked"] += 1
             sequence[position] = "N"
             qc[position] = stats.log
+        qc["masking_summary"] = summary
     return "".join(sequence), qc
 
 
@@ -134,8 +139,10 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self):
+    def check_for_failure(self, summary=None):
         """return whether a position should be masked
+
+        optionally accepts a mutable reference to a dictionary that summarises masking decisions
         """
 
         position_failed = False
@@ -145,6 +152,8 @@ class Stats:
             self.log.append(
                 f"Insufficient depth to evaluate consensus; {self.total} < {self.config.min_depth}. {self.total_reads} including primer regions."
             )
+            if summary:
+                summary["insufficient_depth"] += 1
             return True  # position failed
 
         # test total percentage of bases supporting consensus
@@ -152,6 +161,8 @@ class Stats:
             self.log.append(
                 f"Insufficient support of consensus base; {self.refs} / {self.total} < {self.config.min_frs}. {self.total_reads} including primer regions."
             )
+            if summary:
+                summary["low_frs"] += 1
             return True
 
         # look for overrepresentation of alt alleles in regions covered
@@ -178,13 +189,14 @@ class Stats:
 
         # amplicon bias
         for amplicon, total in self.amplicon_totals.items():
-            if not test_bias(
-                self.refs_in_amplicons[amplicon], total, threshold=bias_threshold
-            ):
+            amplicon_frs = self.refs_in_amplicons[amplicon] / total
+            if amplicon_frs < self.config.min_frs:
                 self.log.append(
-                    f"Amplicon bias in consensus allele calls, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
+                    f"Per-amplicon FRS failure, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
                 )
-                # position_failed = True
+                if summary:
+                    summary["low_amplicon_specific_frs"] += 1
+                position_failed = True
         return position_failed
 
     def __str__(self):

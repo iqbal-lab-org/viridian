@@ -14,7 +14,7 @@ class StatsTest:
         self.log = []
         self.config = self_qc.default_config
 
-    def check_for_failure(self):
+    def check_for_failure(self, **kwargs):
         return self.fail
 
 
