@@ -71,6 +71,45 @@ def test_cigar_tuple_construction():
 
 def test_mappy_cigar_liftover():
     amplicon = primers.Amplicon("test_amplicon")
+    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
+
+    cigar = [
+        (4, 32),
+        (0, 29),
+        (2, 2),
+        (0, 7),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 8),
+        (2, 1),
+        (0, 11),
+        (1, 3),
+        (0, 1),
+        (2, 1),
+        (0, 26),
+        (1, 1),
+        (0, 8),
+        (2, 1),
+        (0, 76),
+        (1, 2),
+        (0, 46),
+        (1, 1),
+        (0, 4),
+        (2, 1),
+        (0, 11),
+        (2, 1),
+        (0, 77),
+        (1, 2),
+        (0, 5),
+        (2, 1),
+        (0, 40),
+        (1, 1),
+        (0, 54),
+        (4, 70),
+    ]
+
+    self_qc.cigar_to_alts(seq, seq, cigar, pysam=True)
 
 
 def test_bias_test():

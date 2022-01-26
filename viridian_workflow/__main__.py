@@ -154,20 +154,20 @@ def main(args=None):
         "--frs_threshold",
         type=float,
         default=0.7,
-        help="Masking threshold for consensus base support",
+        help="Masking threshold for consensus base support [%(default)s]",
         metavar="FLOAT",
     )
     subparser_run_one_sample.add_argument(
         "--self_qc_depth",
         type=int,
         default=10,
-        help="Masking threshold for consensus base depth",
+        help="Masking threshold for consensus base depth [%(default)s]",
         metavar="INT",
     )
     subparser_run_one_sample.add_argument(
         "--log_liftover",
         action="store_true",
-        help="EXERIMENTAL: record the coordinate transformation between the reference and consensus",
+        help="EXPERIMENTAL: record the coordinate transformation between the reference and consensus",
     )
     subparser_run_one_sample.add_argument(
         "--trim_5prime",

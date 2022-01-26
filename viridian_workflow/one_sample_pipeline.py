@@ -317,6 +317,7 @@ class Pipeline:
             min_depth=self.self_qc_depth,
             trim_5prime=self.trim_5prime,
             log_liftover=self.log_liftover,
+            test_amplicon_bias=False,
         )
         position_stats = self_qc.remap(
             self.ref_genome,

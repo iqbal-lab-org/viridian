@@ -20,10 +20,17 @@ BaseProfile = namedtuple(
     ],
 )
 
-Config = namedtuple("Config", ["min_frs", "min_depth", "trim_5prime", "log_liftover"])
+Config = namedtuple(
+    "Config",
+    ["min_frs", "min_depth", "trim_5prime", "log_liftover", "test_amplicon_bias"],
+)
 
 default_config = Config(
-    min_frs=0.7, min_depth=10, trim_5prime=False, log_liftover=False
+    min_frs=0.7,
+    min_depth=10,
+    trim_5prime=False,
+    log_liftover=False,
+    test_amplicon_bias=False,
 )
 
 
@@ -188,20 +195,21 @@ class Stats:
             # position_failed = True
 
         # amplicon bias
-        for amplicon, total in self.amplicon_totals.items():
-            if (
-                total < self.config.min_depth
-            ):  # only evaluate per amplicon frs if there're enough reads
-                continue
-            amplicon_frs = self.refs_in_amplicons[amplicon] / total
-            if amplicon_frs < self.config.min_frs:
-                self.log.append(
-                    f"Per-amplicon FRS failure, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
-                )
-                if summary:
-                    summary["low_amplicon_specific_frs"] += 1
-                position_failed = True
-                break  # to prevent over-counting if both amplicons fail
+        if self.config.test_amplicon_bias:
+            for amplicon, total in self.amplicon_totals.items():
+                if (
+                    total < self.config.min_depth
+                ):  # only evaluate per amplicon frs if there're enough reads
+                    continue
+                amplicon_frs = self.refs_in_amplicons[amplicon] / total
+                if amplicon_frs < self.config.min_frs:
+                    self.log.append(
+                        f"Per-amplicon FRS failure, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
+                    )
+                    if summary:
+                        summary["low_amplicon_specific_frs"] += 1
+                    position_failed = True
+                    break  # to prevent over-counting if both amplicons fail
         return position_failed
 
     def __str__(self):
@@ -337,7 +345,8 @@ def remap(
 
         ref_alts = cigar_to_alts(
             reference_seq[r.reference_start : r.reference_end],
-            r.query_alignment_sequence,
+            r.seq,
+            # r.query_alignment_sequence,
             r.cigar,
             q_pos=r.query_alignment_start,
             pysam=True,
