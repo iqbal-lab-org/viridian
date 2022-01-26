@@ -188,11 +188,12 @@ class Stats:
                 # position_failed = True
 
         # strand bias in alt calls
-        if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
-            self.log.append(
-                f"Strand bias for reads with consensus alleles; {self.refs_forward} / {self.refs}"
-            )
-            # position_failed = True
+        if False:
+            if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
+                self.log.append(
+                    f"Strand bias for reads with consensus alleles; {self.refs_forward} / {self.refs}"
+                )
+                # position_failed = True
 
         # amplicon bias
         if self.config.test_amplicon_bias:
@@ -343,23 +344,22 @@ def remap(
             q_pos=alignment.q_st,
         )
 
-        ref_alts = cigar_to_alts(
-            reference_seq[r.reference_start : r.reference_end],
-            r.seq,
-            # r.query_alignment_sequence,
-            r.cigar,
-            q_pos=r.query_alignment_start,
-            pysam=True,
-        )
+        #        ref_alts = cigar_to_alts(
+        #            reference_seq[r.reference_start : r.reference_end],
+        #            r.seq,
+        # r.query_alignment_sequence,
+        #            r.cigar,
+        #            q_pos=r.query_alignment_start,
+        #            pysam=True,
+        #        )
 
         # TODO test softclip
 
-        for (
-            read_pos,
-            ((read_cons_pos, read_cons_base), (read_ref_pos, read_ref_base)),
-        ) in enumerate(zip(cons_alts, ref_alts)):
+        for (read_pos, (read_cons_pos, read_cons_base)) in enumerate(cons_alts):
             consensus_position = read_cons_pos + alignment.r_st
-            reference_position = read_ref_pos + r.reference_start
+            #            reference_position = read_ref_pos + r.reference_start
+            reference_position = 0
+            read_ref_base = "N"
 
             if consensus_position >= len(consensus_seq):
                 print(
