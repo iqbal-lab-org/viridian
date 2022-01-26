@@ -168,6 +168,9 @@ def main(args=None):
         "--log_liftover", action="store_true", help=argparse.SUPPRESS,
     )
     subparser_run_one_sample.add_argument(
+        "--test_amplicon_frs", action="store_true", help=argparse.SUPPRESS,
+    )
+    subparser_run_one_sample.add_argument(
         "--trim_5prime", action="store_true", help=argparse.SUPPRESS,
     )
     subparser_run_one_sample.add_argument(

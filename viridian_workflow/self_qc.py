@@ -22,7 +22,7 @@ BaseProfile = namedtuple(
 
 Config = namedtuple(
     "Config",
-    ["min_frs", "min_depth", "trim_5prime", "log_liftover", "test_amplicon_bias"],
+    ["min_frs", "min_depth", "trim_5prime", "log_liftover", "test_amplicon_frs"],
 )
 
 default_config = Config(
@@ -30,7 +30,7 @@ default_config = Config(
     min_depth=10,
     trim_5prime=False,
     log_liftover=False,
-    test_amplicon_bias=False,
+    test_amplicon_frs=False,
 )
 
 
@@ -196,7 +196,7 @@ class Stats:
                 # position_failed = True
 
         # amplicon bias
-        if self.config.test_amplicon_bias:
+        if self.config.test_amplicon_frs:
             for amplicon, total in self.amplicon_totals.items():
                 if (
                     total < self.config.min_depth

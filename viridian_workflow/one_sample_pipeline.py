@@ -42,6 +42,7 @@ class Pipeline:
         self_qc_depth=10,
         log_liftover=False,
         trim_5prime=False,
+        test_amplicon_frs=False,
     ):
         self.tech = tech
         self.outdir = outdir
@@ -59,6 +60,7 @@ class Pipeline:
         self.log_liftover = log_liftover
         self.trim_5prime = trim_5prime
         self.sample_name = sample_name
+        self.test_amplicon_frs = test_amplicon_frs
         self.max_percent_amps_fail = max_percent_amps_fail
         self.min_sample_depth = min_sample_depth
         self.viridian_cons_max_n_percent = viridian_cons_max_n_percent
@@ -322,7 +324,7 @@ class Pipeline:
             min_depth=self.self_qc_depth,
             trim_5prime=self.trim_5prime,
             log_liftover=self.log_liftover,
-            test_amplicon_bias=False,
+            test_amplicon_frs=self.test_amplicon_frs,
         )
         position_stats = self_qc.remap(
             self.ref_genome,

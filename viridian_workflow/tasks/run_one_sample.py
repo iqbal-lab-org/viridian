@@ -30,5 +30,6 @@ def run(options):
         self_qc_depth=options.self_qc_depth,
         log_liftover=options.log_liftover,
         trim_5prime=options.trim_5prime,
+        test_amplicon_frs=options.test_amplicon_frs,
         command_line_args=options,
     )
