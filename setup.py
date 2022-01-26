@@ -7,16 +7,18 @@ with open("requirements.txt") as f:
 
 setup(
     name="viridian_workflow",
-    version="0.3.1",
+    version="0.3.4",
     description="FIXME",
-    packages=find_packages(exclude=["tests"]),
-    package_data={'viridian_workflow': ['amplicon_scheme_data/*']},
+    packages=find_packages(),
+    package_data={"viridian_workflow": ["amplicon_scheme_data/*"]},
     author="Jeff Knaggs,Martin Hunt",
     author_email="FIXME",
     url="https://github.com/iqbal-lab-org/viridian_workflow",
     test_suite="nose.collector",
     tests_require=["pytest"],
-    entry_points={"console_scripts": ["viridian_workflow = viridian_workflow.__main__:main"]},
+    entry_points={
+        "console_scripts": ["viridian_workflow = viridian_workflow.__main__:main"]
+    },
     install_requires=install_requires,
     license="MIT",
     classifiers=[

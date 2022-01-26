@@ -26,5 +26,9 @@ def run(options):
         min_sample_depth=options.min_sample_depth,
         max_percent_amps_fail=options.max_percent_amps_fail,
         viridian_cons_max_n_percent=options.max_cons_n_percent,
+        frs_threshold=options.frs_threshold,
+        self_qc_depth=options.self_qc_depth,
+        log_liftover=options.log_liftover,
+        trim_5prime=options.trim_5prime,
         command_line_args=options,
     )

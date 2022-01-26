@@ -11,7 +11,6 @@ from viridian_workflow import (
     detect_primers,
     primers,
     minimap,
-    qcovid,
     self_qc,
     sample_reads,
     utils,
@@ -39,6 +38,10 @@ class Pipeline:
         max_percent_amps_fail=50.0,
         viridian_cons_max_n_percent=50.0,
         command_line_args=None,
+        frs_threshold=0.7,
+        self_qc_depth=10,
+        log_liftover=False,
+        trim_5prime=False,
     ):
         self.tech = tech
         self.outdir = outdir
@@ -51,6 +54,10 @@ class Pipeline:
         self.keep_intermediate = keep_intermediate
         self.keep_bam = keep_bam
         self.target_sample_depth = target_sample_depth
+        self.frs_threshold = frs_threshold
+        self.self_qc_depth = self_qc_depth
+        self.log_liftover = log_liftover
+        self.trim_5prime = trim_5prime
         self.sample_name = sample_name
         self.max_percent_amps_fail = max_percent_amps_fail
         self.min_sample_depth = min_sample_depth
@@ -310,14 +317,27 @@ class Pipeline:
     ):
         logging.info("Running QC on Viridian consensus to make masked FASTA")
 
+        self_qc_config = self_qc.Config(
+            min_frs=self.frs_threshold,
+            min_depth=self.self_qc_depth,
+            trim_5prime=self.trim_5prime,
+            log_liftover=self.log_liftover,
+            test_amplicon_bias=False,
+        )
         position_stats = self_qc.remap(
-            self.viridian_fasta, self.get_minimap_presets(), amplicon_set, tagged_reads
+            self.ref_genome,
+            self.viridian_fasta,
+            self.get_minimap_presets(),
+            amplicon_set,
+            tagged_reads,
+            config=self_qc_config,
         )
         masked_fasta, masking_log = self_qc.mask(
             self.viridian_fasta,
             position_stats,
             outpath=self.final_masked_fasta,
             name=self.sample_name,
+            config=self_qc_config,
         )
 
         self.log_dict["self_qc"] = masking_log

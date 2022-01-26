@@ -12,8 +12,9 @@ class StatsTest:
     def __init__(self, fail):
         self.fail = fail
         self.log = []
+        self.config = self_qc.default_config
 
-    def check_for_failure(self):
+    def check_for_failure(self, **kwargs):
         return self.fail
 
 
@@ -46,10 +47,21 @@ def test_cigar_tuple_construction():
         (4, "A"),
     ]
 
+    ref = "ATTAA"
+    query = "AAA"
+    cigar = [(0, 1), (2, 2), (0, 2)]
+    assert self_qc.cigar_to_alts(ref, query, cigar, pysam=True) == [
+        (0, "A"),
+        (1, "-"),
+        (2, "-"),
+        (3, "A"),
+        (4, "A"),
+    ]
+
     ref = "AAAA"
     query = "GGGAAAA"
     cigar = [(3, 4), (4, 0)]
-    assert self_qc.cigar_to_alts(ref, query, cigar) == [
+    assert self_qc.cigar_to_alts(ref, query, cigar, q_pos=3) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
@@ -59,6 +71,45 @@ def test_cigar_tuple_construction():
 
 def test_mappy_cigar_liftover():
     amplicon = primers.Amplicon("test_amplicon")
+    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
+
+    cigar = [
+        (4, 32),
+        (0, 29),
+        (2, 2),
+        (0, 7),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 8),
+        (2, 1),
+        (0, 11),
+        (1, 3),
+        (0, 1),
+        (2, 1),
+        (0, 26),
+        (1, 1),
+        (0, 8),
+        (2, 1),
+        (0, 76),
+        (1, 2),
+        (0, 46),
+        (1, 1),
+        (0, 4),
+        (2, 1),
+        (0, 11),
+        (2, 1),
+        (0, 77),
+        (1, 2),
+        (0, 5),
+        (2, 1),
+        (0, 40),
+        (1, 1),
+        (0, 54),
+        (4, 70),
+    ]
+
+    self_qc.cigar_to_alts(seq, seq, cigar, pysam=True)
 
 
 def test_bias_test():

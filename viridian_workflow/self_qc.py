@@ -8,23 +8,54 @@ from viridian_workflow.primers import AmpliconSet, get_tags, load_amplicon_schem
 from collections import namedtuple, defaultdict
 
 BaseProfile = namedtuple(
-    "BaseProfile", ["in_primer", "forward_strand", "amplicon_name"]
+    "BaseProfile",
+    [
+        "base",
+        "cons_base",
+        "ref_base",
+        "in_primer",
+        "forward_strand",
+        "amplicon_name",
+        "reference_pos",
+    ],
+)
+
+Config = namedtuple(
+    "Config",
+    ["min_frs", "min_depth", "trim_5prime", "log_liftover", "test_amplicon_bias"],
+)
+
+default_config = Config(
+    min_frs=0.7,
+    min_depth=10,
+    trim_5prime=False,
+    log_liftover=False,
+    test_amplicon_bias=False,
 )
 
 
-def mask_sequence(sequence, position_stats):
+def mask_sequence(sequence, position_stats, config=default_config):
     sequence = list(sequence)
+    summary = defaultdict(int)
     qc = {}
     for position, stats in position_stats.items():
         if position >= len(sequence):
             print(
-                f"Invalid condition: mapped position {position} greater than reference length {len(sequence)}",
+                f"Invalid condition: mapped position {position} greater than consensus length {len(sequence)}",
                 file=sys.stderr,
             )
             continue
-        if stats.check_for_failure():
+        summary["consensus_length"] += 1
+        if sequence[position] == "N":
+            # if a position is already masked by an upstream process skip it
+            summary["already_masked"] += 1
+            summary["total_masked"] += 1
+            continue
+        elif stats.check_for_failure(summary=summary):
+            summary["total_masked"] += 1
             sequence[position] = "N"
             qc[position] = stats.log
+        qc["masking_summary"] = summary
     return "".join(sequence), qc
 
 
@@ -43,7 +74,13 @@ def test_bias(n, trials, threshold=0.3):
 
 
 class Stats:
-    def __init__(self):
+    def __init__(
+        self,
+        ref_base=None,
+        cons_base=None,
+        reference_position=None,
+        config=default_config,
+    ):
         self.alts_in_primer = 0
         self.refs_in_primer = 0
 
@@ -60,12 +97,24 @@ class Stats:
         self.log = []
         self.total_reads = 0
 
+        self.alts_matching_refs = 0
+        self.reference_pos = reference_position
+        self.ref_base = ref_base
+        self.cons_base = cons_base
+
+        self.config = config
+
     def add_alt(self, profile, alt=None):
+        if not self.reference_pos:
+            self.reference_pos = profile.reference_pos
+
         if profile.in_primer:
             self.alts_in_primer += 1
             return
 
         self.alts += 1
+        if profile.base == profile.ref_base:
+            self.alts_matching_refs += 1
 
         if profile.amplicon_name:
             # when unambiguous amplicon call cannot be made, do not
@@ -79,6 +128,9 @@ class Stats:
         self.total += 1
 
     def add_ref(self, profile):
+        if not self.reference_pos:
+            self.reference_pos = profile.reference_pos
+
         if profile.in_primer:
             self.refs_in_primer += 1
             return
@@ -94,23 +146,30 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, minimum_depth=10, minimum_frs=0.7, bias_threshold=0.3):
+    def check_for_failure(self, summary=None):
         """return whether a position should be masked
+
+        optionally accepts a mutable reference to a dictionary that summarises masking decisions
         """
 
         position_failed = False
+        bias_threshold = 0.3
 
-        if self.total < minimum_depth:
+        if self.total < self.config.min_depth:
             self.log.append(
-                f"Insufficient depth to evaluate consensus; {self.total} < {minimum_depth}. {self.total_reads} including primer regions."
+                f"Insufficient depth to evaluate consensus; {self.total} < {self.config.min_depth}. {self.total_reads} including primer regions."
             )
+            if summary:
+                summary["insufficient_depth"] += 1
             return True  # position failed
 
         # test total percentage of bases supporting consensus
-        if self.refs / self.total < minimum_frs:
+        if self.refs / self.total < self.config.min_frs:
             self.log.append(
-                f"Insufficient support of consensus base; {self.refs} / {self.total} < {minimum_frs}. {self.total_reads} including primer regions."
+                f"Insufficient support of consensus base; {self.refs} / {self.total} < {self.config.min_frs}. {self.total_reads} including primer regions."
             )
+            if summary:
+                summary["low_frs"] += 1
             return True
 
         # look for overrepresentation of alt alleles in regions covered
@@ -129,21 +188,29 @@ class Stats:
                 # position_failed = True
 
         # strand bias in alt calls
-        if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
-            self.log.append(
-                f"Strand bias for reads with reference alleles; {self.refs_forward} / {self.refs}"
-            )
-            # position_failed = True
-
-        # amplicon bias
-        for amplicon, total in self.amplicon_totals.items():
-            if not test_bias(
-                self.refs_in_amplicons[amplicon], total, threshold=bias_threshold
-            ):
+        if False:
+            if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
                 self.log.append(
-                    f"Amplicon bias in consensus allele calls, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
+                    f"Strand bias for reads with consensus alleles; {self.refs_forward} / {self.refs}"
                 )
                 # position_failed = True
+
+        # amplicon bias
+        if self.config.test_amplicon_bias:
+            for amplicon, total in self.amplicon_totals.items():
+                if (
+                    total < self.config.min_depth
+                ):  # only evaluate per amplicon frs if there're enough reads
+                    continue
+                amplicon_frs = self.refs_in_amplicons[amplicon] / total
+                if amplicon_frs < self.config.min_frs:
+                    self.log.append(
+                        f"Per-amplicon FRS failure, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
+                    )
+                    if summary:
+                        summary["low_amplicon_specific_frs"] += 1
+                    position_failed = True
+                    break  # to prevent over-counting if both amplicons fail
         return position_failed
 
     def __str__(self):
@@ -155,16 +222,23 @@ class Stats:
         return "-"
 
 
-def cigar_to_alts(ref, query, cigar, q_pos=0):
+def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
     """Interpret cigar string and query sequence in reference
-    coords from mappy (count, op)
+    coords from mappy (count, op) or pysam (op, count)
     """
     positions = []
     r_pos = 0
+
     for count, op in cigar:
+        if pysam:
+            count, op = op, count  # this makes me sad
         if op == 0:
             # match/mismatch
             for i in range(count):
+                if len(query) <= q_pos + i:
+                    # TODO this condition is being hit when there's soft-clipping at the end of the read (I think)
+                    # print(f"WARNING: invalid cigar string. {query}, index {q_pos + i}. cigar: {cigar}", file=sys.stderr)
+                    continue
                 positions.append((r_pos + i, query[q_pos + i]))
             q_pos += count
             r_pos += count
@@ -188,7 +262,9 @@ def cigar_to_alts(ref, query, cigar, q_pos=0):
 
         elif op == 4:
             # soft clip
-            q_pos += count
+            # q_pos += count
+            # may not need to be considered if q_pos offset is set
+            # TODO verify
             pass
 
         elif op == 5:
@@ -201,19 +277,29 @@ def cigar_to_alts(ref, query, cigar, q_pos=0):
     return positions
 
 
-def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
+def remap(
+    ref_genome,
+    consensus_fasta,
+    minimap_presets,
+    amplicon_set,
+    tagged_bam,
+    config=default_config,
+):
     stats = {}
-    ref = mp.Aligner(reference_fasta, preset=minimap_presets)
-    if len(ref.seq_names) != 1:
-        Exception(f"Reference fasta {reference_fasta} has more than one sequence")
-    ref_seq = ref.seq(ref.seq_names[0])
+    cons = mp.Aligner(consensus_fasta, preset=minimap_presets)
+    if len(cons.seq_names) != 1:
+        Exception(f"Consensus fasta {consensus_fasta} has more than one sequence")
+    consensus_seq = cons.seq(cons.seq_names[0])
+
+    ref = mp.Aligner(ref_genome)
+    reference_seq = ref.seq(ref.seq_names[0])
 
     multi_amplicons = 0
     no_amplicons = 0
     tagged = 0
 
     for r in pysam.AlignmentFile(tagged_bam):
-        a = ref.map(r.seq)
+        a = cons.map(r.seq)  # remap to consensus
         alignment = None
         for x in a:
             if x.is_primary:
@@ -246,46 +332,86 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
         elif alignment.strand == 1:
             strand = True
 
-        alts = cigar_to_alts(
-            ref_seq[alignment.r_st : alignment.r_en],
+        # problem: if the consensus is shorter than ref (like if a primer sequence is ellided) then we can't zip the cigar_to_alt lists
+        # slice_start = max(alignment.r_st, r.reference_start)
+        # slice_end = min(alignment.r_en, r.reference_end)
+        # but the start and end coords in both cases are in different reference frames
+
+        cons_alts = cigar_to_alts(
+            consensus_seq[alignment.r_st : alignment.r_en],
             r.seq,
             alignment.cigar,
             q_pos=alignment.q_st,
         )
 
+        #        ref_alts = cigar_to_alts(
+        #            reference_seq[r.reference_start : r.reference_end],
+        #            r.seq,
+        # r.query_alignment_sequence,
+        #            r.cigar,
+        #            q_pos=r.query_alignment_start,
+        #            pysam=True,
+        #        )
+
         # TODO test softclip
 
-        # print(ref_seq[alignment.r_st : alignment.r_en], file=sys.stderr)
-        # print(r.seq, file=sys.stderr)
-        # print(alignment.cigar, file=sys.stderr)
+        for (read_pos, (read_cons_pos, read_cons_base)) in enumerate(cons_alts):
+            consensus_position = read_cons_pos + alignment.r_st
+            #            reference_position = read_ref_pos + r.reference_start
+            reference_position = 0
+            read_ref_base = "N"
 
-        for read_pos, base in alts:
-            ref_position = read_pos + alignment.r_st
-            # print(f"{read_pos}, {alignment.r_st} {base} {ref_seq[ref_position]}")
-            if ref_position >= len(ref_seq):
+            if consensus_position >= len(consensus_seq):
                 print(
-                    f"Position {ref_position} extends beyond length of reference ({len(ref_seq)}) {alignment.q_st} ({read_pos}: {base})",
+                    f"Warning: Position {read_pos}+{alignment.r_st} extends beyond length of consensus ({len(consensus_seq)}) {consensus_position}:{reference_position} ({read_pos}: {read_cons_base})",
                     file=sys.stderr,
                 )
                 continue
 
+            cons_base = consensus_seq[consensus_position]
+            ref_base = reference_seq[reference_position]
+
             # TODO resolve assumption: if there is an ambiguous amplicon id, in_primer is false
-            # in_primer = amplicon.position_in_primer(ref_position)
+            # in_primer = amplicon.position_in_primer(reference_position)
             in_primer = False
 
-            # if in_primer and ref_position < 200:
-            #    print(f"ref: {ref_position}, start: {alignment.r_st}, amplicon: {amplicon.name}, left: {amplicon.left_primer_region}, right: {amplicon.right_primer_region}", file=sys.stderr)
+            # the trim 5' option assumes that all bases max_primer_len from the 5' end of the read are
+            # guaranteed to be inside of a primer
+            if config.trim_5prime and read_pos < amplicon.max_length:
+                in_primer = True
 
-            base_profile = BaseProfile(in_primer, strand, amplicon.name)
+            base_profile = BaseProfile(
+                read_cons_pos,
+                cons_base,
+                ref_base,
+                in_primer,
+                strand,
+                amplicon.name,
+                reference_position,
+            )
 
-            if ref_position not in stats:
-                stats[ref_position] = Stats()
-            stats[ref_position].total_reads += 1
+            if consensus_position not in stats:
+                stats[consensus_position] = Stats(
+                    ref_base=ref_base,
+                    cons_base=cons_base,
+                    reference_position=reference_position,
+                    config=config,
+                )
+            stats[consensus_position].total_reads += 1
 
-            if base != ref_seq[ref_position]:
-                stats[ref_position].add_alt(base_profile)
+            if (
+                config.log_liftover
+                and reference_position != stats[consensus_position].reference_pos
+            ):
+                print(
+                    f"{config} {config.min_frs} {config.trim_5prime} {config.log_liftover} WARNING: liftover error; Ref:{reference_position}:{read_ref_base} (expected {stats[consensus_position].reference_pos})\t{r.cigarstring}\tCons:{consensus_position}:{read_cons_base}\t{alignment.cigar_str}\t{ref_base}/{cons_base}\t{r.seq}",
+                    file=sys.stderr,
+                )
+
+            if read_cons_base != cons_base:
+                stats[consensus_position].add_alt(base_profile)
             else:
-                stats[ref_position].add_ref(base_profile)
+                stats[consensus_position].add_ref(base_profile)
 
     print(
         f"reads tagged with more than one amplicon: {multi_amplicons}, with zero: {no_amplicons}. tagged: {tagged}.",
@@ -294,47 +420,19 @@ def remap(reference_fasta, minimap_presets, amplicon_set, tagged_bam):
     return stats
 
 
-def mask(fasta, stats, outpath=None, name=None):
+def mask(fasta, stats, outpath=None, name=None, config=default_config):
     if not outpath:
         output = f"{name}.masked.fasta"
     ref = mp.Aligner(fasta)
     if len(ref.seq_names) != 1:
-        Exception(f"Reference fasta {fasta} has more than one sequence")
+        Exception(f"Consensus fasta {fasta} has more than one sequence")
     sequence = ref.seq(ref.seq_names[0])
     if not name:
         name = ref.seq_names[0]
 
-    masked, log = mask_sequence(sequence, stats)
+    masked, log = mask_sequence(sequence, stats, config=default_config)
 
     # write masked fasta
     with open(outpath, "w") as maskfd:
         print(f">{name}\n{masked}", file=maskfd, end="")
     return outpath, log
-
-
-if __name__ == "__main__":
-    amplicon_sets = load_amplicon_sets(sys.argv[1])
-
-    shortname = None
-    ref_seq = None
-    for s in mp.fastx_read(sys.argv[1]):
-        ref_seq = s[1]
-
-    amplicon_set = sys.argv[2]
-
-    amplicons = {}
-    for a, aset in amplicon_sets.items():
-        if aset.name == sys.argv[2]:
-            shortname = aset.shortname
-            for amplicon in aset.tree:
-                amplicon = amplicon.data
-                amplicons[amplicon.shortname] = amplicon
-
-    stats = remap(sys.argv[3], amplicon_set, sys.argv[4])
-
-    for p in sorted(stats.keys()):
-        if stats[p].total < 5:
-            continue
-        if str(stats[p]) == "-":
-            continue
-        print(p, stats[p])
