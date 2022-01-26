@@ -34,6 +34,9 @@ class Pipeline:
         keep_bam=False,
         target_sample_depth=1000,
         sample_name="sample",
+        min_sample_depth=10,
+        max_percent_amps_fail=50.0,
+        viridian_cons_max_n_percent=50.0,
         command_line_args=None,
         frs_threshold=0.7,
         self_qc_depth=10,
@@ -56,8 +59,9 @@ class Pipeline:
         self.log_liftover = log_liftover
         self.trim_5prime = trim_5prime
         self.sample_name = sample_name
-        self.viridian_cons_max_n_percent = 50.0
-        self.max_percent_amps_fail = 50.0
+        self.max_percent_amps_fail = max_percent_amps_fail
+        self.min_sample_depth = min_sample_depth
+        self.viridian_cons_max_n_percent = viridian_cons_max_n_percent
         self.command_line_args = command_line_args
         self.start_time = None
         self.amplicon_scheme_name_to_tsv = None
@@ -212,6 +216,7 @@ class Pipeline:
             sample_outprefix,
             self.amplicon_bed,
             target_depth=self.target_sample_depth,
+            min_sampled_depth_for_pass=self.min_sample_depth,
         )
         self.log_dict["read_sampling"] = utils.load_json(f"{sample_outprefix}.json")
         self.sampled_bam = self.sampler.bam_out
@@ -240,9 +245,9 @@ class Pipeline:
 
         try:
             consensus = self.log_dict["viridian"]["run_summary"]["consensus"]
-            percent_n = consensus.count("N") / len(consensus)
+            percent_n = 100.0 * consensus.count("N") / len(consensus)
             if percent_n > self.viridian_cons_max_n_percent:
-                return f"Too many Ns in Viridian consensus: {percent_n}"
+                return f"Too many Ns in Viridian consensus: {round(percent_n, 2)}%"
         except:
             return "Error getting viridian consensus sequence and/or counting Ns"
 

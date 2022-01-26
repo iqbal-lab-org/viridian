@@ -23,5 +23,8 @@ def run(options):
         keep_bam=options.keep_bam,
         target_sample_depth=options.target_sample_depth,
         sample_name=options.sample_name,
+        min_sample_depth=options.min_sample_depth,
+        max_percent_amps_fail=options.max_percent_amps_fail,
+        viridian_cons_max_n_percent=options.max_cons_n_percent,
         command_line_args=options,
     )

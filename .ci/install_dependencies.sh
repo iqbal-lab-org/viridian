@@ -87,7 +87,7 @@ cp -s racon-git/build/bin/racon .
 cd $install_root
 git clone https://github.com/iqbal-lab-org/viridian.git
 cd viridian
-git checkout 1603cb7fb5381af0fe028e73a413c4997fbf002f
+git checkout 9405b476cec0501ce6cde837c591f83d4d5da182
 pip3 install .
 
 #________________________ mummer ____________________________#
