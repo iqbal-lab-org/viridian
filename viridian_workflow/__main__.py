@@ -164,15 +164,16 @@ def main(args=None):
         help="Masking threshold for consensus base depth [%(default)s]",
         metavar="INT",
     )
-    subparser_run_one_sample.add_argument(
-        "--log_liftover",
-        action="store_true",
-        help="EXPERIMENTAL: record the coordinate transformation between the reference and consensus",
-    )
-    subparser_run_one_sample.add_argument(
-        "--trim_5prime",
-        action="store_true",
-        help="Trim the amplicon's primer length from all 5' read ends. This will reduce coverage for nanopore samples.",
+    #subparser_run_one_sample.add_argument(
+    #    "--log_liftover",
+    #    action="store_true",
+    #    help="EXPERIMENTAL: record the coordinate transformation between the reference and consensus",
+    #)
+    #subparser_run_one_sample.add_argument(
+    #    "--trim_5prime",
+    #    action="store_true",
+    #    help="Trim the amplicon's primer length from all 5' read ends. This will reduce coverage for nanopore samples.",
+    #)
     subparser_run_one_sample.add_argument(
         "--min_sample_depth",
         type=int,
