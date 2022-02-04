@@ -21,6 +21,11 @@ class PipelineProcessError(Exception):
     pass
 
 
+TRANSLATE_TABLE = str.maketrans("ATCGatcg", "TAGCtagc")
+def revcomp(seq):
+    return seq.translate(TRANSLATE_TABLE)[::-1]
+
+
 def check_file(fn):
     if not os.path.isfile(fn):
         raise OutputFileError(os.path.abspath(fn))
