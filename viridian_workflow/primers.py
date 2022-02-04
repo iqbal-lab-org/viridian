@@ -1,5 +1,4 @@
 import csv
-import sys
 from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
 
@@ -67,8 +66,7 @@ class Amplicon:
         )
 
     def position_in_primer(self, position):
-        """Test wheter a reference position falls inside the primer
-        """
+        """Test whether a reference position falls inside the primer"""
         return in_range(self.left_primer_region, position) or in_range(
             self.right_primer_region, position
         )
@@ -106,7 +104,11 @@ class Amplicon:
 
 class AmpliconSet:
     def __init__(
-        self, name, amplicons, tolerance=5, shortname=None,
+        self,
+        name,
+        amplicons,
+        tolerance=5,
+        shortname=None,
     ):
         """AmpliconSet supports various membership operations"""
         if not shortname:
@@ -147,6 +149,10 @@ class AmpliconSet:
 
     def __hash__(self):
         return hash(self.name)
+
+    def __iter__(self):
+        for amplicon in self.amplicons.values():
+            yield amplicon
 
     @classmethod
     def from_json(cls, fn, tolerance=5):
