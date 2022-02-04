@@ -145,6 +145,9 @@ class AmpliconSet:
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
 
+    def __hash__(self):
+        return hash(self.name)
+
     @classmethod
     def from_json(cls, fn, tolerance=5):
         raise NotImplementedError
