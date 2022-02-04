@@ -12,6 +12,30 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "primers")
 
 
+def test_basic_Amplicon_methods():
+    amp = primers.Amplicon("name", shortname=0)
+    amp.add(primers.Primer("left_primer", "ACGTA", True, True, 100))
+    amp.add(primers.Primer("right_primer", "TCT", False, False, 300))
+    assert amp.start == 100
+    # End position is one past the end (ie in the style of python ranges)
+    assert amp.end == 303
+    # primer starts at 100, and ends at 302. Length should therefore be 203
+    assert len(amp) == 203
+    # If we add in a new primer that's contained in the existing amplicon,
+    # end positions and length should not change.
+    amp.add(primers.Primer("left_primer_alt", "AAAA", True, True, 120))
+    assert amp.start == 100
+    assert amp.end == 303
+    assert len(amp) == 203
+    # Add new primers outside the current coords - then start, end, length
+    # should all change
+    amp.add(primers.Primer("left_primer_alt2", "CCC", True, True, 90))
+    amp.add(primers.Primer("rightt_primer_alt", "G", False, False, 305))
+    assert amp.start == 90
+    assert amp.end == 306
+    assert len(amp) == 216
+
+
 def test_AmpliconSet_from_json():
     with pytest.raises(NotImplementedError):
         primers.AmpliconSet.from_json("foo.json")
