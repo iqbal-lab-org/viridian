@@ -65,6 +65,9 @@ class Amplicon:
             [self.name, str(self.start), str(self.end), str(self.left), str(self.right)]
         )
 
+    def __hash__(self):
+        return hash(self.name)
+
     def __len__(self):
         """Returns the 'length' of the amplicon, by using the outermost
         coordinates (ie distance from start of leftmost primer to the end
