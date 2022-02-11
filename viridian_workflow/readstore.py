@@ -12,20 +12,14 @@ from viridian_workflow import utils
 # qry_end and ref_end one past the position, so slicing/subtracting
 # coords works easily.
 Read = namedtuple(
-    "Read",
-    [
-        "seq",
-        "ref_start",
-        "ref_end",
-        "qry_start",
-        "qry_end",
-        "is_reverse",
-    ],
+    "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse",],
 )
 
 
 class Fragment:
     def __init__(self, reads):
+        """fragment ref bounds ignore softclipping
+        """
         self.ref_start = None
         self.ref_end = None
         self.reads = reads
@@ -37,11 +31,13 @@ class Fragment:
 class PairedReads(Fragment):
     def __init__(self, read1, read2):
         super().__init__([read1, read2])
+        self.interval = read1.ref_start, read2.ref_end
 
 
 class SingleRead(Fragment):
     def __init__(self, read):
         super().__init__([read])
+        self.interval = read.ref_start, read.ref_end
 
 
 class ReadStore:
@@ -67,10 +63,14 @@ class ReadStore:
         pass
 
     @classmethod
-    def from_bam(cls, amplicon_set, bam):
-        # construct read namedtuples
-        # note - can set this from bam contents: self.reads_all_paired
-        pass
+    def from_bam(self, name, amplicon_set, bam):
+        for fragment in syncronise_fragments(bam):
+            self.push_fragment(fragment)
+
+    def push_fragment(self, fragment):
+        amplicon = self.amplicon_set.match(fragment)
+        if amplicon:
+            self.amplicons[amplicon].append(fragment)
 
     @staticmethod
     def sample_paired_reads(fragments, outfile, target_bases):
@@ -84,7 +84,8 @@ class ReadStore:
                         f">{i}.{j}",
                         utils.revcomp(read.seq) if read.is_reverse else read.seq,
                         sep="\n",
-                        file=f)
+                        file=f,
+                    )
                 bases_out += fragment.total_mapped_bases()
                 if bases_out >= target_bases:
                     break
@@ -115,9 +116,11 @@ class ReadStore:
                     f">r{i}",
                     utils.revcomp(rev_frag.reads[0].seq),
                     sep="\n",
-                    file=f
+                    file=f,
                 )
-                bases_out += fwd_frag.total_mapped_bases() + rev_frag.total_mapped_bases()
+                bases_out += (
+                    fwd_frag.total_mapped_bases() + rev_frag.total_mapped_bases()
+                )
                 if bases_out >= target_bases:
                     break
 

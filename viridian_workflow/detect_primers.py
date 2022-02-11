@@ -2,10 +2,12 @@
 from collections import defaultdict
 
 import pysam
-from viridian_workflow.primers import AmpliconSet, set_tags
+from viridian_workflow.primers import AmpliconSet
+
+from readstore import PairedReads, SingleRead
 
 
-def score(matches):
+def score(matches, off_target):
     """Assign winning amplicon set id based on match stats"""
 
     # naive: take max of all bins
@@ -16,24 +18,6 @@ def score(matches):
             m = v
             winner = k
     return winner
-
-
-def read_interval(read):
-    """determine template start and end coords for either a single read or
-    paired reads
-    """
-    if read.is_paired:
-        if not read.is_reverse:
-            start = read.reference_start
-            end = read.reference_start + read.template_length
-            return start, end
-
-        else:
-            start = read.next_reference_start
-            end = read.next_reference_start - read.template_length
-            return start, end
-    else:
-        return read.reference_start, read.reference_end
 
 
 def match_read_to_amplicons(read, amplicon_sets):
@@ -55,15 +39,6 @@ def match_reads(reads, amplicon_sets):
 
         matches = match_read_to_amplicons(read, amplicon_sets)
         yield read, matches
-
-
-def pysam_open_mode(filename):
-    if filename.endswith(".sam"):
-        return ""
-    elif filename.endswith(".bam"):
-        return "b"
-    else:
-        raise Exception(f"Filename {filename} does not end with .sam or .bam")
 
 
 def amplicon_set_counts_to_naive_total_counts(scheme_counts):
@@ -111,18 +86,27 @@ def syncronise_fragments(reads, stats):
         if not read.is_paired:
             stats["unpaired_reads"] += 1
             stats["template_lengths"][abs(read.query_length)] += 1  # TODO: check this
-            yield (read, None)
+            yield SingleRead(read)
 
         if not read.is_proper_pair:
             continue
 
+        vwf_read = Read(
+            read.sequence,
+            read.reference_start,
+            read.reference_end,
+            read.qry_start,
+            read.qry_end,
+            read.is_reverse,
+        )
+
         if read.is_read1:
             stats["template_lengths"][abs(read.template_length)] += 1
-            reads_by_name[read.query_name] = read
+            reads_by_name[read.query_name] = vwf_read
 
         elif read.is_read2:
             read1 = reads_by_name[read.query_name]
-            yield (read1, read)
+            yield PairedReads(read1, vwf_read)
             del reads_by_name[read.query_name]
 
 
@@ -146,7 +130,10 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
         "template_lengths": defaultdict(int),
     }
 
-    for read, mate in syncronise_fragments(aln_file_in, stats):
+    for fragment in syncronise_fragments(aln_file_in, stats):
+        for amplicon_set in amplicon_sets:
+            amplicon_matches[Amplicon_set] = amplicon_set.match(fragment)
+
         amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
 
         if amplicon_matches:
@@ -174,7 +161,3 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
     )
     stats["chosen_amplicon_scheme"] = score(stats["amplicon_scheme_simple_counts"])
     return stats
-
-
-if __name__ == "__main__":
-    raise NotImplementedError
