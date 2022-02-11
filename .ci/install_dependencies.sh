@@ -108,13 +108,3 @@ cd varifier
 git checkout 9ad87db9d501e17c008716f53c386500d4ba8f63
 pip3 install .
 cd ..
-
-#________________________ qcovid ____________________________#
-cd $install_root
-git clone https://github.com/iqbal-lab-org/QCovid.git
-cd QCovid
-git checkout d2bba0a18f65277fd53ba8b532104b7b4c7ce191
-mkdir -p /viridian_workflow/data/
-cp primers/*.qcovid.tsv /viridian_workflow/data/
-pip3 install .
-cd ..
