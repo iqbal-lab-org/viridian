@@ -1,8 +1,11 @@
 import csv
 from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
+from readstore import PairedReads, SingleRead, ReadStore
 
-Primer = namedtuple("Primer", ["name", "seq", "left", "forward", "pos"])
+Primer = namedtuple(
+    "Primer", ["name", "seq", "left", "forward", "ref_start", "ref_end"]
+)
 
 
 def load_amplicon_schemes(amplicon_tsvs):
@@ -80,6 +83,31 @@ class Amplicon:
             self.right_primer_region, position
         )
 
+    def match_primers(self, fragment):
+        """Attempt to match either end of a fragment against the amplicon's primers
+        """
+        p1, p2 = None, None
+
+        min_dist = config.primer_match_threshold
+        # closest leftmost position
+        for primer in self.left:
+            dist = fragment.ref_start - primer.ref_start
+            if dist >= 0 and dist < config.primer_match_threshold:
+                if dist <= min_dist:
+                    min_dist = dist
+                    p1 = primer
+
+        min_dist = config.primer_match_threshold
+        # closest leftmost position
+        for primer in self.right:
+            dist = primer.ref_end - fragment.ref_end
+            if dist >= 0 and dist < config.primer_match_threshold:
+                if dist <= min_dist:
+                    min_dist = dist
+                    p2 = primer
+
+        return p1, p2
+
     def add(self, primer):
         primer_end = primer.pos + len(primer.seq)
         if len(primer.seq) > self.max_length:
@@ -113,11 +141,7 @@ class Amplicon:
 
 class AmpliconSet:
     def __init__(
-        self,
-        name,
-        amplicons,
-        tolerance=5,
-        shortname=None,
+        self, name, amplicons, tolerance=5, shortname=None,
     ):
         """AmpliconSet supports various membership operations"""
         if not shortname:
@@ -204,35 +228,26 @@ class AmpliconSet:
         name = fn if not name else name
         return cls(name, amplicons, **kwargs)
 
-    def match(self, start, end):
+    def match(self, fragment):
         """Identify a template's mapped interval based on the start and end
         positions
 
-        returns a set of matching amplicons
+        The return value is None if the fragment does not belong to the
+        AmpliconSet.
+
+        Otherwise, returns a list of matching amplicons. The list may be empty.
         """
 
         # amplicons which contain the start and end
-        hits = self.tree[start].intersection(self.tree[end])
+        hits = self.tree[fragment.ref_start].intersection(self.tree[fragment.ref_end])
 
         # amplicons contained by the start and end
-        # this should never happen in tiled amplicons
-        enveloped = self.tree.envelop(start, end)
+        # this should never happen in tiled amplicons and may be a strong
+        # signal for negatively identifying an amplicon set
+        enveloped = self.tree.envelop(fragment.ref_start, fragment.ref_end)
 
         if enveloped:
             return None
 
-        if len(hits) == 0:
-            return None
-        elif len(hits) > 2:
-            # there should not be any more than 2 ambiguous matches under any
-            # known primer set. The interval tree can confirm this at the time
-            # the primer set is parsed
-            raise Exception
         else:
             return [hit.data for hit in hits]
-
-    def get_tags(self, read):
-        pass
-
-    def set_tags(self, read):
-        pass
