@@ -58,6 +58,19 @@ Other options:
   it already exists.
 
 
+## Pipeline
+
+```mermaid
+flowchart TD
+    A[Map] --> B[Identify Amplicons];
+    B --> C[Downsample Reads];
+    C --> D[Identify Primers];
+    D --> E[Amplicon Assembly];
+    D --> F[Consensus QC];
+    D --> F;
+    B -- reference_mapped.bam --> G;
+    F -- consensus.fa --> G;
+```
 
 ## Output files
 
