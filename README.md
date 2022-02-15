@@ -66,7 +66,7 @@ flowchart TD
     B --> C[Downsample Reads];
     C --> D[Identify Primers];
     D --> E[Amplicon Assembly];
-    D --> F[Consensus QC];
+    E --> F[Consensus QC];
     D --> F;
     B -- reference_mapped.bam --> G;
     F -- consensus.fa --> G;
