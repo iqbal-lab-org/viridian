@@ -79,6 +79,27 @@ jobs:
             ls
         fi
 
+    - name: Login to DockerHub
+      if: startsWith(github.event.ref, 'refs/tags/v')
+      uses: docker/login-action@v1 
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build and push
+      id: docker_build
+      if: startsWith(github.event.ref, 'refs/tags/v')
+      uses: docker/build-push-action@v2
+      with:
+        tags: |
+          iqbal-lab/viridian_workflow:latest
+          iqbal-lab/viridian_workflow:${{env.RELEASE_VERSION}}
+        push: true
+        no-cache: true
+    -
+      name: Docker digest
+      run: echo ${{ steps.docker_build.outputs.digest }}
+
     - name: Release
       if: startsWith(github.event.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
