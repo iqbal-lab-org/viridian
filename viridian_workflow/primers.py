@@ -109,34 +109,33 @@ class Amplicon:
         return p1, p2
 
     def add(self, primer):
-        primer_end = primer.pos + len(primer.seq)
         if len(primer.seq) > self.max_length:
             self.max_length = len(primer.seq)
 
         if primer.left:
             self.left.append(primer)
             if not self.left_primer_region:
-                self.left_primer_region = (primer.pos, primer_end)
-                self.start = primer.pos
+                self.left_primer_region = (primer.ref_start, primer.ref_end)
+                self.start = primer.ref_start
             else:
                 left_start, left_end = self.left_primer_region
                 self.left_primer_region = (
-                    min(primer.pos, left_start),
-                    max(primer_end, left_end),
+                    min(primer.ref_start, left_start),
+                    max(primer.ref_end, left_end),
                 )
-                self.start = min(self.start, primer.pos)
+                self.start = min(self.start, primer.ref_start)
         else:
             self.right.append(primer)
             if not self.right_primer_region:
-                self.right_primer_region = (primer.pos, primer_end)
-                self.end = primer_end
+                self.right_primer_region = (primer.ref_start, primer.ref_end)
+                self.end = primer.ref_end
             else:
                 right_start, right_end = self.right_primer_region
                 self.right_primer_region = (
-                    min(primer.pos, right_start),
-                    max(primer_end, right_end),
+                    min(primer.ref_start, right_start),
+                    max(primer.ref_end, right_end),
                 )
-                self.end = max(self.end, primer_end)
+                self.end = max(self.end, primer.ref_end)
 
 
 class AmpliconSet:
@@ -222,7 +221,14 @@ class AmpliconSet:
                 # We assume that primer is always left+forward, or right+reverse
                 forward = left
                 pos = int(d["Position"])
-                primer = Primer(d["Primer_name"], d["Sequence"], left, forward, pos)
+                primer = Primer(
+                    d["Primer_name"],
+                    d["Sequence"],
+                    left,
+                    forward,
+                    pos,
+                    pos + len(d["Sequence"]),
+                )
                 amplicons[d["Amplicon_name"]].add(primer)
 
         name = fn if not name else name
