@@ -42,13 +42,17 @@ class Fragment:
 class PairedReads(Fragment):
     def __init__(self, read1, read2):
         super().__init__([read1, read2])
-        self.interval = read1.ref_start, read2.ref_end
+        (self.ref_start, self.ref_end) = (
+            (read1.ref_start, read2.ref_end)
+            if read1.ref_start < read2.ref_start
+            else (read2.ref_start, read1.ref_end)
+        )
 
 
 class SingleRead(Fragment):
     def __init__(self, read):
         super().__init__([read])
-        self.interval = read.ref_start, read.ref_end
+        self.ref_start, self.ref_end = read.ref_start, read.ref_end
 
 
 class ReadStore:

@@ -12,8 +12,10 @@ def score(matches, mismatches):
     m = 0
     winner = None
     for amplicon_set in amplicon_sets:
-        print(mismatches[amplicon_set], matches[amplicon_set])
-        winner = amplicon_set
+        print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
+        if matches[amplicon_set] >= m:
+            winner = amplicon_set
+            m = matches[amplicon_set]
     return winner
 
 
@@ -120,7 +122,6 @@ def gather_stats_from_bam(infile, amplicon_sets):
     matches = defaultdict(int)
 
     for fragment in syncronise_fragments(aln_file_in, stats):
-        print(fragment)
         for amplicon_set in amplicon_sets:
             hit = amplicon_set.match(fragment)
             if hit:

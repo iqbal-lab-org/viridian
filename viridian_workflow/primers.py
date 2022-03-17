@@ -223,6 +223,6 @@ class AmpliconSet:
             return None
 
         if len(hits) == 1:
-            return hits[0].data
+            return list(hits)[0].data
 
         return None
