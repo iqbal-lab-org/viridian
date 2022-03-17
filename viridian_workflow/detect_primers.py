@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from collections import defaultdict
 
 import pysam
@@ -7,13 +6,12 @@ from viridian_workflow.primers import AmpliconSet
 from readstore import PairedReads, SingleRead
 
 
-def score(matches, off_target):
+def score(matches, mismatches):
     """Assign winning amplicon set id based on match stats"""
 
-    # naive: take max of all bins
     m = 0
     winner = None
-    for k, v in matches.items():
+    for amplicon in matches.keys() + mismatches.keys():
         if v >= m:
             m = v
             winner = k
@@ -110,12 +108,9 @@ def syncronise_fragments(reads, stats):
             del reads_by_name[read.query_name]
 
 
-def gather_stats_from_bam(infile, bam_out, amplicon_sets):
+def gather_stats_from_bam(infile, amplicon_sets):
     open_mode_in = "r" + pysam_open_mode(infile)
     aln_file_in = pysam.AlignmentFile(infile, open_mode_in)
-    if bam_out is not None:
-        open_mode_out = "w" + pysam_open_mode(bam_out)
-        aln_file_out = pysam.AlignmentFile(bam_out, open_mode_out, template=aln_file_in)
 
     match_any_amplicon = 0
     amplicon_scheme_set_matches = defaultdict(int)
@@ -131,24 +126,14 @@ def gather_stats_from_bam(infile, bam_out, amplicon_sets):
     }
 
     for fragment in syncronise_fragments(aln_file_in, stats):
+        matches = {}
+        mismatches = {}
         for amplicon_set in amplicon_sets:
-            amplicon_matches[Amplicon_set] = amplicon_set.match(fragment)
-
-        amplicon_matches = match_read_to_amplicons(read, amplicon_sets)
-
-        if amplicon_matches:
-            match_any_amplicon += 1
-            read = set_tags(amplicon_sets, read, amplicon_matches)
-
-            amplicon_key = tuple(sorted(list(amplicon_matches.keys())))
-            amplicon_scheme_set_matches[amplicon_key] += 1
-            if mate:
-                mate = set_tags(amplicon_sets, mate, amplicon_matches)
-
-        if bam_out is not None:
-            aln_file_out.write(read)
-            if mate:
-                aln_file_out.write(mate)
+            hit = amplicon_set.match(fragment)
+            if hit:
+                matches[amplicon_set] += 1
+            else:
+                mismatches[amplicon_set] += 1
 
     aln_file_in.close()
     if bam_out is not None:

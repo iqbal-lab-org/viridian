@@ -228,14 +228,16 @@ class AmpliconSet:
         name = fn if not name else name
         return cls(name, amplicons, **kwargs)
 
+    def score(self, readstore):
+        for fragment in readstore:
+            self.match(fragment)
+
     def match(self, fragment):
         """Identify a template's mapped interval based on the start and end
         positions
 
         The return value is None if the fragment does not belong to the
-        AmpliconSet.
-
-        Otherwise, returns a list of matching amplicons. The list may be empty.
+        AmpliconSet or if the fragment matches more than one Amplicon.
         """
 
         # amplicons which contain the start and end
@@ -249,5 +251,7 @@ class AmpliconSet:
         if enveloped:
             return None
 
-        else:
-            return [hit.data for hit in hits]
+        if len(hits) == 1:
+            return hits[0].data
+
+        return None

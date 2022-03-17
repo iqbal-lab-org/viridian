@@ -10,7 +10,7 @@ from viridian_workflow import utils
 # We will enforce that  ref_start < ref_end, and qry_start < qry_end. Then we
 # can use is_reverse to resolve the direcrtion of the read.
 # qry_end and ref_end one past the position, so slicing/subtracting
-# coords works easily.
+# coords follows the python string convention.
 Read = namedtuple(
     "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse",],
 )
@@ -45,6 +45,7 @@ class ReadStore:
         self.amplicons = {}
         self.amplicon_set = amplicon_set
         self.reads_all_paired = None
+        self.unmatched_reads = 0
 
     def __eq__(self, other):
         pass
@@ -71,6 +72,8 @@ class ReadStore:
         amplicon = self.amplicon_set.match(fragment)
         if amplicon:
             self.amplicons[amplicon].append(fragment)
+        else:
+            self.unmatched_reads += 1
 
     @staticmethod
     def sample_paired_reads(fragments, outfile, target_bases):
