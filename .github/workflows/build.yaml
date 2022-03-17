@@ -10,6 +10,10 @@ on:
     branches:
       - master
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     name: Build
@@ -65,7 +69,7 @@ jobs:
       if: false == startsWith(github.event.ref, 'refs/tags/v')
       run: echo "RELEASE_VERSION=test" >> $GITHUB_ENV
 
-    - name: Build Container
+    - name: Build Singularity container
       env:
         SINGULARITY_RECIPE: Singularity.def
         OUTPUT_CONTAINER: viridian_workflow_${{env.RELEASE_VERSION}}.img
@@ -86,3 +90,27 @@ jobs:
         files: viridian_workflow*.img
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Log in to github container registry
+      if: startsWith(github.event.ref, 'refs/tags/v')
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      if: startsWith(github.event.ref, 'refs/tags/v')
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+    - name: Build and push Docker image
+      if: startsWith(github.event.ref, 'refs/tags/v')
+      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}

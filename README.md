@@ -7,23 +7,26 @@ for full documentation.
 
 ## Installation
 
-Clone this repository and then from its root, build either a Singularity
-or Docker container.
+The recommended method is to use a pre-built Docker or Singularity container
+(see the wiki for how to build your own).
 
-To build a singularity container:
-```
-singularity build viridian_workflow.img Singularity.def
-```
-
-To build a docker container:
-```
-docker build --network=host .
-```
-(without `--network=host` you will likely get `pip install` timing out and
-the build failing).
-
-Both the Docker and Singularity container will have the main script
+Both the Docker and Singularity container have the main script
 `viridian_workflow` installed.
+
+### Docker
+Get a Docker image of the latest release:
+```
+docker pull ghcr.io/iqbal-lab-org/cte:latest
+```
+All Docker images are listed in the
+[packages page](https://github.com/iqbal-lab-org/viridian_workflow/pkgs/container/viridian_workflow).
+
+### Singularity
+[Releases](https://github.com/iqbal-lab-org/viridian_workflow/releases)
+include a Singularity image to download.
+Each release has a singularity image file called
+`viridian_workflow_vX.Y.Z.img`, where `X.Y.Z` is the release version.
+
 
 ## Usage
 
