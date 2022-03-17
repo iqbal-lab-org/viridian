@@ -3,7 +3,7 @@ import sys
 import mappy as mp
 import pysam
 
-from viridian_workflow.primers import AmpliconSet, get_tags, load_amplicon_schemes
+from viridian_workflow.primers import AmpliconSet
 
 from collections import namedtuple, defaultdict
 
@@ -311,7 +311,9 @@ def remap(
         assert alignment.q_en > alignment.q_st
         assert alignment.r_en > alignment.r_st
 
-        amplicons = get_tags(amplicon_set, r)
+        amplicons = None
+        # BROKEN BROKEN
+        #        amplicons = get_tags(amplicon_set, r)
 
         amplicon = None
 

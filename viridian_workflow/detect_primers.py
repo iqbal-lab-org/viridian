@@ -2,19 +2,18 @@ from collections import defaultdict
 
 import pysam
 from viridian_workflow.primers import AmpliconSet
-
-from readstore import PairedReads, SingleRead
+from viridian_workflow.readstore import PairedReads, SingleRead, read_from_pysam
 
 
 def score(matches, mismatches):
     """Assign winning amplicon set id based on match stats"""
+    amplicon_sets = set([*matches.keys(), *mismatches.keys()])
 
     m = 0
     winner = None
-    for amplicon in matches.keys() + mismatches.keys():
-        if v >= m:
-            m = v
-            winner = k
+    for amplicon_set in amplicon_sets:
+        print(mismatches[amplicon_set], matches[amplicon_set])
+        winner = amplicon_set
     return winner
 
 
@@ -84,33 +83,25 @@ def syncronise_fragments(reads, stats):
         if not read.is_paired:
             stats["unpaired_reads"] += 1
             stats["template_lengths"][abs(read.query_length)] += 1  # TODO: check this
-            yield SingleRead(read)
+            yield SingleRead(read_from_pysam(read))
 
         if not read.is_proper_pair:
             continue
 
-        vwf_read = Read(
-            read.sequence,
-            read.reference_start,
-            read.reference_end,
-            read.qry_start,
-            read.qry_end,
-            read.is_reverse,
-        )
-
         if read.is_read1:
             stats["template_lengths"][abs(read.template_length)] += 1
-            reads_by_name[read.query_name] = vwf_read
+            reads_by_name[read.query_name] = read_from_pysam(read)
 
         elif read.is_read2:
             read1 = reads_by_name[read.query_name]
-            yield PairedReads(read1, vwf_read)
+            yield PairedReads(read1, read_from_pysam(read))
             del reads_by_name[read.query_name]
 
 
 def gather_stats_from_bam(infile, amplicon_sets):
-    open_mode_in = "r" + pysam_open_mode(infile)
-    aln_file_in = pysam.AlignmentFile(infile, open_mode_in)
+    # open_mode_in = "r" + pysam_open_mode(infile)
+    print("gathering stats")
+    aln_file_in = pysam.AlignmentFile(infile, "rb")
 
     match_any_amplicon = 0
     amplicon_scheme_set_matches = defaultdict(int)
@@ -125,9 +116,11 @@ def gather_stats_from_bam(infile, amplicon_sets):
         "template_lengths": defaultdict(int),
     }
 
+    mismatches = defaultdict(int)
+    matches = defaultdict(int)
+
     for fragment in syncronise_fragments(aln_file_in, stats):
-        matches = {}
-        mismatches = {}
+        print(fragment)
         for amplicon_set in amplicon_sets:
             hit = amplicon_set.match(fragment)
             if hit:
@@ -136,13 +129,11 @@ def gather_stats_from_bam(infile, amplicon_sets):
                 mismatches[amplicon_set] += 1
 
     aln_file_in.close()
-    if bam_out is not None:
-        aln_file_out.close()
 
     stats["match_any_amplicon"] = match_any_amplicon
     stats["amplicon_scheme_set_matches"] = amplicon_scheme_set_matches
     stats["amplicon_scheme_simple_counts"] = amplicon_set_counts_to_naive_total_counts(
         stats["amplicon_scheme_set_matches"]
     )
-    stats["chosen_amplicon_scheme"] = score(stats["amplicon_scheme_simple_counts"])
+    stats["chosen_amplicon_scheme"] = score(matches, mismatches)
     return stats

@@ -1,50 +1,15 @@
 import csv
 from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
-from readstore import PairedReads, SingleRead, ReadStore
+from viridian_workflow.readstore import PairedReads, SingleRead, ReadStore
 
 Primer = namedtuple(
     "Primer", ["name", "seq", "left", "forward", "ref_start", "ref_end"]
 )
 
 
-def load_amplicon_schemes(amplicon_tsvs):
-    return dict(
-        [
-            (s, AmpliconSet.from_tsv(tsv, shortname=s))
-            for tsv, s in zip(amplicon_tsvs, ["a", "b", "c"])
-        ]
-    )
-
-
-def set_tags(amplicon_sets, read, matches):
-    tags = []
-    shortnames = set()
-    for amplicon_set in amplicon_sets:
-        if amplicon_set.shortname in shortnames:
-            Exception(
-                f"Multiple amplicon sets of the same shortname: {amplicon_set.shortname}"
-            )
-        shortnames.add(amplicon_set.shortname)
-        if amplicon_set.name not in matches:
-            continue
-        shortname = amplicon_set.shortname
-        for amplicon in matches[amplicon_set.name]:
-            tags.append((f"Z{shortname}", amplicon.shortname, "i"))
-    read.set_tags(tags)
-    return read
-
-
-def get_tags(amplicon_set, read):
-    matches = []
-    for tag, amplicon_id in read.get_tags():
-        if tag[0] == "Z" and tag[1] == amplicon_set.shortname:
-            matches.append(amplicon_set.amplicon_ids[amplicon_id])
-    return matches
-
-
-def in_range(range_tuple, position):
-    start, end = range_tuple
+def in_range(interval, position):
+    start, end = interval
     return position < end and position > start
 
 

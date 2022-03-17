@@ -16,6 +16,17 @@ Read = namedtuple(
 )
 
 
+def read_from_pysam(read):
+    return Read(
+        read.query_sequence,
+        read.reference_start,
+        read.reference_end,
+        read.query_alignment_start,
+        read.query_alignment_end,
+        read.is_reverse,
+    )
+
+
 class Fragment:
     def __init__(self, reads):
         """fragment ref bounds ignore softclipping
@@ -41,11 +52,14 @@ class SingleRead(Fragment):
 
 
 class ReadStore:
-    def __init__(self, name, amplicon_set, shortname=0):
+    def __init__(self, amplicon_set, bam):
         self.amplicons = {}
         self.amplicon_set = amplicon_set
         self.reads_all_paired = None
         self.unmatched_reads = 0
+
+        for fragment in syncronise_fragments(bam):
+            self.push_fragment(fragment)
 
     def __eq__(self, other):
         pass
@@ -62,11 +76,6 @@ class ReadStore:
 
     def fetch(self, start=0, end=None):
         pass
-
-    @classmethod
-    def from_bam(self, name, amplicon_set, bam):
-        for fragment in syncronise_fragments(bam):
-            self.push_fragment(fragment)
 
     def push_fragment(self, fragment):
         amplicon = self.amplicon_set.match(fragment)
