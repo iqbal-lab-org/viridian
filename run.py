@@ -1,8 +1,6 @@
 import sys
 
-from viridian_workflow import primers
-from viridian_workflow import readstore
-from viridian_workflow import minimap
+from viridian_workflow import primers, readstore, minimap, utils
 
 # load amplicon sets
 amplicon_sets = []
@@ -22,11 +20,11 @@ for name, tsv in [
 
 # generate name-sorted bam from fastqs
 minimap.run(
-    f"{sys.argv[10]}/testbam.bam", sys.argv[5], sys.argv[7], fq2=sys.argv[8], sort=False
+    work_dir / "testbam.bam", sys.argv[1], sys.argv[1], fq2=sys.argv[2], sort=False
 )
 
 # pre-process input bam
-bam = readstore.Bam(f"{sys.argv[10]}/testbam.bam")
+bam = readstore.Bam(work_dir / "unsorted.bam")
 
 # detect amplicon set
 amplicon_set = bam.detect_amplicon_set(amplicon_sets)
@@ -37,7 +35,26 @@ stats = bam.stats
 rs = readstore.ReadStore(amplicon_set, bam)
 
 # downsample to viridian assembly
-failures = rs.make_reads_dir_for_viridian("/tmp/asdfg", 1000)
+failures = rs.make_reads_dir_for_viridian(work_dir / "amplicons", 1000)
 
 for failure in failures:
-    print(failure.name)
+    print(failure.name, file=failed_amplicon_amps_fd)
+
+# run viridian
+def run_viridian(self):
+    logging.info("Making initial unmasked consensus using Viridian")
+    viridian_cmd = " ".join(
+        [
+            "viridian",
+            "assemble",
+            "--bam",
+            self.sampled_bam,
+            "illumina",
+            "--amplicons_to_fail_file",
+            failed_amps_file,
+            ref,
+            amplicon_json,
+            work_dir / "viridian",
+        ]
+    )
+    utils.run_process(viridian_cmd)
