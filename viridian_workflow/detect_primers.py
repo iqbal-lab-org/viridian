@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import pysam
 from viridian_workflow.primers import AmpliconSet
-from viridian_workflow.readstore import PairedReads, SingleRead, read_from_pysam
+from viridian_workflow.readstore import PairedReads, SingleRead
 
 
 def score(matches, mismatches):
@@ -54,85 +54,3 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
         new_key = ";".join(sorted([str(x) for x in k]))
         dict_out[new_key] = v
     return dict_out
-
-
-def syncronise_fragments(reads, stats):
-    infile_is_paired = None
-    reads_by_name = {}
-
-    for read in reads:
-        if infile_is_paired is None:
-            infile_is_paired = read.is_paired
-        else:
-            if infile_is_paired != read.is_paired:
-                raise Exception("Mix of paired and unpaired reads.")
-
-        if read.is_secondary or read.is_supplementary:
-            continue
-
-        stats["total_reads"] += 1
-        if read.is_read1:
-            stats["reads1"] += 1
-        elif read.is_read2:
-            stats["reads2"] += 1
-
-        if read.is_unmapped:
-            continue
-
-        stats["read_lengths"][read.query_length] += 1
-        stats["mapped"] += 1
-
-        if not read.is_paired:
-            stats["unpaired_reads"] += 1
-            stats["template_lengths"][abs(read.query_length)] += 1  # TODO: check this
-            yield SingleRead(read_from_pysam(read))
-
-        if not read.is_proper_pair:
-            continue
-
-        if read.is_read1:
-            stats["template_lengths"][abs(read.template_length)] += 1
-            reads_by_name[read.query_name] = read_from_pysam(read)
-
-        elif read.is_read2:
-            read1 = reads_by_name[read.query_name]
-            yield PairedReads(read1, read_from_pysam(read))
-            del reads_by_name[read.query_name]
-
-
-def gather_stats_from_bam(infile, amplicon_sets):
-    aln_file_in = pysam.AlignmentFile(infile, "rb")
-
-    match_any_amplicon = 0
-
-    stats = {
-        "unpaired_reads": 0,
-        "reads1": 0,
-        "reads2": 0,
-        "total_reads": 0,
-        "mapped": 0,
-        "read_lengths": defaultdict(int),
-        "template_lengths": defaultdict(int),
-    }
-
-    mismatches = defaultdict(int)
-    matches = defaultdict(int)
-
-    for fragment in syncronise_fragments(aln_file_in, stats):
-        for amplicon_set in amplicon_sets:
-            hit = amplicon_set.match(fragment)
-            if hit:
-                matches[amplicon_set] += 1
-            else:
-                mismatches[amplicon_set] += 1
-
-    aln_file_in.close()
-
-    stats["match_any_amplicon"] = match_any_amplicon
-    stats["amplicon_scheme_set_matches"] = matches
-    stats["amplicon_scheme_simple_counts"] = amplicon_set_counts_to_naive_total_counts(
-        stats["amplicon_scheme_set_matches"]
-    )
-    chosen_scheme = score(matches, mismatches)
-    stats["chosen_amplicon_scheme"] = chosen_scheme.name
-    return chosen_scheme, stats
