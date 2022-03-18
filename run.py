@@ -7,7 +7,6 @@ from viridian_workflow import minimap
 
 print(f"{sys.argv}")
 
-
 print("load amplicon sets")
 
 amplicon_sets = {}
@@ -28,11 +27,20 @@ for name, tsv in [
 
 
 for name in amplicon_sets:
-    print(len(amplicon_sets[name].tree))
+    print(name, len(amplicon_sets[name].tree))
 
-bam = minimap.run(
-    f"{sys.argv[10]}/testbam.bam", sys.argv[5], sys.argv[7], fq2=sys.argv[8], sort=False
-)
-stats = detect_primers.gather_stats_from_bam(bam, amplicon_sets.values())
-print(stats)
-# rs = readstore.ReadStore(amplicon_set, bam)
+bam = Bam(f"{sys.argv[10]")
+
+#minimap.run(
+#    f"{sys.argv[10]}/testbam.bam", sys.argv[5], sys.argv[7], fq2=sys.argv[8], sort=False
+#)
+
+amplicon_set = bam.detect_amplicon_set(amplicon_sets)
+
+stats = bam.stats()
+
+# construct readstore
+rs = bam.ReadStore(amplicon_set)
+print(rs)
+
+# downsample to viridian assembly

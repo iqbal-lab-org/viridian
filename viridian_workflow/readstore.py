@@ -26,6 +26,114 @@ def read_from_pysam(read):
         read.is_reverse,
     )
 
+class Bam:
+    def __init__(self, bam, infile_is_paired=None):
+        self.stats = None
+        self.infile_is_paired = infile_is_paired
+        assert os.fileexists(bam)
+        self.bam = bam
+
+    @classmethod
+    def from_pe_fastqs(cls, fq1, fq2):
+        pass
+
+    def from_se_fastq(cls, fq):
+        pass
+
+    def syncronise_fragments(self):
+        reads_by_name = {}
+
+        reads = pysam
+        for read in reads:
+            if self.infile_is_paired is None:
+                self.infile_is_paired = read.is_paired
+            else:
+                if self.infile_is_paired != read.is_paired:
+                    raise Exception("Mix of paired and unpaired reads.")
+
+            if read.is_secondary or read.is_supplementary:
+                continue
+
+            self.stats["total_reads"] += 1
+            if read.is_read1:
+                self.stats["reads1"] += 1
+            elif read.is_read2:
+                self.stats["reads2"] += 1
+
+            if read.is_unmapped:
+                continue
+
+            self.stats["read_lengths"][read.query_length] += 1
+            self.stats["mapped"] += 1
+
+            if not read.is_paired:
+                self.stats["unpaired_reads"] += 1
+                self.stats["template_lengths"][abs(read.query_length)] += 1  # TODO: check this
+                yield SingleRead(read_from_pysam(read))
+
+            if not read.is_proper_pair:
+                continue
+
+            if read.is_read1:
+                stats["template_lengths"][abs(read.template_length)] += 1
+                reads_by_name[read.query_name] = read_from_pysam(read)
+
+            elif read.is_read2:
+                read1 = reads_by_name[read.query_name]
+                yield PairedReads(read1, read_from_pysam(read))
+                del reads_by_name[read.query_name]
+
+
+
+    def detect_amplicon_set(self, amplicon_sets):
+        """return inferred amplicon set from list
+        """
+        #aln_file_in = pysam.AlignmentFile(self.bam, "rb")
+
+        match_any_amplicon = 0
+
+        self.stats = {
+            "unpaired_reads": 0,
+            "reads1": 0,
+            "reads2": 0,
+            "total_reads": 0,
+            "mapped": 0,
+            "read_lengths": defaultdict(int),
+            "template_lengths": defaultdict(int),
+        }
+
+        mismatches = defaultdict(int)
+        matches = defaultdict(int)
+
+        for fragment in self.syncronise_fragments():
+            for amplicon_set in amplicon_sets:
+                hit = amplicon_set.match(fragment)
+                if hit:
+                    matches[amplicon_set] += 1
+                else:
+                    mismatches[amplicon_set] += 1
+
+        aln_file_in.close()
+
+        self.stats["match_any_amplicon"] = match_any_amplicon
+        self.stats["amplicon_scheme_set_matches"] = matches
+        self.stats["amplicon_scheme_simple_counts"] = amplicon_set_counts_to_naive_total_counts(
+            self.stats["amplicon_scheme_set_matches"]
+        )
+        chosen_scheme = score(matches, mismatches)
+        self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
+        return chosen_scheme
+
+
+    def stats(self):
+        """return pre-computed stats (or compute)
+        """
+        pass
+
+    def readstore(self, amplicon_set):
+        """construct readstore object
+        """
+        pass
 
 class Fragment:
     def __init__(self, reads):
@@ -62,7 +170,7 @@ class ReadStore:
         self.reads_all_paired = None
         self.unmatched_reads = 0
 
-        for fragment in syncronise_fragments(bam):
+        for fragment in detect_primers.syncronise_fragments(bam):
             self.push_fragment(fragment)
 
     def __eq__(self, other):

@@ -101,12 +101,9 @@ def syncronise_fragments(reads, stats):
 
 
 def gather_stats_from_bam(infile, amplicon_sets):
-    # open_mode_in = "r" + pysam_open_mode(infile)
-    print("gathering stats")
     aln_file_in = pysam.AlignmentFile(infile, "rb")
 
     match_any_amplicon = 0
-    amplicon_scheme_set_matches = defaultdict(int)
 
     stats = {
         "unpaired_reads": 0,
@@ -132,9 +129,10 @@ def gather_stats_from_bam(infile, amplicon_sets):
     aln_file_in.close()
 
     stats["match_any_amplicon"] = match_any_amplicon
-    stats["amplicon_scheme_set_matches"] = amplicon_scheme_set_matches
+    stats["amplicon_scheme_set_matches"] = matches
     stats["amplicon_scheme_simple_counts"] = amplicon_set_counts_to_naive_total_counts(
         stats["amplicon_scheme_set_matches"]
     )
-    stats["chosen_amplicon_scheme"] = score(matches, mismatches)
-    return stats
+    chosen_scheme = score(matches, mismatches)
+    stats["chosen_amplicon_scheme"] = chosen_scheme.name
+    return chosen_scheme, stats
