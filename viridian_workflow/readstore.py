@@ -177,7 +177,12 @@ class Bam:
             self.stats["amplicon_scheme_set_matches"]
         )
         chosen_scheme = score(matches, mismatches)
-        self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
+        if chosen_scheme:
+            self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
+        else:
+            # TODO: decide on behaviour when no appropriate scheme is chosen
+            # current policy: abort
+            raise Exception("failed to choose amplicon scheme")
         return chosen_scheme
 
     def stats(self):
