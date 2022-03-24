@@ -36,7 +36,7 @@ with tempfile.TemporaryDirectory() as work_dir:
     # detect amplicon set
     amplicon_set = bam.detect_amplicon_set(amplicon_sets)
 
-    stats = bam.stats
+    # check it out: stats = bam.stats
 
     # construct readstore
     rs = readstore.ReadStore(amplicon_set, bam)
@@ -44,8 +44,9 @@ with tempfile.TemporaryDirectory() as work_dir:
     # downsample to viridian assembly
     failures = rs.make_reads_dir_for_viridian(work_dir / "amplicons", 1000)
 
-    for failure in failures:
-        print(failure.name, file=failed_amplicon_amps_fd)
+    with open(work_dir / "failed_amplicons.tsv") as failed_amplicon_amps_fd:
+        for failure in failures:
+            print(failure.name, file=failed_amplicon_amps_fd)
 
     # run viridian
     def run_viridian(self):
@@ -55,10 +56,10 @@ with tempfile.TemporaryDirectory() as work_dir:
                 "viridian",
                 "assemble",
                 "--bam",
-                self.sampled_bam,
+                sampled_bam,
                 "illumina",
                 "--amplicons_to_fail_file",
-                failed_amps_file,
+                work_dir / "failed_amplicons.tsv",  # failed_amps_file
                 ref,
                 amplicon_json,
                 work_dir / "viridian",
