@@ -14,13 +14,10 @@ def run(
     minimap_x_opt=None,
     sort=True,
 ):
-    # Note: was getting issues with escaping the tab characters in the -R
-    # option. In the end got it to work by giving Popen a string instead of
-    # a list and setting shell=True (using a list and shell=False failed using
-    # exactly the same minimap_cmd contents).
     minimap_cmd = [
         "minimap2",
-        f"-R '@RG\\tID:1\\tSM:{sample_name}'",
+        "-R",
+        fr"@RG\tID:1\tSM:{sample_name}",
         "-t",
         str(threads),
         "-a",
@@ -45,14 +42,20 @@ def run(
         )
         sort_proc = subprocess.Popen(sort_cmd, stdin=map_proc.stdout)
         sort_proc.wait()
+        if sort_proc.returncode:
+            raise Exception("minimap2 subprocess failed")
+
     else:
-        minimap_cmd.extend([">", bam])
-        subprocess.check_output(" ".join(minimap_cmd), shell=True)
+        with open(bam, "w") as out_fd:
+            map_proc = subprocess.Popen(minimap_cmd, stdout=out_fd)
+            map_proc.wait()
+            if map_proc.returncode:
+                raise Exception("minimap2 subprocess failed")
 
     check_file(bam)
 
     if sort:
-        run_process(f"samtools index {bam}")
+        run_process(["samtools", "index", bam])
         check_file(bam + ".bai")
 
     return bam
