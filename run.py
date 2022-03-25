@@ -1,8 +1,28 @@
 import sys
 from pathlib import Path
 import tempfile
+import json
 
 from viridian_workflow import primers, readstore, minimap, utils
+
+
+def run_viridian(amplicon_dir, amplicon_json):
+    print(amplicon_json)
+    with open(work_dir / "failed_amplicons.json", "w") as failed_amplicon_amps_fd:
+        json.dump(amplicon_failures, failed_amplicon_amps_fd)
+
+    viridian_cmd = [
+        "viridian",
+        "assemble",
+        "--reads_per_amp_dir",
+        amplicon_dir,
+        "illumina",
+        ref,
+        work_dir / "failed_amplicons.json",
+        work_dir / "viridian",
+    ]
+    utils.run_process(viridian_cmd)
+
 
 # load amplicon sets
 amplicon_sets = []
@@ -42,27 +62,8 @@ with tempfile.TemporaryDirectory() as work_dir:
     rs = readstore.ReadStore(amplicon_set, bam)
 
     # downsample to viridian assembly
-    failures = rs.make_reads_dir_for_viridian(work_dir / "amplicons", 1000)
-
-    with open(work_dir / "failed_amplicons.tsv") as failed_amplicon_amps_fd:
-        for failure in failures:
-            print(failure.name, file=failed_amplicon_amps_fd)
+    amp_dir = work_dir / "amplicons"
+    amplicon_failures = rs.make_reads_dir_for_viridian(amp_dir, 1000)
 
     # run viridian
-    def run_viridian(self):
-        logging.info("Making initial unmasked consensus using Viridian")
-        viridian_cmd = " ".join(
-            [
-                "viridian",
-                "assemble",
-                "--bam",
-                sampled_bam,
-                "illumina",
-                "--amplicons_to_fail_file",
-                work_dir / "failed_amplicons.tsv",  # failed_amps_file
-                ref,
-                amplicon_json,
-                work_dir / "viridian",
-            ]
-        )
-        utils.run_process(viridian_cmd)
+    run_viridian(amp_dir, amplicon_failures)
