@@ -366,6 +366,7 @@ class ReadStore:
             else:
                 bases_out = self.sample_unpaired_reads(fragments, outfile, target_bases)
             if bases_out == 0:
+                manifest_data[amplicon.name] = None
                 self.failed_amplicons.add(amplicon)
             else:
                 manifest_data[amplicon.name] = outname
