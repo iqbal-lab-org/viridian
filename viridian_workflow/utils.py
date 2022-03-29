@@ -57,7 +57,7 @@ def run_process(cmd, ignore_error=False, stdout=None):
     start_time = time.time()
     result = subprocess.run(
         cmd,
-        shell=True,
+        shell=False,
         stderr=subprocess.PIPE,
         stdout=stdout_fd,
         universal_newlines=True,
@@ -67,13 +67,12 @@ def run_process(cmd, ignore_error=False, stdout=None):
     time_elapsed = time.time() - start_time
     print(f"Process ({' '.join(cmd)}) completed in {time_elapsed} seconds.")
 
+    if not ignore_error and result.returncode != 0:
+        raise Exception(f"Process returned {result.returncode}: {result.stderr}")
+
     if not stdout:
         print(result.stdout)
         return result.stdout
-
-    if not ignore_error and result.returncode != 0:
-        # raise or(f"Process returned {result.returncode}")
-        print(result.stderr)
 
 
 def amplicons_json_to_bed_and_range(infile, outfile):
