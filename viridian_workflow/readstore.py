@@ -252,6 +252,20 @@ class ReadStore:
         else:
             self.unmatched_reads += 1
 
+        if amplicon.name not in self.summary:
+            self.summary[amplicon.name] = {
+                "start": amplicon.start + 1,
+                "end": amplicon.end + 1,
+                "total_mapped_bases": 0,
+                "total_depth": 0,
+                "sampled_bases": 0,
+                "sampled_depth": 0,
+                "pass": False,
+            }
+        else:
+            self.summary["total_mapped_bases"] += fragment.total_mapped_bases()
+            self.summary["total_depth"] += 1
+
     @staticmethod
     def sample_paired_reads(fragments, outfile, target_bases):
         if len(fragments) == 0:
@@ -315,19 +329,7 @@ class ReadStore:
         manifest_data = {}
         self.failed_amplicons = set()
 
-        summary = {}
-
         for amplicon in self.amplicon_set:
-            summary[amplicon.name] = {
-                "start": amplicon.start + 1,
-                "end": amplicon.end + 1,
-                "total_mapped_bases": 0,
-                "total_depth": 0,
-                "sampled_bases": 0,
-                "sampled_depth": 0,
-                "pass": False,
-            }
-
             outname = f"{len(manifest_data)}.fa"
             outfile = os.path.join(outdir, outname)
             fragments = self[amplicon]
