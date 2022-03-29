@@ -226,8 +226,38 @@ class ReadStore:
         self.reads_all_paired = None
         self.unmatched_reads = 0
 
+        self.summary = {}
+        self.viridian_json = {
+            "name": amplicon_set.name,
+            "source": amplicon_set.fn,
+            "amplicons": {},
+        }
+
+        for amplicon_name, amplicon in amplicon_set.amplicons.items():
+            self.summary[amplicon_name] = {
+                "start": amplicon.start + 1,
+                "end": amplicon.end + 1,
+                "total_mapped_bases": 0,
+                "total_depth": 0,
+                "sampled_bases": 0,
+                "sampled_depth": 0,
+                "pass": False,
+            }
+
+            left_start, left_end = amplicon.left_primer_region
+            right_start, right_end = amplicon.right_primer_region
+
+            self.viridian_json["amplicons"][amplicon.name] = {
+                "start": left_start,
+                "end": right_end,
+                "left_primer_end": left_end,
+                "right_primer_start": right_start,
+            }
+
         for fragment in bam.syncronise_fragments():
             self.push_fragment(fragment)
+
+        self.summarise_amplicons()
 
     def __eq__(self, other):
         pass
@@ -247,24 +277,20 @@ class ReadStore:
 
     def push_fragment(self, fragment):
         amplicon = self.amplicon_set.match(fragment)
-        if amplicon:
-            self.amplicons[amplicon].append(fragment)
-        else:
+        if not amplicon:
             self.unmatched_reads += 1
+            return
 
-        if amplicon.name not in self.summary:
-            self.summary[amplicon.name] = {
-                "start": amplicon.start + 1,
-                "end": amplicon.end + 1,
-                "total_mapped_bases": 0,
-                "total_depth": 0,
-                "sampled_bases": 0,
-                "sampled_depth": 0,
-                "pass": False,
-            }
-        else:
-            self.summary["total_mapped_bases"] += fragment.total_mapped_bases()
-            self.summary["total_depth"] += 1
+        self.amplicons[amplicon].append(fragment)
+
+        self.summary[amplicon.name][
+            "total_mapped_bases"
+        ] += fragment.total_mapped_bases()
+        self.summary[amplicon.name]["total_depth"] += 1
+
+    def summarise_amplicons(self):
+        # normalise the bases per amplicons and such
+        pass
 
     @staticmethod
     def sample_paired_reads(fragments, outfile, target_bases):

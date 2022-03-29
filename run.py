@@ -1,4 +1,5 @@
 import sys
+import shutil
 from pathlib import Path
 import tempfile
 import json
@@ -6,10 +7,12 @@ import json
 from viridian_workflow import primers, readstore, minimap, utils
 
 
-def run_viridian(amplicon_dir, amplicon_json):
-    print(amplicon_json)
-    with open(work_dir / "failed_amplicons.json", "w") as failed_amplicon_amps_fd:
-        json.dump(amplicon_failures, failed_amplicon_amps_fd)
+def run_viridian(work_dir, amplicon_dir, amplicon_manifest, amplicon_json):
+    with open(amplicon_dir / "manifest.json", "w") as failed_amplicon_amps_fd:
+        json.dump(amplicon_manifest, failed_amplicon_amps_fd, indent=2)
+
+    with open(work_dir / "amplicons.json", "w") as failed_amplicon_amps_fd:
+        json.dump(amplicon_json, failed_amplicon_amps_fd, indent=2)
 
     viridian_cmd = [
         "viridian",
@@ -18,10 +21,13 @@ def run_viridian(amplicon_dir, amplicon_json):
         amplicon_dir,
         "illumina",
         ref,
-        work_dir / "failed_amplicons.json",
+        work_dir / "amplicons.json",
         work_dir / "viridian",
     ]
     utils.run_process(viridian_cmd)
+    output = work_dir / "viridian" / "consensus.final_assembly.fa"
+    utils.check_file(output)
+    return output
 
 
 # load amplicon sets
@@ -43,8 +49,13 @@ for name, tsv in [
 # input file args, working directory, and reference file path
 fq1, fq2 = sys.argv[1], sys.argv[2]
 ref = Path("../covid/MN908947.fasta")
-with tempfile.TemporaryDirectory() as work_dir:
+# with tempfile.TemporaryDirectory() as work_dir:
+work_dir = f"/tmp/vwf_test/"
+if True:
     work_dir = Path(work_dir)
+    if work_dir.exists():
+        shutil.rmtree(work_dir)
+    work_dir.mkdir()
     print(f"using {work_dir} {work_dir.exists()}")
 
     # generate name-sorted bam from fastqs
@@ -63,7 +74,10 @@ with tempfile.TemporaryDirectory() as work_dir:
 
     # downsample to viridian assembly
     amp_dir = work_dir / "amplicons"
-    amplicon_failures = rs.make_reads_dir_for_viridian(amp_dir, 1000)
+    manifest_data = rs.make_reads_dir_for_viridian(amp_dir, 1000)
 
     # run viridian
-    run_viridian(amp_dir, amplicon_failures)
+    consensus = run_viridian(work_dir, amp_dir, manifest_data, rs.viridian_json)
+
+    # self qc
+    self_qc(consensus)

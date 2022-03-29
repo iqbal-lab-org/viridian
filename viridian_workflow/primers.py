@@ -104,9 +104,7 @@ class Amplicon:
 
 
 class AmpliconSet:
-    def __init__(
-        self, name, amplicons, tolerance=5, shortname=None,
-    ):
+    def __init__(self, name, amplicons, tolerance=5, shortname=None, fn=None):
         """AmpliconSet supports various membership operations"""
         if not shortname:
             # base-54 hash
@@ -116,6 +114,8 @@ class AmpliconSet:
         self.seqs = {}
         self.amplicons = amplicons
         self.amplicon_ids = {}
+        if fn:
+            self.fn = fn
 
         primer_lengths = set()
         sequences = {}
@@ -197,7 +197,7 @@ class AmpliconSet:
                 amplicons[d["Amplicon_name"]].add(primer)
 
         name = fn if not name else name
-        return cls(name, amplicons, **kwargs)
+        return cls(name, amplicons, fn=fn, **kwargs)
 
     def score(self, readstore):
         for fragment in readstore:
