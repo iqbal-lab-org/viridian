@@ -22,6 +22,8 @@ class PipelineProcessError(Exception):
 
 
 TRANSLATE_TABLE = str.maketrans("ATCGatcg", "TAGCtagc")
+
+
 def revcomp(seq):
     return seq.translate(TRANSLATE_TABLE)[::-1]
 
@@ -47,7 +49,8 @@ def write_json(outfile, data):
 
 
 def run_process(cmd, ignore_error=False, stdout=None):
-    logging.info(f"Running: {cmd}")
+    cmd = list(map(str, cmd))
+    print(f"Running: {' '.join(cmd)}")
     stdout_fd = subprocess.PIPE
     if stdout:
         stdout_fd = open(stdout, "w")
@@ -62,15 +65,15 @@ def run_process(cmd, ignore_error=False, stdout=None):
     if stdout:
         stdout_fd.close()
     time_elapsed = time.time() - start_time
-    logging.info(f"Process ({cmd}) completed in {time_elapsed} seconds.")
+    print(f"Process ({' '.join(cmd)}) completed in {time_elapsed} seconds.")
 
     if not stdout:
-        logging.info(result.stdout)
+        print(result.stdout)
         return result.stdout
 
     if not ignore_error and result.returncode != 0:
-        raise PipelineProcessError(f"Process returned {result.returncode}")
-        logging.error(result.stderr)
+        # raise or(f"Process returned {result.returncode}")
+        print(result.stderr)
 
 
 def amplicons_json_to_bed_and_range(infile, outfile):
