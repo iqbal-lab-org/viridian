@@ -313,9 +313,21 @@ class ReadStore:
         random.seed(42)
         os.mkdir(outdir)
         manifest_data = {}
-        failed_amplicons = set()
+        self.failed_amplicons = set()
+
+        summary = {}
 
         for amplicon in self.amplicon_set:
+            summary[amplicon.name] = {
+                "start": amplicon.start + 1,
+                "end": amplicon.end + 1,
+                "total_mapped_bases": 0,
+                "total_depth": 0,
+                "sampled_bases": 0,
+                "sampled_depth": 0,
+                "pass": False,
+            }
+
             outname = f"{len(manifest_data)}.fa"
             outfile = os.path.join(outdir, outname)
             fragments = self[amplicon]
@@ -326,11 +338,8 @@ class ReadStore:
             else:
                 bases_out = self.sample_unpaired_reads(fragments, outfile, target_bases)
             if bases_out == 0:
-                failed_amplicons.add(amplicon)
+                self.failed_amplicons.add(amplicon)
             else:
                 manifest_data[amplicon.name] = outname
 
-        with open(os.path.join(outdir, "manifest.json"), "w") as f:
-            json.dump(manifest_data, f, indent=2)
-
-        return failed_amplicons
+        return manifest_data
