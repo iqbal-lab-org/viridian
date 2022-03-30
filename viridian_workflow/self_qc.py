@@ -277,149 +277,40 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
     return positions
 
 
-def remap(
-    ref_genome,
-    consensus_fasta,
-    minimap_presets,
-    amplicon_set,
-    tagged_bam,
-    config=default_config,
-):
+def annotate_vcf(vcf, msa):
+    header = []
+    records = {}
+
+    coords = {}
     stats = {}
-    cons = mp.Aligner(consensus_fasta, preset=minimap_presets)
-    if len(cons.seq_names) != 1:
-        Exception(f"Consensus fasta {consensus_fasta} has more than one sequence")
-    consensus_seq = cons.seq(cons.seq_names[0])
 
-    ref = mp.Aligner(ref_genome)
-    reference_seq = ref.seq(ref.seq_names[0])
+    with open(msa) as msa_fd:
+        seq1 = msa_rd.readline().strip()
+        seq2 = msa_fd.readline().strip()
+        ref = 0  # 1-based coords in vcf
+        con = 0
 
-    multi_amplicons = 0
-    no_amplicons = 0
-    tagged = 0
+        for a, b in zip(seq1, seq2):
+            if a != "-":
+                ref += 1
+            if b != "-":
+                con += 1
 
-    for r in pysam.AlignmentFile(tagged_bam):
-        a = cons.map(r.seq)  # remap to consensus
-        alignment = None
-        for x in a:
-            if x.is_primary:
-                alignment = x
+            coords[ref] = con
+            stats[con] = f"{ref}:{a}-{con}{b}"
 
-        if not alignment:
+    for line in open(vcf):
+        line = line.strip()
+        if line[0] == "#":
+            header.append(line)
             continue
 
-        assert alignment.q_en > alignment.q_st
-        assert alignment.r_en > alignment.r_st
+        #        MN908947.3	12781	6	C	T	.	PASS	.	GT	1/1
+        _, pos, _, x, y, *r = line.split("\t")
+        pos = int(pos)
 
-        amplicons = None
-        # BROKEN BROKEN
-        #        amplicons = get_tags(amplicon_set, r)
-
-        amplicon = None
-
-        if len(amplicons) == 1:
-            amplicon = amplicons[0]
-            tagged += 1
-        elif len(amplicons) > 1:
-            multi_amplicons += 1
-            continue
-        else:
-            no_amplicons += 1
-            continue
-
-        strand = False  # strand is forward
-        if alignment.strand == 0:
-            # should be error
-            raise Exception()
-        elif alignment.strand == 1:
-            strand = True
-
-        # problem: if the consensus is shorter than ref (like if a primer sequence is ellided) then we can't zip the cigar_to_alt lists
-        # slice_start = max(alignment.r_st, r.reference_start)
-        # slice_end = min(alignment.r_en, r.reference_end)
-        # but the start and end coords in both cases are in different reference frames
-
-        cons_alts = cigar_to_alts(
-            consensus_seq[alignment.r_st : alignment.r_en],
-            r.seq,
-            alignment.cigar,
-            q_pos=alignment.q_st,
-        )
-
-        #        ref_alts = cigar_to_alts(
-        #            reference_seq[r.reference_start : r.reference_end],
-        #            r.seq,
-        # r.query_alignment_sequence,
-        #            r.cigar,
-        #            q_pos=r.query_alignment_start,
-        #            pysam=True,
-        #        )
-
-        # TODO test softclip
-
-        for (read_pos, (read_cons_pos, read_cons_base)) in enumerate(cons_alts):
-            consensus_position = read_cons_pos + alignment.r_st
-            #            reference_position = read_ref_pos + r.reference_start
-            reference_position = 0
-            read_ref_base = "N"
-
-            if consensus_position >= len(consensus_seq):
-                print(
-                    f"Warning: Position {read_pos}+{alignment.r_st} extends beyond length of consensus ({len(consensus_seq)}) {consensus_position}:{reference_position} ({read_pos}: {read_cons_base})",
-                    file=sys.stderr,
-                )
-                continue
-
-            cons_base = consensus_seq[consensus_position]
-            ref_base = reference_seq[reference_position]
-
-            # TODO resolve assumption: if there is an ambiguous amplicon id, in_primer is false
-            # in_primer = amplicon.position_in_primer(reference_position)
-            in_primer = False
-
-            # the trim 5' option assumes that all bases max_primer_len from the 5' end of the read are
-            # guaranteed to be inside of a primer
-            if config.trim_5prime and read_pos < amplicon.max_length:
-                in_primer = True
-
-            base_profile = BaseProfile(
-                read_cons_pos,
-                cons_base,
-                ref_base,
-                in_primer,
-                strand,
-                amplicon.name,
-                reference_position,
-            )
-
-            if consensus_position not in stats:
-                stats[consensus_position] = Stats(
-                    ref_base=ref_base,
-                    cons_base=cons_base,
-                    reference_position=reference_position,
-                    config=config,
-                )
-            stats[consensus_position].total_reads += 1
-
-            if (
-                config.log_liftover
-                and reference_position != stats[consensus_position].reference_pos
-            ):
-                print(
-                    f"{config} {config.min_frs} {config.trim_5prime} {config.log_liftover} WARNING: liftover error; Ref:{reference_position}:{read_ref_base} (expected {stats[consensus_position].reference_pos})\t{r.cigarstring}\tCons:{consensus_position}:{read_cons_base}\t{alignment.cigar_str}\t{ref_base}/{cons_base}\t{r.seq}",
-                    file=sys.stderr,
-                )
-
-            if read_cons_base != cons_base:
-                stats[consensus_position].add_alt(base_profile)
-            else:
-                stats[consensus_position].add_ref(base_profile)
-
-    print(
-        f"reads tagged with more than one amplicon: {multi_amplicons}, with zero: {no_amplicons}. tagged: {tagged}.",
-        file=sys.stderr,
-    )
-    return stats
+        records.append(line, stats[pos])
+    return records
 
 
 def mask(fasta, stats, outpath=None, name=None, config=default_config):

@@ -292,6 +292,39 @@ class ReadStore:
         # normalise the bases per amplicons and such
         pass
 
+    def remap(self, fasta, minimap_presets=None):
+        """remap reads to consensus
+        """
+
+        stats = {}
+        cons = mp.Aligner(consensus_fasta, preset=minimap_presets)
+        if len(cons.seq_names) != 1:
+            Exception(f"Consensus fasta {consensus_fasta} has more than one sequence")
+        consensus_seq = cons.seq(cons.seq_names[0])
+
+        reference_seq = ref.seq(ref.seq_names[0])
+
+        multi_amplicons = 0
+        no_amplicons = 0
+        tagged = 0
+
+        for amplicon in self.amplicons:
+            for fragment in self.reads[amplicon]:
+                r = fragment.r1
+                a = cons.map(r.seq)  # remap to consensus
+                alignment = None
+                for x in a:
+                    if x.is_primary:
+                        alignment = x
+
+                if not alignment:
+                    continue
+
+                assert alignment.q_en > alignment.q_st
+                assert alignment.r_en > alignment.r_st
+
+        return stats
+
     @staticmethod
     def sample_paired_reads(fragments, outfile, target_bases):
         if len(fragments) == 0:
