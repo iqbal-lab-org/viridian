@@ -83,8 +83,12 @@ if True:
     vcf = varifier.run(work_dir / "varifier", ref, consensus)
 
     # self qc
-    positions = rs.remap(consensus)
+    #    positions = rs.remap(consensus)
 
     # annotate vcf
-    annotated_vcf = self_qc.annotate_vcf(vcf, work_dir / "varifier" / "04.msa")
-    print(annotated_vcf)
+    annotated_vcf = self_qc.annotate_vcf(
+        work_dir / "varifier" / "03.probe_filtered.vcf",
+        work_dir / "varifier" / "04.msa",
+    )
+    for rec in annotated_vcf:
+        print(rec)

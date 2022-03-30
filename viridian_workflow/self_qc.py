@@ -277,15 +277,14 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
     return positions
 
 
-def annotate_vcf(vcf, msa):
+def annotate_vcf(vcf, msa, stats):
     header = []
-    records = {}
+    records = []
 
     coords = {}
-    stats = {}
 
     with open(msa) as msa_fd:
-        seq1 = msa_rd.readline().strip()
+        seq1 = msa_fd.readline().strip()
         seq2 = msa_fd.readline().strip()
         ref = 0  # 1-based coords in vcf
         con = 0
@@ -309,7 +308,10 @@ def annotate_vcf(vcf, msa):
         _, pos, _, x, y, *r = line.split("\t")
         pos = int(pos)
 
-        records.append(line, stats[pos])
+        if pos in stats:
+            records.append((*line.split("\t"), stats[coords[pos]]))
+        else:
+            print(f"bad state {pos}")
     return records
 
 

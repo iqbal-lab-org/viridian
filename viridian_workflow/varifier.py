@@ -21,7 +21,8 @@ def run(outdir, ref_genome, assembly, min_coord=None, max_coord=None):
             assembly,
             ref_genome,
             outdir,
-        ]
+        ],
+        ignore_error=True,
     )
     check_file(vcf)
     return vcf
