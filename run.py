@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import json
 
-from viridian_workflow import primers, readstore, minimap, utils
+from viridian_workflow import primers, readstore, minimap, utils, self_qc, varifier
 
 
 def run_viridian(work_dir, amplicon_dir, amplicon_manifest, amplicon_json):
@@ -79,5 +79,12 @@ if True:
     # run viridian
     consensus = run_viridian(work_dir, amp_dir, manifest_data, rs.viridian_json)
 
+    # varifier
+    vcf = varifier.run(work_dir / "varifier", ref, consensus)
+
     # self qc
-    self_qc(consensus)
+    positions = rs.remap(consensus)
+
+    # annotate vcf
+    annotated_vcf = self_qc.annotate_vcf(vcf, work_dir / "varifier" / "04.msa")
+    print(annotated_vcf)
