@@ -7,12 +7,10 @@ import sys
 import os
 
 from viridian_workflow import (
-    amplicon_schemes,
     detect_primers,
     primers,
     minimap,
     self_qc,
-    sample_reads,
     utils,
     varifier,
 )
