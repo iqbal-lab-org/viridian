@@ -70,6 +70,8 @@ if True:
     # check it out: stats = bam.stats
 
     # construct readstore
+    # note: we could/should be subsampling at this point. we
+    # could do this by passing in bam.stats
     rs = readstore.ReadStore(amplicon_set, bam)
 
     # downsample to viridian assembly
@@ -80,15 +82,16 @@ if True:
     consensus = run_viridian(work_dir, amp_dir, manifest_data, rs.viridian_json)
 
     # varifier
-    vcf = varifier.run(work_dir / "varifier", ref, consensus)
+    vcf = varifier.run(work_dir / "varifier", ref, consensus, min_coord=rs.start_pos, max_coord=rs.end_pos)
 
     # self qc
-    #    positions = rs.remap(consensus)
+    position_stats = rs.remap(consensus)
 
     # annotate vcf
     annotated_vcf = self_qc.annotate_vcf(
-        work_dir / "varifier" / "03.probe_filtered.vcf",
+        work_dir / "varifier" / "04.final.vcf",
         work_dir / "varifier" / "04.msa",
+        position_stats
     )
     for rec in annotated_vcf:
         print(rec)

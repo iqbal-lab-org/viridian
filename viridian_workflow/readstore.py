@@ -4,9 +4,10 @@ import json
 import os
 import random
 
-from viridian_workflow import utils
+from viridian_workflow import utils, self_qc
 
 import pysam
+import mappy as mp
 
 # "seq" is the read sequence in the direction of the reference genome, ie what
 # you get in a BAM file.
@@ -226,6 +227,9 @@ class ReadStore:
         self.reads_all_paired = None
         self.unmatched_reads = 0
 
+        self.start_pos = None
+        self.end_pos = None
+
         self.summary = {}
         self.viridian_json = {
             "name": amplicon_set.name,
@@ -243,6 +247,18 @@ class ReadStore:
                 "sampled_depth": 0,
                 "pass": False,
             }
+
+            # store the global start and end position for the entire
+            # primer scheme. This is used to help varifier.
+            if not self.start_pos:
+                self.start_pos = amplicon.start + 1
+            if not self.end_pos:
+                self.end_pos = amplicon.end + 1
+
+            if amplicon.start + 1 < self.start_pos:
+                self.start_pos = amplicon.start + 1
+            if amplicon.end + 1 > self.end_pos:
+                self.end_pos = amplicon.end + 1
 
             left_start, left_end = amplicon.left_primer_region
             right_start, right_end = amplicon.right_primer_region
@@ -297,31 +313,28 @@ class ReadStore:
         """
 
         stats = {}
-        cons = mp.Aligner(consensus_fasta, preset=minimap_presets)
+        cons = mp.Aligner(str(fasta), preset=minimap_presets)
         if len(cons.seq_names) != 1:
-            Exception(f"Consensus fasta {consensus_fasta} has more than one sequence")
+            Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])
 
-        reference_seq = ref.seq(ref.seq_names[0])
-
-        multi_amplicons = 0
-        no_amplicons = 0
-        tagged = 0
-
         for amplicon in self.amplicons:
-            for fragment in self.reads[amplicon]:
-                r = fragment.r1
-                a = cons.map(r.seq)  # remap to consensus
-                alignment = None
-                for x in a:
-                    if x.is_primary:
-                        alignment = x
+            for fragment in self.amplicons[amplicon]:
+                for r in fragment.reads:
+                    a = cons.map(r.seq)  # remap to consensus
+                    alignment = None
+                    for x in a:
+                        if x.is_primary:
+                            alignment = x
 
-                if not alignment:
-                    continue
+                    if not alignment:
+                        continue
 
-                assert alignment.q_en > alignment.q_st
-                assert alignment.r_en > alignment.r_st
+                    assert alignment.q_en > alignment.q_st
+                    assert alignment.r_en > alignment.r_st
+
+                    for ref_pos, call in self_qc.cigar_to_alts(consensus_seq, query, cigar): 
+                        stats[ref_pos] = call
 
         return stats
 

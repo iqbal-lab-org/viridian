@@ -3,8 +3,6 @@ import sys
 import mappy as mp
 import pysam
 
-from viridian_workflow.primers import AmpliconSet
-
 from collections import namedtuple, defaultdict
 
 BaseProfile = namedtuple(
