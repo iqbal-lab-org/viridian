@@ -32,29 +32,87 @@ default_config = Config(
 )
 
 
-def mask_sequence(sequence, position_stats, config=default_config):
-    sequence = list(sequence)
-    summary = defaultdict(int)
-    qc = {}
-    for position, stats in position_stats.items():
-        if position >= len(sequence):
-            print(
-                f"Invalid condition: mapped position {position} greater than consensus length {len(sequence)}",
-                file=sys.stderr,
-            )
-            continue
-        summary["consensus_length"] += 1
-        if sequence[position] == "N":
-            # if a position is already masked by an upstream process skip it
-            summary["already_masked"] += 1
-            summary["total_masked"] += 1
-            continue
-        elif stats.check_for_failure(summary=summary):
-            summary["total_masked"] += 1
-            sequence[position] = "N"
-            qc[position] = stats.log
-        qc["masking_summary"] = summary
-    return "".join(sequence), qc
+class Pileup:
+    """A pileup is an array of Stats objects indexed by position in a reference
+    """
+
+    def __init__(self, ref):
+        self.ref = ref
+        for r in ref:
+            self.seq.append(Stats(ref=r))
+
+    def __getitem__(self, pos):
+        return self.seq[pos]
+
+    def __setitem__(self, pos, profile):
+        self.seq[pos].update(profile)
+
+    def mask():
+        sequence = list(self.ref)
+        summary = defaultdict(int)
+        self.qc = {}
+        for position, stats in enumerate(self.seq):
+            if position >= len(sequence):
+                print(
+                    f"Invalid condition: mapped position {position} greater than consensus length {len(sequence)}",
+                    file=sys.stderr,
+                )
+                continue
+            summary["consensus_length"] += 1
+            if sequence[position] == "N":
+                # if a position is already masked by an upstream process skip it
+                summary["already_masked"] += 1
+                summary["total_masked"] += 1
+                continue
+            elif stats.check_for_failure(summary=summary):
+                summary["total_masked"] += 1
+                sequence[position] = "N"
+                self.qc[position] = stats.log
+            self.qc["masking_summary"] = summary
+        return "".join(sequence)
+
+    def annotate_vcf(vcf, msa=None):
+        header = []
+        records = []
+
+        coords = {}
+
+        if msa:
+            with open(msa) as msa_fd:
+                seq1 = msa_fd.readline().strip()
+                seq2 = msa_fd.readline().strip()
+                ref = 0  # 1-based coords in vcf
+                con = 0
+
+                for a, b in zip(seq1, seq2):
+                    if a != "-":
+                        ref += 1
+                    if b != "-":
+                        con += 1
+
+                    coords[ref] = con
+                    stats[con] = f"{ref}:{a}-{con}{b}"
+        else:
+            for i in range(len(self.ref)):
+                coords[i] = i
+
+        # TODO: assert 'chromosome' names are the same
+
+        for line in open(vcf):
+            line = line.strip()
+            if line[0] == "#":
+                header.append(line)
+                continue
+
+            #        MN908947.3	12781	6	C	T	.	PASS	.	GT	1/1
+            _, pos, _, x, y, *r = line.split("\t")
+            pos = int(pos)
+
+            if pos in stats:
+                records.append((*line.split("\t"), stats[coords[pos]]))
+            else:
+                print(f"test state {pos} -- check indel logic")
+        return records
 
 
 def test_bias(n, trials, threshold=0.3):
@@ -273,44 +331,6 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
             raise Exception(f"invalid cigar op {op}")
 
     return positions
-
-
-def annotate_vcf(vcf, msa, stats):
-    header = []
-    records = []
-
-    coords = {}
-
-    with open(msa) as msa_fd:
-        seq1 = msa_fd.readline().strip()
-        seq2 = msa_fd.readline().strip()
-        ref = 0  # 1-based coords in vcf
-        con = 0
-
-        for a, b in zip(seq1, seq2):
-            if a != "-":
-                ref += 1
-            if b != "-":
-                con += 1
-
-            coords[ref] = con
-            stats[con] = f"{ref}:{a}-{con}{b}"
-
-    for line in open(vcf):
-        line = line.strip()
-        if line[0] == "#":
-            header.append(line)
-            continue
-
-        #        MN908947.3	12781	6	C	T	.	PASS	.	GT	1/1
-        _, pos, _, x, y, *r = line.split("\t")
-        pos = int(pos)
-
-        if pos in stats:
-            records.append((*line.split("\t"), stats[coords[pos]]))
-        else:
-            print(f"bad state {pos}")
-    return records
 
 
 def mask(fasta, stats, outpath=None, name=None, config=default_config):

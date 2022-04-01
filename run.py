@@ -92,7 +92,7 @@ if True:
         max_coord=rs.end_pos,
     )
 
-    # self qc
+    # self qc: remap reads to consensus
     pileup = rs.pileup(consensus)
 
     # annotate vcf
