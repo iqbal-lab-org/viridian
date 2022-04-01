@@ -308,11 +308,11 @@ class ReadStore:
         # normalise the bases per amplicons and such
         pass
 
-    def remap(self, fasta, minimap_presets=None):
+    def pileup(self, fasta, minimap_presets=None):
         """remap reads to consensus
         """
 
-        stats = {}
+        pileup = self_qc.Pileup()
         cons = mp.Aligner(str(fasta), preset=minimap_presets)
         if len(cons.seq_names) != 1:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
@@ -333,10 +333,12 @@ class ReadStore:
                     assert alignment.q_en > alignment.q_st
                     assert alignment.r_en > alignment.r_st
 
-                    for ref_pos, call in self_qc.cigar_to_alts(consensus_seq, query, cigar): 
-                        stats[ref_pos] = call
+                    for ref_pos, call in self_qc.cigar_to_alts(
+                        consensus_seq, r.seq, alignment.cigar, q_pos=alignment.q_st
+                    ):
+                        pileup[ref_pos] = call
 
-        return stats
+        return pileup
 
     @staticmethod
     def sample_paired_reads(fragments, outfile, target_bases):

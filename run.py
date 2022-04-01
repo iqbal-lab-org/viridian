@@ -59,7 +59,9 @@ if True:
     print(f"using {work_dir} {work_dir.exists()}")
 
     # generate name-sorted bam from fastqs
-    unsorted_bam = minimap.run(work_dir / "testbam.bam", ref, fq1, fq2=fq2, sort=False)
+    unsorted_bam = minimap.run(
+        work_dir / "name_sorted.bam", ref, fq1, fq2=fq2, sort=False
+    )
 
     # pre-process input bam
     bam = readstore.Bam(unsorted_bam)
@@ -82,16 +84,22 @@ if True:
     consensus = run_viridian(work_dir, amp_dir, manifest_data, rs.viridian_json)
 
     # varifier
-    vcf = varifier.run(work_dir / "varifier", ref, consensus, min_coord=rs.start_pos, max_coord=rs.end_pos)
+    vcf, msa = varifier.run(
+        work_dir / "varifier",
+        ref,
+        consensus,
+        min_coord=rs.start_pos,
+        max_coord=rs.end_pos,
+    )
 
     # self qc
-    position_stats = rs.remap(consensus)
+    pileup = rs.pileup(consensus)
 
     # annotate vcf
-    annotated_vcf = self_qc.annotate_vcf(
-        work_dir / "varifier" / "04.final.vcf",
-        work_dir / "varifier" / "04.msa",
-        position_stats
-    )
+    annotated_vcf = pileup.annotate_vcf(vcf, msa=msa,)
+
+    # mask output
+    # masked_fasta = pileup.mask(consensus)
+
     for rec in annotated_vcf:
         print(rec)

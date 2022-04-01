@@ -6,6 +6,7 @@ from viridian_workflow.utils import run_process, check_file
 
 def run(outdir, ref_genome, assembly, min_coord=None, max_coord=None):
     vcf = os.path.join(outdir, "04.truth.vcf")
+    msa = os.path.join(outdir, "04.msa")
     options = ["--global_align"]
     if min_coord is not None:
         options += ["--global_align_min_coord", min_coord + 1]
@@ -24,4 +25,5 @@ def run(outdir, ref_genome, assembly, min_coord=None, max_coord=None):
         ],
     )
     check_file(vcf)
-    return vcf
+    check_file(msa)
+    return vcf, msa
