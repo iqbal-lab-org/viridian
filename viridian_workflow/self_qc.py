@@ -6,16 +6,7 @@ import pysam
 from collections import namedtuple, defaultdict
 
 BaseProfile = namedtuple(
-    "BaseProfile",
-    [
-        "base",
-        "cons_base",
-        "ref_base",
-        "in_primer",
-        "forward_strand",
-        "amplicon_name",
-        "reference_pos",
-    ],
+    "BaseProfile", ["base", "in_primer", "forward_strand", "amplicon_name",],
 )
 
 Config = namedtuple(
@@ -38,14 +29,21 @@ class Pileup:
 
     def __init__(self, ref):
         self.ref = ref
+        self.seq = []
         for r in ref:
-            self.seq.append(Stats(ref=r))
+            self.seq.append(Stats(ref_base=r))
 
     def __getitem__(self, pos):
         return self.seq[pos]
 
     def __setitem__(self, pos, profile):
+        raise Exception(f"don't set Pileup positions")
+
+    def update(self, pos, profile):
         self.seq[pos].update(profile)
+
+    def __len__(self):
+        return len(self.seq)
 
     def mask():
         sequence = list(self.ref)
@@ -160,17 +158,16 @@ class Stats:
 
         self.config = config
 
-    def add_alt(self, profile, alt=None):
-        if not self.reference_pos:
-            self.reference_pos = profile.reference_pos
+    def update(self, profile, alt=None):
+        # TODO: check if alt
 
         if profile.in_primer:
             self.alts_in_primer += 1
             return
 
         self.alts += 1
-        if profile.base == profile.ref_base:
-            self.alts_matching_refs += 1
+        # if profile.base == profile.ref_base:
+        #    self.alts_matching_refs += 1
 
         if profile.amplicon_name:
             # when unambiguous amplicon call cannot be made, do not
@@ -180,25 +177,6 @@ class Stats:
 
         if profile.forward_strand:
             self.alts_forward += 1
-
-        self.total += 1
-
-    def add_ref(self, profile):
-        if not self.reference_pos:
-            self.reference_pos = profile.reference_pos
-
-        if profile.in_primer:
-            self.refs_in_primer += 1
-            return
-
-        self.refs += 1
-
-        if profile.amplicon_name:
-            self.refs_in_amplicons[profile.amplicon_name] += 1
-            self.amplicon_totals[profile.amplicon_name] += 1
-
-        if profile.forward_strand:
-            self.refs_forward += 1
 
         self.total += 1
 
@@ -278,39 +256,50 @@ class Stats:
         return "-"
 
 
-def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
+def parse_cigar(ref, query, alignment):
     """Interpret cigar string and query sequence in reference
     coords from mappy (count, op) or pysam (op, count)
+
+    Returns a list of query basecalls per reference position
+
+    ref: AATGG 
+    qry: AACT-
+    (1, "A")
+    (2, "AC")
+    (3, "T")
+    (4, "-")
+    (5, "-")
+    etc.
     """
     positions = []
-    r_pos = 0
+    r_pos = alignment.r_st
+    cigar = alignment.cigar
+    q_pos = alignment.q_st
 
     for count, op in cigar:
-        if pysam:
-            count, op = op, count  # this makes me sad
         if op == 0:
             # match/mismatch
-            for i in range(count):
-                if len(query) <= q_pos + i:
-                    # TODO this condition is being hit when there's soft-clipping at the end of the read (I think)
-                    # print(f"WARNING: invalid cigar string. {query}, index {q_pos + i}. cigar: {cigar}", file=sys.stderr)
-                    continue
-                positions.append((r_pos + i, query[q_pos + i]))
-            q_pos += count
-            r_pos += count
+            for _ in range(count):
+                if len(query) == q_pos + 1:
+                    # done? TODO: verify that this captures the full query sequence
+                    # print(f"WARNING: invalid cigar string. {len(query)}, index {q_pos}. cigar: {cigar}", file=sys.stderr)
+                    break
+
+                positions.append((r_pos, query[q_pos]))
+                q_pos += 1
+                r_pos += 1
 
         elif op == 1:
-            pass
             # insertion
-            #            positions.append((q_pos, query[q_pos : q_pos + count]))
-            q_pos += count
-            r_pos += 0
+            positions.append((r_pos, query[q_pos : q_pos + count + 1]))
+            q_pos += 1
+            r_pos += 1  # TODO verify
 
         elif op == 2:
             # deletion
-            for n in range(count):
-                positions.append((r_pos + n, "-"))
-            r_pos += count
+            for _ in range(count):
+                positions.append((r_pos, "-"))
+                r_pos += 1
 
         elif op == 3:
             # ref_skip
@@ -321,6 +310,7 @@ def cigar_to_alts(ref, query, cigar, q_pos=0, pysam=False):
             # q_pos += count
             # may not need to be considered if q_pos offset is set
             # TODO verify
+            # may need to consider where softclipping on the 3' end
             pass
 
         elif op == 5:

@@ -27,7 +27,19 @@ def score(matches, mismatches):
     m = 0
     winner = None
     for amplicon_set in amplicon_sets:
-        print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
+        total = matches[amplicon_set] + mismatches[amplicon_set]
+        if mismatches[amplicon_set] / total >= 0.1:
+            # if more than 10% of reads break the amplicon boundaries
+            # disqualify this amplicon set
+            print(
+                amplicon_set.name,
+                mismatches[amplicon_set],
+                matches[amplicon_set],
+                "[disqualified]",
+            )
+            continue
+        else:
+            print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
         if matches[amplicon_set] >= m:
             winner = amplicon_set
             m = matches[amplicon_set]
@@ -203,6 +215,9 @@ class Fragment:
     def total_mapped_bases(self):
         return sum([r.qry_end - r.qry_start for r in self.reads])
 
+    def in_primer(self, pos):
+        return False
+
 
 class PairedReads(Fragment):
     def __init__(self, read1, read2):
@@ -312,11 +327,11 @@ class ReadStore:
         """remap reads to consensus
         """
 
-        pileup = self_qc.Pileup()
         cons = mp.Aligner(str(fasta), preset=minimap_presets)
         if len(cons.seq_names) != 1:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])
+        pileup = self_qc.Pileup(consensus_seq)
 
         for amplicon in self.amplicons:
             for fragment in self.amplicons[amplicon]:
@@ -333,10 +348,34 @@ class ReadStore:
                     assert alignment.q_en > alignment.q_st
                     assert alignment.r_en > alignment.r_st
 
-                    for ref_pos, call in self_qc.cigar_to_alts(
-                        consensus_seq, r.seq, alignment.cigar, q_pos=alignment.q_st
+                    aln = self_qc.parse_cigar(consensus_seq, r.seq, alignment)
+                    ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
+                    c = consensus_seq[alignment.r_st : alignment.r_en]
+                    for e in aln:
+                        if len(e[1]) > 3:
+
+                            print(c)
+                            print(ex)
+                            print(r.seq)
+                            print()
+
+                            for i, (ee, cc) in enumerate(zip(aln, c)):
+                                print(f"{i}\t{ee}\t{cc}")
+                            exit()
+                    # elif len(c) != len(ex):
+                    #    print(c)
+                    #    print(ex)
+                    #    print(alignment.r_en, alignment.q_en, alignment.cigar)
+                    #    print()
+
+                    for ref_pos, call in self_qc.parse_cigar(
+                        consensus_seq, r.seq, alignment
                     ):
-                        pileup[ref_pos] = call
+                        # ref_base = r.seq[q_pos]
+                        profile = self_qc.BaseProfile(
+                            call, fragment.in_primer(ref_pos), r.is_reverse, amplicon
+                        )
+                        pileup[ref_pos].update(profile)
 
         return pileup
 
