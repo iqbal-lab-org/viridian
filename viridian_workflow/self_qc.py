@@ -34,6 +34,9 @@ class Pileup:
             self.seq.append(Stats(ref_base=r))
 
     def __getitem__(self, pos):
+        if pos >= len(self.seq):
+            print(f"position too big: {pos} {len(self.seq)}")
+            return None
         return self.seq[pos]
 
     def __setitem__(self, pos, profile):
@@ -69,11 +72,12 @@ class Pileup:
             self.qc["masking_summary"] = summary
         return "".join(sequence)
 
-    def annotate_vcf(vcf, msa=None):
+    def annotate_vcf(self, vcf, msa=None):
         header = []
         records = []
 
-        coords = {}
+        # 1-based coord translation table
+        ref_to_consensus = {}
 
         if msa:
             with open(msa) as msa_fd:
@@ -88,11 +92,10 @@ class Pileup:
                     if b != "-":
                         con += 1
 
-                    coords[ref] = con
-                    stats[con] = f"{ref}:{a}-{con}{b}"
+                    ref_to_consensus[ref] = con
         else:
             for i in range(len(self.ref)):
-                coords[i] = i
+                ref_to_consensus[i] = i
 
         # TODO: assert 'chromosome' names are the same
 
@@ -106,10 +109,16 @@ class Pileup:
             _, pos, _, x, y, *r = line.split("\t")
             pos = int(pos)
 
-            if pos in stats:
-                records.append((*line.split("\t"), stats[coords[pos]]))
-            else:
-                print(f"test state {pos} -- check indel logic")
+            cons_coord = ref_to_consensus[pos]
+            records.append(
+                (
+                    *line.split("\t"),
+                    str(pos),
+                    str(cons_coord),
+                    str(self.seq[cons_coord - 1]),
+                )
+            )
+
         return records
 
 
@@ -137,6 +146,7 @@ class Stats:
     ):
         self.alts_in_primer = 0
         self.refs_in_primer = 0
+        self.alt_bases = defaultdict(int)
 
         self.alts_in_amplicons = defaultdict(int)
         self.refs_in_amplicons = defaultdict(int)
@@ -160,6 +170,7 @@ class Stats:
 
     def update(self, profile, alt=None):
         # TODO: check if alt
+        self.alt_bases[profile.base] += 1
 
         if profile.in_primer:
             self.alts_in_primer += 1
@@ -248,12 +259,8 @@ class Stats:
         return position_failed
 
     def __str__(self):
-        f = []
-        if len(self.amps_total) > 1:
-            return "-".join([f"{k}:{v}" for k, v in self.amps_total.items()])
-        if self.alts / self.total > 0.2:
-            return f"{self.alts}/{self.total}"
-        return "-"
+        alts = " ".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])
+        return f"{self.ref_base}: {alts}"
 
 
 def parse_cigar(ref, query, alignment):
@@ -292,8 +299,8 @@ def parse_cigar(ref, query, alignment):
         elif op == 1:
             # insertion
             positions.append((r_pos, query[q_pos : q_pos + count + 1]))
-            q_pos += 1
-            r_pos += 1  # TODO verify
+            q_pos += count + 1
+            r_pos += 1
 
         elif op == 2:
             # deletion

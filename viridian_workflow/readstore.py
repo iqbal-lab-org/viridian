@@ -334,7 +334,7 @@ class ReadStore:
         pileup = self_qc.Pileup(consensus_seq)
 
         for amplicon in self.amplicons:
-            for fragment in self.amplicons[amplicon]:
+            for fragment in self.amplicons[amplicon][:1000]:
                 for r in fragment.reads:
                     a = cons.map(r.seq)  # remap to consensus
                     alignment = None
@@ -351,32 +351,14 @@ class ReadStore:
                     aln = self_qc.parse_cigar(consensus_seq, r.seq, alignment)
                     ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
                     c = consensus_seq[alignment.r_st : alignment.r_en]
-                    for e in aln:
-                        if len(e[1]) > 3:
-
-                            print(c)
-                            print(ex)
-                            print(r.seq)
-                            print()
-
-                            for i, (ee, cc) in enumerate(zip(aln, c)):
-                                print(f"{i}\t{ee}\t{cc}")
-                            exit()
-                    # elif len(c) != len(ex):
-                    #    print(c)
-                    #    print(ex)
-                    #    print(alignment.r_en, alignment.q_en, alignment.cigar)
-                    #    print()
 
                     for ref_pos, call in self_qc.parse_cigar(
                         consensus_seq, r.seq, alignment
                     ):
-                        # ref_base = r.seq[q_pos]
                         profile = self_qc.BaseProfile(
                             call, fragment.in_primer(ref_pos), r.is_reverse, amplicon
                         )
                         pileup[ref_pos].update(profile)
-
         return pileup
 
     @staticmethod
