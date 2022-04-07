@@ -27,11 +27,35 @@ class Pileup:
     """A pileup is an array of Stats objects indexed by position in a reference
     """
 
-    def __init__(self, ref):
+    def __init__(self, ref, msa=None):
         self.ref = ref
         self.seq = []
+
+        # 1-based index translation tables
+        self.ref_to_consensus = {}
+        self.consensus_to_ref = {}
         for r in ref:
             self.seq.append(Stats(ref_base=r))
+
+        if msa:
+            with open(msa) as msa_fd:
+                seq1 = msa_fd.readline().strip()  # consensus
+                seq2 = msa_fd.readline().strip()  # reference
+                ref = 0  # we're using 1-based coords (vcf)
+                con = 0
+
+                for a, b in zip(seq1, seq2):
+                    if a != "-":
+                        ref += 1
+                    if b != "-":
+                        con += 1
+
+                    self.ref_to_consensus[ref] = con
+                    self.consensus_to_ref[con] = ref
+        else:
+            for i in range(1, len(self.ref) + 1):
+                self.ref_to_consensus[i] = i
+                self.consensus_to_ref[i] = i
 
     def __getitem__(self, pos):
         if pos >= len(self.seq):
@@ -72,30 +96,9 @@ class Pileup:
             self.qc["masking_summary"] = summary
         return "".join(sequence)
 
-    def annotate_vcf(self, vcf, msa=None):
+    def annotate_vcf(self, vcf):
         header = []
         records = []
-
-        # 1-based coord translation table
-        ref_to_consensus = {}
-
-        if msa:
-            with open(msa) as msa_fd:
-                seq1 = msa_fd.readline().strip()
-                seq2 = msa_fd.readline().strip()
-                ref = 0  # 1-based coords in vcf
-                con = 0
-
-                for a, b in zip(seq1, seq2):
-                    if a != "-":
-                        ref += 1
-                    if b != "-":
-                        con += 1
-
-                    ref_to_consensus[ref] = con
-        else:
-            for i in range(len(self.ref)):
-                ref_to_consensus[i] = i
 
         # TODO: assert 'chromosome' names are the same
 
@@ -109,7 +112,7 @@ class Pileup:
             _, pos, _, x, y, *r = line.split("\t")
             pos = int(pos)
 
-            cons_coord = ref_to_consensus[pos]
+            cons_coord = self.ref_to_consensus[pos]
             records.append(
                 (
                     *line.split("\t"),
@@ -171,23 +174,25 @@ class Stats:
     def update(self, profile, alt=None):
         # TODO: check if alt
         self.alt_bases[profile.base] += 1
+        if profile.base != self.ref_base:
+            self.alts += 1
+            if profile.amplicon_name:
+                self.alts_in_amplicons[profile.amplicon_name] += 1
 
-        if profile.in_primer:
-            self.alts_in_primer += 1
-            return
+            if profile.in_primer:
+                self.alts_in_primer += 1
+            if not profile.is_reverse:
+                self.alts_forward += 1
 
-        self.alts += 1
-        # if profile.base == profile.ref_base:
-        #    self.alts_matching_refs += 1
+        else:
+            self.refs += 1
+            if profile.amplicon_name:
+                self.refs_in_amplicons[profile.amplicon_name] += 1
 
-        if profile.amplicon_name:
-            # when unambiguous amplicon call cannot be made, do not
-            # consider (or consider differently)
-            self.alts_in_amplicons[profile.amplicon_name] += 1
-            self.amplicon_totals[profile.amplicon_name] += 1
-
-        if profile.forward_strand:
-            self.alts_forward += 1
+            if profile.in_primer:
+                self.refs_in_primer += 1
+            if not profile.is_reverse:
+                self.refs_forward += 1
 
         self.total += 1
 

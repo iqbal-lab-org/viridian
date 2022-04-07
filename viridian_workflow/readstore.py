@@ -323,7 +323,7 @@ class ReadStore:
         # normalise the bases per amplicons and such
         pass
 
-    def pileup(self, fasta, minimap_presets=None):
+    def pileup(self, fasta, msa=None, minimap_presets=None):
         """remap reads to consensus
         """
 
@@ -331,12 +331,12 @@ class ReadStore:
         if len(cons.seq_names) != 1:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])
-        pileup = self_qc.Pileup(consensus_seq)
+        pileup = self_qc.Pileup(consensus_seq, msa=msa)
 
         for amplicon in self.amplicons:
             for fragment in self.amplicons[amplicon][:1000]:
-                for r in fragment.reads:
-                    a = cons.map(r.seq)  # remap to consensus
+                for read in fragment.reads:
+                    a = cons.map(read.seq)  # remap to consensus
                     alignment = None
                     for x in a:
                         if x.is_primary:
@@ -348,17 +348,20 @@ class ReadStore:
                     assert alignment.q_en > alignment.q_st
                     assert alignment.r_en > alignment.r_st
 
-                    aln = self_qc.parse_cigar(consensus_seq, r.seq, alignment)
+                    aln = self_qc.parse_cigar(consensus_seq, read.seq, alignment)
                     ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
                     c = consensus_seq[alignment.r_st : alignment.r_en]
 
-                    for ref_pos, call in self_qc.parse_cigar(
-                        consensus_seq, r.seq, alignment
+                    for consensus_pos, call in self_qc.parse_cigar(
+                        consensus_seq, read.seq, alignment
                     ):
                         profile = self_qc.BaseProfile(
-                            call, fragment.in_primer(ref_pos), r.is_reverse, amplicon
+                            call,
+                            fragment.in_primer(pileup.consensus_to_ref[consensus_pos]),
+                            read.is_reverse,
+                            amplicon,
                         )
-                        pileup[ref_pos].update(profile)
+                        pileup[consensus_pos].update(profile)
         return pileup
 
     @staticmethod
