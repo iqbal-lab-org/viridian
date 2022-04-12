@@ -336,7 +336,13 @@ class ReadStore:
         pileup = self_qc.Pileup(consensus_seq, msa=msa)
 
         for amplicon in self.amplicons:
-            for fragment in self.amplicons[amplicon][:1000]:
+            random.seed(42)
+            fragments = (
+                random.sample(self.amplicons[amplicon], 1000)
+                if len(self.amplicons[amplicon]) > 1000
+                else self.amplicons[amplicon]
+            )
+            for fragment in fragments:
                 for read in fragment.reads:
                     a = cons.map(read.seq)  # remap to consensus
                     alignment = None

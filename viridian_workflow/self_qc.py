@@ -109,20 +109,36 @@ class Pileup:
                 continue
 
             #        MN908947.3	12781	6	C	T	.	PASS	.	GT	1/1
-            _, pos, _, x, y, *r = line.split("\t")
+            (
+                chrom,
+                pos,
+                mut_id,
+                ref,
+                alt,
+                qual,
+                original_filters,
+                info,
+                fmt,
+                *r,
+            ) = line.split("\t")
             pos = int(pos)
 
             cons_coord = self.ref_to_consensus[pos]
+            stats = self.seq[cons_coord - 1]
+            filters = stats.test()
+            info_field = stats.info()
+            vcf_filters = original_filters
+            if filters:
+                if original_filters == "PASS":
+                    vcf_filters = ";".join(filters)
+                else:
+                    vcf_filters = ";".join([original_filters, *vcf_filters])
+
             records.append(
-                (
-                    *line.split("\t"),
-                    str(pos),
-                    str(cons_coord),
-                    str(self.seq[cons_coord - 1]),
-                )
+                (chrom, pos, mut_id, ref, alt, qual, vcf_filters, info_field, fmt, *r)
             )
 
-        return records
+        return header, records
 
 
 def test_bias(n, trials, threshold=0.3):
@@ -174,6 +190,9 @@ class Stats:
     def update(self, profile, alt=None):
         # TODO: check if alt
         self.alt_bases[profile.base] += 1
+        if profile.amplicon_name:
+            self.amplicon_totals[profile.amplicon_name] += 1
+
         if profile.base != self.ref_base:
             self.alts += 1
             if profile.amplicon_name:
@@ -262,6 +281,22 @@ class Stats:
                     position_failed = True
                     break  # to prevent over-counting if both amplicons fail
         return position_failed
+
+    def test(self):
+        return ["min_depth", "primer_artefact"]
+
+    def info(self):
+        """Output position stats as VCF INFO field
+        """
+        amplicon_totals = ",".join(
+            [
+                f"{str(self.refs_in_amplicons[amplicon])}/{str(self.alts_in_amplicons[amplicon])}"
+                for amplicon in self.amplicon_totals
+            ]
+        )
+        depth_symbol = ">=" if self.total >= 1000 else "="
+        info = f"primer={self.refs_in_primer}/{self.alts_in_primer};total{depth_symbol}{self.total};amplicon_overlap={len(self.amplicon_totals)};amplicon_totals={amplicon_totals}"
+        return info
 
     def __str__(self):
         alts = " ".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])

@@ -102,5 +102,9 @@ if True:
     # mask output
     # masked_fasta = pileup.mask(consensus)
 
-    for rec in annotated_vcf:
-        print(rec)
+    with open(work_dir / "final.vcf", "w") as vcf_out:
+        header, records = annotated_vcf
+        for h in header:
+            print(h, file=vcf_out)
+        for rec in records:
+            print("\t".join(map(str, rec)), file=vcf_out)
