@@ -107,8 +107,6 @@ class Pileup:
             if line[0] == "#":
                 header.append(line)
                 continue
-
-            #        MN908947.3	12781	6	C	T	.	PASS	.	GT	1/1
             (
                 chrom,
                 pos,
@@ -179,6 +177,7 @@ class Stats:
         self.total = 0
         self.log = []
         self.total_reads = 0
+        self.filters = {}
 
         self.alts_matching_refs = 0
         self.reference_pos = reference_position
@@ -221,68 +220,48 @@ class Stats:
         optionally accepts a mutable reference to a dictionary that summarises masking decisions
         """
 
-        position_failed = False
-        bias_threshold = 0.3
-
-        if self.total < self.config.min_depth:
-            self.log.append(
-                f"Insufficient depth to evaluate consensus; {self.total} < {self.config.min_depth}. {self.total_reads} including primer regions."
-            )
-            if summary:
-                summary["insufficient_depth"] += 1
-            return True  # position failed
-
-        # test total percentage of bases supporting consensus
-        if self.refs / self.total < self.config.min_frs:
-            self.log.append(
-                f"Insufficient support of consensus base; {self.refs} / {self.total} < {self.config.min_frs}. {self.total_reads} including primer regions."
-            )
-            if summary:
-                summary["low_frs"] += 1
-            return True
-
-        # look for overrepresentation of alt alleles in regions covered
-        # by primer sequences. This is reported but not as a failure
-
-        if not self.alts_in_primer + self.refs_in_primer == 0:
-
-            if not test_bias(
-                self.refs_in_primer / (self.alts_in_primer + self.refs_in_primer),
-                self.refs / (self.alts + self.refs),
-                threshold=bias_threshold,
-            ):
-                self.log.append(
-                    f"Consensus base calls are biased in primer region; {self.refs_in_primer}/{self.alts_in_primer}+{self.refs_in_primer} vs. {self.refs}/{self.alts}+{self.refs}"
-                )
-                # position_failed = True
-
-        # strand bias in alt calls
-        if False:
-            if not test_bias(self.refs_forward, self.refs, threshold=bias_threshold):
-                self.log.append(
-                    f"Strand bias for reads with consensus alleles; {self.refs_forward} / {self.refs}"
-                )
-                # position_failed = True
-
-        # amplicon bias
-        if self.config.test_amplicon_frs:
-            for amplicon, total in self.amplicon_totals.items():
-                if (
-                    total < self.config.min_depth
-                ):  # only evaluate per amplicon frs if there're enough reads
+        def test_amplicon_bias(s):
+            passing = []
+            for amplicon, total in s.amplicon_totals.items():
+                if total < s.config.min_depth:
                     continue
-                amplicon_frs = self.refs_in_amplicons[amplicon] / total
-                if amplicon_frs < self.config.min_frs:
-                    self.log.append(
-                        f"Per-amplicon FRS failure, amplicon {amplicon}: {self.refs_in_amplicons[amplicon]} / {total}"
-                    )
-                    if summary:
-                        summary["low_amplicon_specific_frs"] += 1
-                    position_failed = True
-                    break  # to prevent over-counting if both amplicons fail
-        return position_failed
+                if (
+                    s.refs_in_amplicons[amplicon] / s.amplicon_totals[amplicon]
+                    < s.config.min_frs
+                ):
+                    passing.append(False)
+                else:
+                    passing.append(True)
+
+        self.config.filters = {
+            "low_depth": (
+                lambda s: s.total < s.config.min_depth,
+                lambda s: f"Insufficient depth; {s.total} < {s.config.min_depth}. {s.total_reads} including primer regions.",
+            ),
+            "low_frs": (
+                lambda s: s.refs / s.total < s.config.min_frs,
+                lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {s.config.min_frs}. {s.total_reads} including primer regions.",
+            ),
+            "amplicon_bias": (
+                test_amplicon_bias,
+                lambda s: f"Per-amplicon FRS failure;",
+            ),
+        }
+
+        self.position_failed = False
+
+        for filter_name, (filter_func, msg_format) in self.config.filters.items():
+            if filter_func(self):
+                self.log.append(msg_format(self))
+                self.filters.append(filter_name)
+                if summary:
+                    summary[filter_name] += 1
+                self.position_failed = True
+
+        return self.position_failed
 
     def test(self):
+
         return ["min_depth", "primer_artefact"]
 
     def info(self):
