@@ -181,7 +181,7 @@ class Stats:
 
             if profile.in_primer:
                 self.alts_in_primer += 1
-            if not profile.is_reverse:
+            if profile.forward_strand:
                 self.alts_forward += 1
 
         else:
@@ -191,7 +191,7 @@ class Stats:
 
             if profile.in_primer:
                 self.refs_in_primer += 1
-            if not profile.is_reverse:
+            if profile.forward_strand:
                 self.refs_forward += 1
 
         self.total += 1

@@ -93,10 +93,11 @@ if True:
     )
 
     # self qc: remap reads to consensus
-    pileup = rs.pileup(consensus)
+    pileup = rs.pileup(consensus, msa=msa)
 
     # annotate vcf
-    annotated_vcf = pileup.annotate_vcf(vcf, msa=msa,)
+    print(f"msa: {msa}")
+    annotated_vcf = pileup.annotate_vcf(vcf)
 
     # mask output
     # masked_fasta = pileup.mask(consensus)

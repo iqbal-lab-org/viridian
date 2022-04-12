@@ -16,8 +16,13 @@ import mappy as mp
 # qry_end and ref_end one past the position, so slicing/subtracting
 # coords follows the python string convention.
 Read = namedtuple(
-    "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse",],
+    "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse"],
 )
+
+
+def in_range(interval, position):
+    start, end = interval
+    return position < end and position > start
 
 
 def score(matches, mismatches):
@@ -215,9 +220,6 @@ class Fragment:
     def total_mapped_bases(self):
         return sum([r.qry_end - r.qry_start for r in self.reads])
 
-    def in_primer(self, pos):
-        return False
-
 
 class PairedReads(Fragment):
     def __init__(self, read1, read2):
@@ -352,14 +354,23 @@ class ReadStore:
                     ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
                     c = consensus_seq[alignment.r_st : alignment.r_en]
 
+                    primers = amplicon.match_primers(fragment)
+
                     for consensus_pos, call in self_qc.parse_cigar(
                         consensus_seq, read.seq, alignment
                     ):
+                        in_primer = False
+                        for primer in primers:
+                            # primers can be None
+                            if primer and in_range(
+                                (primer.ref_start, primer.ref_end),
+                                pileup.consensus_to_ref[consensus_pos],
+                            ):
+                                in_primer = True
+                                break
+
                         profile = self_qc.BaseProfile(
-                            call,
-                            fragment.in_primer(pileup.consensus_to_ref[consensus_pos]),
-                            read.is_reverse,
-                            amplicon,
+                            call, in_primer, read.is_reverse, amplicon,
                         )
                         pileup[consensus_pos].update(profile)
         return pileup

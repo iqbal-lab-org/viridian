@@ -1,16 +1,11 @@
 import csv
 from collections import namedtuple, defaultdict
 from intervaltree import IntervalTree
-from viridian_workflow.readstore import PairedReads, SingleRead, ReadStore
+from viridian_workflow.readstore import PairedReads, SingleRead, ReadStore, in_range
 
 Primer = namedtuple(
     "Primer", ["name", "seq", "left", "forward", "ref_start", "ref_end"]
 )
-
-
-def in_range(interval, position):
-    start, end = interval
-    return position < end and position > start
 
 
 class Amplicon:
@@ -42,31 +37,34 @@ class Amplicon:
         of rightmost primer)"""
         return self.end - self.start
 
-    def position_in_primer(self, position):
-        """Test whether a reference position falls inside the primer"""
+    def position_in_primers(self, position):
+        """Test whether a reference position falls inside any of the primers
+        associated with this amplicon
+        """
+
         return in_range(self.left_primer_region, position) or in_range(
             self.right_primer_region, position
         )
 
-    def match_primers(self, fragment):
+    def match_primers(self, fragment, primer_match_threshold=3):
         """Attempt to match either end of a fragment against the amplicon's primers
         """
         p1, p2 = None, None
 
-        min_dist = config.primer_match_threshold
+        min_dist = primer_match_threshold
         # closest leftmost position
         for primer in self.left:
             dist = fragment.ref_start - primer.ref_start
-            if dist >= 0 and dist < config.primer_match_threshold:
+            if dist >= 0 and dist < primer_match_threshold:
                 if dist <= min_dist:
                     min_dist = dist
                     p1 = primer
 
-        min_dist = config.primer_match_threshold
+        min_dist = primer_match_threshold
         # closest leftmost position
         for primer in self.right:
             dist = primer.ref_end - fragment.ref_end
-            if dist >= 0 and dist < config.primer_match_threshold:
+            if dist >= 0 and dist < primer_match_threshold:
                 if dist <= min_dist:
                     min_dist = dist
                     p2 = primer
