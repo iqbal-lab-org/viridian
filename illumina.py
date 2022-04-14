@@ -100,7 +100,9 @@ if True:
     annotated_vcf = pileup.annotate_vcf(vcf)
 
     # mask output
-    # masked_fasta = pileup.mask(consensus)
+    masked_fasta = pileup.mask()
+    print(pileup.summary)
+    print(f"masked: {len(masked_fasta)}")
 
     with open(work_dir / "final.vcf", "w") as vcf_out:
         header, records = annotated_vcf

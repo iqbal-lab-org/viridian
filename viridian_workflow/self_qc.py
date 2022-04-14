@@ -30,6 +30,7 @@ class Pileup:
     def __init__(self, ref, msa=None):
         self.ref = ref
         self.seq = []
+        self.summary = None
 
         # 1-based index translation tables
         self.ref_to_consensus = {}
@@ -72,9 +73,9 @@ class Pileup:
     def __len__(self):
         return len(self.seq)
 
-    def mask():
+    def mask(self):
         sequence = list(self.ref)
-        summary = defaultdict(int)
+        self.summary = defaultdict(int)
         self.qc = {}
         for position, stats in enumerate(self.seq):
             if position >= len(sequence):
@@ -83,17 +84,17 @@ class Pileup:
                     file=sys.stderr,
                 )
                 continue
-            summary["consensus_length"] += 1
+            self.summary["consensus_length"] += 1
             if sequence[position] == "N":
                 # if a position is already masked by an upstream process skip it
-                summary["already_masked"] += 1
-                summary["total_masked"] += 1
+                self.summary["already_masked"] += 1
+                self.summary["total_masked"] += 1
                 continue
-            elif stats.check_for_failure(summary=summary):
-                summary["total_masked"] += 1
+            elif stats.check_for_failure(summary=self.summary):
+                self.summary["total_masked"] += 1
                 sequence[position] = "N"
                 self.qc[position] = stats.log
-            self.qc["masking_summary"] = summary
+            self.qc["masking_summary"] = self.summary
         return "".join(sequence)
 
     def annotate_vcf(self, vcf):
@@ -177,7 +178,7 @@ class Stats:
         self.total = 0
         self.log = []
         self.total_reads = 0
-        self.filters = {}
+        self.failures = []
 
         self.alts_matching_refs = 0
         self.reference_pos = reference_position
@@ -185,6 +186,44 @@ class Stats:
         self.cons_base = cons_base
 
         self.config = config
+
+        # define the filters
+        # filter closures take a Stats and return True on failure
+        def test_amplicon_bias(s):
+            passing = []
+            for amplicon, total in s.amplicon_totals.items():
+                if total < s.config.min_depth:
+                    continue
+                if (
+                    s.refs_in_amplicons[amplicon] / s.amplicon_totals[amplicon]
+                    < config.min_frs
+                ):
+                    passing.append(False)
+                else:
+                    passing.append(True)
+            if len(passing) > 1 and not all(passing[0] == e for e in passing):
+                #                print(f"{s.reference_pos}\t{passing}")
+                #                for amplicon, total in s.amplicon_totals.items():
+                #                    print(f"\t{amplicon.name}\t{total}\t{s.refs_in_amplicons[amplicon]} / {s.amplicon_totals[amplicon]}")
+
+                # this is a failure
+                return True
+            return False
+
+        self.filters = {
+            "low_depth": (
+                lambda s: s.total < s.config.min_depth,
+                lambda s: f"Insufficient depth; {s.total} < {s.config.min_depth}. {s.total_reads} including primer regions.",
+            ),
+            "low_frs": (
+                lambda s: s.refs / s.total < s.config.min_frs,
+                lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {s.config.min_frs}. {s.total_reads} including primer regions.",
+            ),
+            "amplicon_bias": (
+                test_amplicon_bias,
+                lambda s: f"Per-amplicon FRS failure;",
+            ),
+        }
 
     def update(self, profile, alt=None):
         # TODO: check if alt
@@ -220,40 +259,12 @@ class Stats:
         optionally accepts a mutable reference to a dictionary that summarises masking decisions
         """
 
-        def test_amplicon_bias(s):
-            passing = []
-            for amplicon, total in s.amplicon_totals.items():
-                if total < s.config.min_depth:
-                    continue
-                if (
-                    s.refs_in_amplicons[amplicon] / s.amplicon_totals[amplicon]
-                    < s.config.min_frs
-                ):
-                    passing.append(False)
-                else:
-                    passing.append(True)
-
-        self.config.filters = {
-            "low_depth": (
-                lambda s: s.total < s.config.min_depth,
-                lambda s: f"Insufficient depth; {s.total} < {s.config.min_depth}. {s.total_reads} including primer regions.",
-            ),
-            "low_frs": (
-                lambda s: s.refs / s.total < s.config.min_frs,
-                lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {s.config.min_frs}. {s.total_reads} including primer regions.",
-            ),
-            "amplicon_bias": (
-                test_amplicon_bias,
-                lambda s: f"Per-amplicon FRS failure;",
-            ),
-        }
-
         self.position_failed = False
 
-        for filter_name, (filter_func, msg_format) in self.config.filters.items():
+        for filter_name, (filter_func, msg_format) in self.filters.items():
             if filter_func(self):
                 self.log.append(msg_format(self))
-                self.filters.append(filter_name)
+                self.failures.append(filter_name)
                 if summary:
                     summary[filter_name] += 1
                 self.position_failed = True
