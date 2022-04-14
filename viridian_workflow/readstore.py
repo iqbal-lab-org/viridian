@@ -187,13 +187,16 @@ class Bam:
                 else:
                     mismatches[amplicon_set] += 1
 
-        self.stats["match_any_amplicon"] = match_any_amplicon
-        self.stats["amplicon_scheme_set_matches"] = matches
-        self.stats[
-            "amplicon_scheme_simple_counts"
-        ] = amplicon_set_counts_to_naive_total_counts(
-            self.stats["amplicon_scheme_set_matches"]
-        )
+        #        self.stats["match_any_amplicon"] = match_any_amplicon
+        self.stats["amplicon_scheme_set_matches"] = {}
+        for match in matches:
+            self.stats["amplicon_scheme_set_matches"][match.name] = matches[match]
+
+        #        self.stats[
+        #            "amplicon_scheme_simple_counts"
+        #        ] = amplicon_set_counts_to_naive_total_counts(
+        #            self.stats["amplicon_scheme_set_matches"]
+        #        )
         chosen_scheme = score(matches, mismatches)
         if chosen_scheme:
             self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
@@ -254,8 +257,8 @@ class ReadStore:
             "amplicons": {},
         }
 
-        for amplicon_name, amplicon in amplicon_set.amplicons.items():
-            self.summary[amplicon_name] = {
+        for _, amplicon in amplicon_set.amplicons.items():
+            self.summary[amplicon.name] = {
                 "start": amplicon.start + 1,
                 "end": amplicon.end + 1,
                 "total_mapped_bases": 0,

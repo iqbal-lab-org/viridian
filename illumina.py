@@ -50,11 +50,16 @@ for name, tsv in [
 fq1, fq2 = sys.argv[1], sys.argv[2]
 ref = Path("../covid/MN908947.fasta")
 # with tempfile.TemporaryDirectory() as work_dir:
-work_dir = f"/tmp/vwf_test/"
+work_dir = sys.argv[3]
 if True:
+
+    log = {"version": "test-0.1"}
+
     work_dir = Path(work_dir)
     if work_dir.exists():
-        shutil.rmtree(work_dir)
+        print(f"workdir {work_dir} exists, exiting")
+        exit()
+    #     shutil.rmtree(work_dir)
     work_dir.mkdir()
     print(f"using {work_dir} {work_dir.exists()}")
 
@@ -68,6 +73,7 @@ if True:
 
     # detect amplicon set
     amplicon_set = bam.detect_amplicon_set(amplicon_sets)
+    log["amplicons"] = bam.stats
 
     # check it out: stats = bam.stats
 
@@ -92,12 +98,18 @@ if True:
         max_coord=rs.end_pos,
     )
 
+    #    log["varifier"] = varifier.log
     # self qc: remap reads to consensus
     pileup = rs.pileup(consensus, msa=msa)
 
     # mask output
     masked_fasta = pileup.mask()
-    print(pileup.summary)
+    # log["self_qc"] = pileup.log
+    log["summary"] = pileup.summary
+
+    for i in pileup.summary:
+        print(f"{i}\t{pileup.summary[i]}")
+
     with open(work_dir / "masked.fasta", "w") as fasta_out:
         print(masked_fasta, file=fasta_out)
 
@@ -111,3 +123,7 @@ if True:
             print(h, file=vcf_out)
         for rec in records:
             print("\t".join(map(str, rec)), file=vcf_out)
+
+    print(log)
+    with open(work_dir / "log.json", "w") as json_out:
+        json.dump(log, json_out, indent=4)
