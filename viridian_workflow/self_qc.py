@@ -27,10 +27,10 @@ class Pileup:
     """A pileup is an array of Stats objects indexed by position in a reference
     """
 
-    def __init__(self, ref, msa=None):
+    def __init__(self, ref, msa=None, config=default_config):
+        self.config = config
         self.ref = ref
         self.seq = []
-        self.summary = None
 
         # 1-based index translation tables
         self.ref_to_consensus = {}
@@ -58,6 +58,49 @@ class Pileup:
                 self.ref_to_consensus[i] = i
                 self.consensus_to_ref[i] = i
 
+        # define the filters
+        # filter closures take a Stats and return True on failure
+        def test_amplicon_bias(s):
+            passing = []
+            for amplicon, total in s.amplicon_totals.items():
+                if total < self.config.min_depth:
+                    continue
+                if (
+                    s.refs_in_amplicons[amplicon] / s.amplicon_totals[amplicon]
+                    < self.config.min_frs
+                ):
+                    passing.append(False)
+                else:
+                    passing.append(True)
+            if len(passing) > 1 and not all(passing[0] == e for e in passing):
+                #                print(f"{s.reference_pos}\t{passing}")
+                #                for amplicon, total in s.amplicon_totals.items():
+                #                    print(f"\t{amplicon.name}\t{total}\t{s.refs_in_amplicons[amplicon]} / {s.amplicon_totals[amplicon]}")
+
+                # this is a failure
+                return True
+            return False
+
+        self.filters = {
+            "low_depth": (
+                lambda s: s.total < self.config.min_depth,
+                lambda s: f"Insufficient depth; {s.total} < {self.config.min_depth}. {s.total_reads} including primer regions.",
+            ),
+            "low_frs": (
+                lambda s: s.refs / s.total < self.config.min_frs,
+                lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {self.config.min_frs}. {s.total_reads} including primer regions.",
+            ),
+            "amplicon_bias": (
+                test_amplicon_bias,
+                lambda s: f"Per-amplicon FRS failure;",
+            ),
+        }
+
+        # initialise summary for each filter
+        self.summary = defaultdict(int)
+        for f in self.filters:
+            self.summary[f] = 0
+
     def __getitem__(self, pos):
         if pos >= len(self.seq):
             print(f"position too big: {pos} {len(self.seq)}")
@@ -75,7 +118,6 @@ class Pileup:
 
     def mask(self):
         sequence = list(self.ref)
-        self.summary = defaultdict(int)
         self.qc = {}
         for position, stats in enumerate(self.seq):
             if position >= len(sequence):
@@ -90,7 +132,9 @@ class Pileup:
                 self.summary["already_masked"] += 1
                 self.summary["total_masked"] += 1
                 continue
-            elif stats.check_for_failure(summary=self.summary):
+            elif stats.check_for_failure(self.filters):
+                for failure in stats.get_failures():
+                    self.summary[failure] += 1
                 self.summary["total_masked"] += 1
                 sequence[position] = "N"
                 self.qc[position] = stats.log
@@ -124,12 +168,11 @@ class Pileup:
 
             cons_coord = self.ref_to_consensus[pos]
             stats = self.seq[cons_coord - 1]
-            filters = stats.test()
             info_field = stats.info()
             vcf_filters = original_filters
-            if filters:
+            if stats.position_failed == True:
                 if original_filters == "PASS":
-                    vcf_filters = ";".join(filters)
+                    vcf_filters = ";".join(stats.get_failures())
                 else:
                     vcf_filters = ";".join([original_filters, *vcf_filters])
 
@@ -178,52 +221,16 @@ class Stats:
         self.total = 0
         self.log = []
         self.total_reads = 0
-        self.failures = []
+        self.failures = None
 
         self.alts_matching_refs = 0
         self.reference_pos = reference_position
         self.ref_base = ref_base
         self.cons_base = cons_base
 
-        self.config = config
+        # self.config = config
 
-        # define the filters
-        # filter closures take a Stats and return True on failure
-        def test_amplicon_bias(s):
-            passing = []
-            for amplicon, total in s.amplicon_totals.items():
-                if total < s.config.min_depth:
-                    continue
-                if (
-                    s.refs_in_amplicons[amplicon] / s.amplicon_totals[amplicon]
-                    < config.min_frs
-                ):
-                    passing.append(False)
-                else:
-                    passing.append(True)
-            if len(passing) > 1 and not all(passing[0] == e for e in passing):
-                #                print(f"{s.reference_pos}\t{passing}")
-                #                for amplicon, total in s.amplicon_totals.items():
-                #                    print(f"\t{amplicon.name}\t{total}\t{s.refs_in_amplicons[amplicon]} / {s.amplicon_totals[amplicon]}")
-
-                # this is a failure
-                return True
-            return False
-
-        self.filters = {
-            "low_depth": (
-                lambda s: s.total < s.config.min_depth,
-                lambda s: f"Insufficient depth; {s.total} < {s.config.min_depth}. {s.total_reads} including primer regions.",
-            ),
-            "low_frs": (
-                lambda s: s.refs / s.total < s.config.min_frs,
-                lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {s.config.min_frs}. {s.total_reads} including primer regions.",
-            ),
-            "amplicon_bias": (
-                test_amplicon_bias,
-                lambda s: f"Per-amplicon FRS failure;",
-            ),
-        }
+        self.position_failed = None
 
     def update(self, profile, alt=None):
         # TODO: check if alt
@@ -253,7 +260,7 @@ class Stats:
 
         self.total += 1
 
-    def check_for_failure(self, summary=None):
+    def check_for_failure(self, filters):
         """return whether a position should be masked
 
         optionally accepts a mutable reference to a dictionary that summarises masking decisions
@@ -261,23 +268,28 @@ class Stats:
 
         self.position_failed = False
 
-        for filter_name, (filter_func, msg_format) in self.filters.items():
+        for filter_name, (filter_func, msg_format) in filters.items():
             if filter_func(self):
                 self.log.append(msg_format(self))
+                if self.failures is None:
+                    self.failures = []
                 self.failures.append(filter_name)
-                if summary:
-                    summary[filter_name] += 1
                 self.position_failed = True
 
         return self.position_failed
 
-    def test(self):
-
-        return ["min_depth", "primer_artefact"]
+    def get_failures(self):
+        """return list of failed filters for VCF FILTER field
+        """
+        if self.position_failed is None:
+            raise Exception("pileup must be evaluated for failure first")
+        return self.failures
 
     def info(self):
         """Output position stats as VCF INFO field
         """
+        if self.position_failed is None:
+            raise Exception("pileup must be evaluated for failure first")
         amplicon_totals = ",".join(
             [
                 f"{str(self.refs_in_amplicons[amplicon])}/{str(self.alts_in_amplicons[amplicon])}"

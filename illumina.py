@@ -95,14 +95,15 @@ if True:
     # self qc: remap reads to consensus
     pileup = rs.pileup(consensus, msa=msa)
 
-    # annotate vcf
-    print(f"msa: {msa}")
-    annotated_vcf = pileup.annotate_vcf(vcf)
-
     # mask output
     masked_fasta = pileup.mask()
     print(pileup.summary)
-    print(f"masked: {len(masked_fasta)}")
+    with open(work_dir / "masked.fasta", "w") as fasta_out:
+        print(masked_fasta, file=fasta_out)
+
+    # annotate vcf
+    print(f"msa: {msa}")
+    annotated_vcf = pileup.annotate_vcf(vcf)
 
     with open(work_dir / "final.vcf", "w") as vcf_out:
         header, records = annotated_vcf
