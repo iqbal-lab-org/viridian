@@ -102,8 +102,9 @@ class Pileup:
             self.summary[f] = 0
 
     def __getitem__(self, pos):
-        if pos >= len(self.seq):
-            print(f"position too big: {pos} {len(self.seq)}")
+        if pos > len(self.seq):
+            # be mindful of 0 vs. 1 indexing here
+            print(f"position too big: {pos} {len(self.seq)}", file=sys.stderr)
             return None
         return self.seq[pos]
 

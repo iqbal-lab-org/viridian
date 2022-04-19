@@ -1,4 +1,5 @@
 from collections import namedtuple, defaultdict
+import sys
 from pathlib import Path
 import json
 import os
@@ -337,7 +338,7 @@ class ReadStore:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])
         pileup = self_qc.Pileup(consensus_seq, msa=msa)
-
+        conspos_oob = 0  # consensus positions out-of-bounds
         for amplicon in self.amplicons:
             random.seed(42)
             fragments = (
@@ -368,6 +369,11 @@ class ReadStore:
                     for consensus_pos, call in self_qc.parse_cigar(
                         consensus_seq, read.seq, alignment
                     ):
+                        if consensus_pos >= len(pileup):
+                            # print(f"consensus pos out of bounds: {consensus_pos}/{len(pileup)}", file=sys.stderr)
+                            conspos_oob += 1
+                            continue
+
                         in_primer = False
                         for primer in primers:
                             # primers can be None
@@ -382,6 +388,7 @@ class ReadStore:
                             call, in_primer, read.is_reverse, amplicon,
                         )
                         pileup[consensus_pos].update(profile)
+        print(f"consensus positions out of bounds: {conspos_oob}", file=sys.stderr)
         return pileup
 
     @staticmethod
