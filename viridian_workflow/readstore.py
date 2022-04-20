@@ -242,11 +242,13 @@ class SingleRead(Fragment):
 
 
 class ReadStore:
-    def __init__(self, amplicon_set, bam):
+    def __init__(self, amplicon_set, bam, target_depth=1000):
         self.amplicons = defaultdict(list)
         self.amplicon_set = amplicon_set
-        self.reads_all_paired = None
+        self.reads_all_paired = bam.infile_is_paired
         self.unmatched_reads = 0
+
+        self.target_depth = target_depth
 
         self.start_pos = None
         self.end_pos = None
@@ -293,6 +295,10 @@ class ReadStore:
 
         for fragment in bam.syncronise_fragments():
             self.push_fragment(fragment)
+        random.seed(42)
+        for amplicon in self.amplicons:
+            random.shuffle(self.amplicons[amplicon])
+            self.amplicons[amplicon] = self.amplicons[amplicon][: target_depth * 2]
 
         self.summarise_amplicons()
 
@@ -340,10 +346,9 @@ class ReadStore:
         pileup = self_qc.Pileup(consensus_seq, msa=msa)
         conspos_oob = 0  # consensus positions out-of-bounds
         for amplicon in self.amplicons:
-            random.seed(42)
             fragments = (
-                random.sample(self.amplicons[amplicon], 1000)
-                if len(self.amplicons[amplicon]) > 1000
+                self.amplicons[amplicon]
+                if len(self.amplicons[amplicon]) >= self.target_depth
                 else self.amplicons[amplicon]
             )
             for fragment in fragments:
@@ -391,13 +396,11 @@ class ReadStore:
         print(f"consensus positions out of bounds: {conspos_oob}", file=sys.stderr)
         return pileup
 
-    @staticmethod
-    def sample_paired_reads(fragments, outfile, target_bases):
-        if len(fragments) == 0:
-            return 0
+    def reads_to_fastas(self, amplicon, outfile):
         bases_out = 0
+        target_bases = len(amplicon) * self.target_depth
         with open(outfile, "w") as f:
-            for i, fragment in enumerate(fragments):
+            for i, fragment in enumerate(self[amplicon]):
                 for j, read in enumerate(fragment.reads):
                     print(
                         f">{i}.{j}",
@@ -408,62 +411,25 @@ class ReadStore:
                 bases_out += fragment.total_mapped_bases()
                 if bases_out >= target_bases:
                     break
-
         return bases_out
 
-    @staticmethod
-    def sample_unpaired_reads(fragments, outfile, target_bases):
-        rev_indexes = []
-        fwd_indexes = []
-        for i, fragment in enumerate(fragments):
-            if fragment.reads[0].is_reverse:
-                rev_indexes.append(i)
-            else:
-                fwd_indexes.append(i)
-
-        if len(fwd_indexes) == 0 or len(rev_indexes) == 0:
-            return 0
-
-        bases_out = 0
-        with open(outfile, "w") as f:
-            for i, (fwd_i, rev_i) in enumerate(zip(fwd_indexes, rev_indexes)):
-                fwd_frag = fragments[fwd_i]
-                rev_frag = fragments[rev_i]
-                print(
-                    f">f{i}",
-                    fwd_frag.reads[0].seq,
-                    f">r{i}",
-                    utils.revcomp(rev_frag.reads[0].seq),
-                    sep="\n",
-                    file=f,
-                )
-                bases_out += (
-                    fwd_frag.total_mapped_bases() + rev_frag.total_mapped_bases()
-                )
-                if bases_out >= target_bases:
-                    break
-
-        return bases_out
-
-    def make_reads_dir_for_viridian(self, outdir, target_depth):
+    def make_reads_dir_for_viridian(self, outdir):
         """Makes a directory of reads for each amplicon, in the format required
         by `viridian assemble --reads_per_amp_dir`. Returns a set of amplicon
         names that should be failed because they had no reads"""
-        random.seed(42)
         os.mkdir(outdir)
         manifest_data = {}
         self.failed_amplicons = set()
 
         for amplicon in self.amplicon_set:
+            print(
+                f"writing out {amplicon.name} reads {len(self[amplicon])}, {len(manifest_data)}.fa",
+                file=sys.stderr,
+            )
             outname = f"{len(manifest_data)}.fa"
             outfile = os.path.join(outdir, outname)
-            fragments = self[amplicon]
-            random.shuffle(fragments)
-            target_bases = target_depth * len(amplicon)
-            if self.reads_all_paired:
-                bases_out = self.sample_paired_reads(fragments, outfile, target_bases)
-            else:
-                bases_out = self.sample_unpaired_reads(fragments, outfile, target_bases)
+            bases_out = self.reads_to_fastas(amplicon, outfile)
+
             if bases_out == 0:
                 manifest_data[amplicon.name] = None
                 self.failed_amplicons.add(amplicon)
