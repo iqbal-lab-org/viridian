@@ -65,6 +65,8 @@ class Pileup:
             for amplicon, total in s.amplicon_totals.items():
                 if total < self.config.min_depth:
                     continue
+                if s.amplicon_totals[amplicon] == 0:
+                    continue
                 if (
                     s.refs_in_amplicons[amplicon] / s.amplicon_totals[amplicon]
                     < self.config.min_frs
@@ -81,6 +83,25 @@ class Pileup:
                 return True
             return False
 
+        def test_strand_bias(s):
+            passing = []
+            for amplicon, total in s.amplicon_totals.items():
+                if total < self.config.min_depth:
+                    continue
+                if s.amplicon_totals[amplicon] == 0:
+                    continue
+                if (
+                    s.refs_in_forward_strands[amplicon] / s.amplicon_totals[amplicon]
+                    < self.config.min_frs
+                ):
+                    passing.append(False)
+                else:
+                    passing.append(True)
+            if len(passing) > 1 and not all(passing[0] == e for e in passing):
+                # True = failure
+                return True
+            return False
+
         self.filters = {
             "low_depth": (
                 lambda s: s.total < self.config.min_depth,
@@ -92,8 +113,11 @@ class Pileup:
             ),
             "amplicon_bias": (
                 test_amplicon_bias,
-                lambda s: f"Per-amplicon FRS failure;",
+                lambda s: f"Per-amplicon FRS failure",
             ),
+            #            "strand_bias": (
+            #                test_strand_bias,
+            #                lambda s: f"Strand-biased FRS failure"),
         }
 
         # initialise summary for each filter
@@ -212,6 +236,7 @@ class Stats:
 
         self.alts_in_amplicons = defaultdict(int)
         self.refs_in_amplicons = defaultdict(int)
+        self.refs_in_forward_strand = defaultdict(int)
         self.amplicon_totals = defaultdict(int)
 
         self.alts_forward = 0
@@ -253,6 +278,7 @@ class Stats:
             self.refs += 1
             if profile.amplicon_name:
                 self.refs_in_amplicons[profile.amplicon_name] += 1
+            #                self.refs_in_forward_strand[profile.strand] += 1
 
             if profile.in_primer:
                 self.refs_in_primer += 1

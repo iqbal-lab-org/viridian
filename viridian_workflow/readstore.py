@@ -220,6 +220,7 @@ class Fragment:
         self.ref_start = None
         self.ref_end = None
         self.reads = reads
+        self.strand = None
 
     def total_mapped_bases(self):
         return sum([r.qry_end - r.qry_start for r in self.reads])
@@ -233,12 +234,19 @@ class PairedReads(Fragment):
             if read1.ref_start < read2.ref_start
             else (read2.ref_start, read1.ref_end)
         )
+        if read1.is_reverse and not read2.is_reverse:
+            self.strand = False
+        elif not read1.is_reverse and read2.is_reverse:
+            self.strand = True
+        else:
+            raise Exception(f"Read pair is in invalid orientation F1F2/R1R2")
 
 
 class SingleRead(Fragment):
     def __init__(self, read):
         super().__init__([read])
         self.ref_start, self.ref_end = read.ref_start, read.ref_end
+        self.strand = not read.is_reverse
 
 
 class ReadStore:
@@ -252,6 +260,7 @@ class ReadStore:
 
         self.start_pos = None
         self.end_pos = None
+        self.amplicon_stats = {}
 
         self.summary = {}
         self.viridian_json = {
@@ -333,7 +342,17 @@ class ReadStore:
 
     def summarise_amplicons(self):
         # normalise the bases per amplicons and such
-        pass
+        for amplicon in self.amplicons:
+            self.amplicon_stats[amplicon] = {}
+            self.amplicon_stats[amplicon][False] = 0
+            self.amplicon_stats[amplicon][True] = 0
+            for fragment in self.amplicons[amplicon]:
+                self.amplicon_stats[amplicon][fragment.strand] += 1
+
+            print(
+                f"strand bias:\t{amplicon.name}\t{self.amplicon_stats[amplicon][False]}/{self.amplicon_stats[amplicon][True]}",
+                file=sys.stderr,
+            )
 
     def pileup(self, fasta, msa=None, minimap_presets=None):
         """remap reads to consensus
