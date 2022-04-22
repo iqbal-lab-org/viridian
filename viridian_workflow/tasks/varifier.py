@@ -2,12 +2,11 @@
 """
 import os
 from viridian_workflow.utils import run_process, check_file
+from .task import Task
 
 
 class Varifier(Task):
-    def __init__(
-        self, outdir, ref, consensus, min_coord=rs.start_pos, max_coord=rs.end_pos
-    ):
+    def __init__(self, outdir, ref, consensus, min_coord=0, max_coord=None):
         vcf = os.path.join(outdir, "04.truth.vcf")
         msa = os.path.join(outdir, "04.msa")
         self.output = (vcf, msa)

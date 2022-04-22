@@ -2,10 +2,13 @@
 """
 import os
 from viridian_workflow.utils import run_process, check_file
+from .task import Task
 
 
 class Viridian(Task):
-    def __init__(self, work_dir, amplicon_dir, amplicon_manifest, amplicon_json):
+    def __init__(
+        self, work_dir, platform, amplicon_dir, amplicon_manifest, amplicon_json
+    ):
         output = work_dir / "viridian" / "consensus.final_assembly.fa"
         self.platform = platform
         self.work_dir = work_dir

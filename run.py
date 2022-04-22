@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import json
 
-from viridian_workflow import primers, readstore, minimap, utils, self_qc, varifier
+from viridian_workflow import primers, readstore, utils, self_qc
 from viridian_workflow.tasks import minimap, varifier, viridian
 
 
@@ -56,7 +56,7 @@ def run_pipeline(work_dir, platform, fqs):
     ref = Path("../covid/MN908947.fasta")
 
     if platform == "illumina":
-        fq1, fq2 = *fqs
+        fq1, fq2 = fqs
         minimap = Minimap(work_dir, ref, fq1, fq2=fq2, sort=False)
     elif platform == "onp":
         fq = fqs[0]
