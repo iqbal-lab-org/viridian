@@ -5,49 +5,7 @@ import tempfile
 import json
 
 from viridian_workflow import primers, readstore, utils, self_qc
-from viridian_workflow.tasks import minimap, varifier, viridian
-
-
-if __name__ == "__main__":
-    # set up the pipeline
-
-    # load amplicon sets
-    amplicon_sets = []
-    for name, tsv in [
-        ("artic-v3", "viridian_workflow/amplicon_scheme_data/covid-artic-v3.vwf.tsv"),
-        (
-            "midnight-1200",
-            "viridian_workflow/amplicon_scheme_data/covid-midnight-1200.vwf.tsv",
-        ),
-        (
-            "covid-ampliseq-v1",
-            "viridian_workflow/amplicon_scheme_data/covid-ampliseq-v1.vwf.tsv",
-        ),
-        ("artic-v4.0", "viridian_workflow/amplicon_scheme_data/covid-artic-v4.vwf.tsv"),
-    ]:
-        amplicon_sets.append(primers.AmpliconSet.from_tsv(tsv, name=name))
-
-    # with tempfile.TemporaryDirectory() as work_dir:
-    work_dir = "/tmp/vwf/"
-    work_dir = Path(work_dir)
-    if work_dir.exists():
-        print(f"workdir {work_dir} exists, clobbering")
-        shutil.rmtree(work_dir)
-    work_dir.mkdir()
-    print(f"using {work_dir}")
-
-    log = {"summary": {"version": "test-0.1", "status": "processing"}}
-    try:
-        results = run_pipeline(work_dir, platform, fqs)
-        log["results"] = results
-    except (e):
-        log["summary"]["status"] = {"Failed", str(e)}
-        exit(0)  # ?
-
-    log["summary"]["status"] = "Success"
-
-    with open(work_dir / "log.json", "w") as json_out:
-        json.dump(log, json_out, indent=4)
+from viridian_workflow.subtasks import Minimap, Varifier, Viridian
 
 
 def run_pipeline(work_dir, platform, fqs):
@@ -57,10 +15,16 @@ def run_pipeline(work_dir, platform, fqs):
 
     if platform == "illumina":
         fq1, fq2 = fqs
-        minimap = Minimap(work_dir, ref, fq1, fq2=fq2, sort=False)
+        minimap = Minimap(work_dir / "name_sorted.bam", ref, fq1, fq2=fq2, sort=False)
     elif platform == "onp":
         fq = fqs[0]
-        minimap = Minimap(work_dir, ref, fq, sort=False)
+        minimap = Minimap(work_dir / "name_sorted.bam", ref, fq, sort=False)
+    elif platform == "iontorrent":
+        raise NotImplementedError
+    else:
+        print(f"Platform {platform} is not supported.", file=sys.stderr)
+        exit(1)
+
     unsorted_bam = minimap.run()
     # add minimap task log to result log
     # log["minimap"] = minimap.log
@@ -81,7 +45,9 @@ def run_pipeline(work_dir, platform, fqs):
     manifest_data = rs.make_reads_dir_for_viridian(amp_dir)
 
     # run viridian
-    viridian = Viridian(work_dir, platform, amp_dir, manifest_data, rs.viridian_json)
+    viridian = Viridian(
+        work_dir, platform, ref, amp_dir, manifest_data, rs.viridian_json
+    )
     consensus = viridian.run()
     log["viridian"] = viridian.log
 
@@ -118,3 +84,46 @@ def run_pipeline(work_dir, platform, fqs):
             print("\t".join(map(str, rec)), file=vcf_out)
 
     return log
+
+
+if __name__ == "__main__":
+    # set up the pipeline
+    platform, *fqs = sys.argv[1:]
+
+    # load amplicon sets
+    amplicon_sets = []
+    for name, tsv in [
+        ("artic-v3", "viridian_workflow/amplicon_scheme_data/covid-artic-v3.vwf.tsv"),
+        (
+            "midnight-1200",
+            "viridian_workflow/amplicon_scheme_data/covid-midnight-1200.vwf.tsv",
+        ),
+        (
+            "covid-ampliseq-v1",
+            "viridian_workflow/amplicon_scheme_data/covid-ampliseq-v1.vwf.tsv",
+        ),
+        ("artic-v4.0", "viridian_workflow/amplicon_scheme_data/covid-artic-v4.vwf.tsv"),
+    ]:
+        amplicon_sets.append(primers.AmpliconSet.from_tsv(tsv, name=name))
+
+    work_dir = "/tmp/vwf/"
+    work_dir = Path(work_dir)
+    if work_dir.exists():
+        print(f"work dir {work_dir} exists, clobbering", file=sys.stderr)
+        shutil.rmtree(work_dir)
+    work_dir.mkdir()
+
+    log = {"summary": {"version": "test-0.1", "status": "Interrupted"}}
+    # try:
+    if True:
+        results = run_pipeline(work_dir, platform, fqs)
+        log["results"] = results
+    # except Exception as e:
+    elif False:
+        log["summary"]["status"] = {"Failure": str(e)}
+        print(f"Pipeline failed with exception: {e}", file=sys.stderr)
+    else:
+        log["summary"]["status"] = "Success"
+
+    with open(work_dir / "log.json", "w") as json_out:
+        json.dump(log, json_out, indent=4)

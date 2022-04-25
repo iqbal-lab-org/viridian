@@ -1,15 +1,14 @@
 """minimap2 and samtools utilities
 """
+import sys
 import subprocess
 from viridian_workflow.utils import run_process, check_file
 from .task import Task
 
 
 class Minimap(Task):
-    def __init__(self):
-        pass
-
-    def run(
+    def __init__(
+        self,
         bam,
         ref_genome,
         fq1,
@@ -19,7 +18,10 @@ class Minimap(Task):
         minimap_x_opt=None,
         sort=True,
     ):
-        minimap_cmd = [
+
+        self.output = bam
+        self.sort = sort
+        self.cmd = [
             "minimap2",
             "-R",
             fr"@RG\tID:1\tSM:{sample_name}",
@@ -30,20 +32,21 @@ class Minimap(Task):
         if fq2 is None:
             if minimap_x_opt is None:
                 minimap_x_opt = "-x map-ont"
-            minimap_cmd.extend(minimap_x_opt.split())
+            self.cmd.extend(minimap_x_opt.split())
             reads_list = [fq1]
         else:
             if minimap_x_opt is None:
                 minimap_x_opt = "-x sr"
-            minimap_cmd.extend(minimap_x_opt.split())
+            self.cmd.extend(minimap_x_opt.split())
             reads_list = [fq1, fq2]
-        minimap_cmd.append(ref_genome)
-        minimap_cmd.extend(reads_list)
+        self.cmd.append(ref_genome)
+        self.cmd.extend(reads_list)
 
-        if sort:
-            sort_cmd = ["samtools", "sort", "-o", bam]
+    def run(self):
+        if self.sort:
+            sort_cmd = ["samtools", "sort", "-o", self.output]
             map_proc = subprocess.Popen(
-                " ".join(minimap_cmd), shell=True, stdout=subprocess.PIPE
+                " ".join(self.cmd), shell=True, stdout=subprocess.PIPE
             )
             sort_proc = subprocess.Popen(sort_cmd, stdin=map_proc.stdout)
             sort_proc.wait()
@@ -51,16 +54,17 @@ class Minimap(Task):
                 raise Exception("minimap2 subprocess failed")
 
         else:
-            with open(bam, "w") as out_fd:
-                map_proc = subprocess.Popen(minimap_cmd, stdout=out_fd)
+            with open(self.output, "w") as out_fd:
+                print(f"running: {' '.join([str(c) for c in self.cmd])}", sys.stderr)
+                map_proc = subprocess.Popen(self.cmd, stdout=out_fd)
                 map_proc.wait()
                 if map_proc.returncode:
                     raise Exception("minimap2 subprocess failed")
 
-        check_file(bam)
+        check_file(self.output)
 
-        if sort:
-            run_process(["samtools", "index", bam])
-            check_file(bam + ".bai")
+        if self.sort:
+            run_process(["samtools", "index", self.output])
+            check_file(self.output + ".bai")
 
-        return bam
+        return self.output
