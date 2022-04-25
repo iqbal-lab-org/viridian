@@ -252,11 +252,14 @@ class SingleRead(Fragment):
 class ReadStore:
     def __init__(self, amplicon_set, bam, target_depth=1000):
         self.amplicons = defaultdict(list)
+        self.reads_per_amplicon = defaultdict(int)
         self.amplicon_set = amplicon_set
         self.reads_all_paired = bam.infile_is_paired
         self.unmatched_reads = 0
 
         self.target_depth = target_depth
+        # TODO find a home for this magic number
+        self.viridian_target_depth_factor = 200
 
         self.start_pos = None
         self.end_pos = None
@@ -303,11 +306,17 @@ class ReadStore:
             }
 
         for fragment in bam.syncronise_fragments():
-            self.push_fragment(fragment)
+            self.count_fragment(fragment)
+
         random.seed(42)
+        for fragment in bam.syncronise_fragments():
+            self.push_fragment(fragment)
+
         for amplicon in self.amplicons:
             random.shuffle(self.amplicons[amplicon])
-            self.amplicons[amplicon] = self.amplicons[amplicon][: target_depth * 2]
+
+            # truncate number of reads to target count per amplicon
+            self.amplicons[amplicon] = self.amplicons[amplicon][:target_depth]
 
         self.summarise_amplicons()
 
@@ -327,18 +336,35 @@ class ReadStore:
     def fetch(self, start=0, end=None):
         pass
 
-    def push_fragment(self, fragment):
+    def count_fragment(self, fragment):
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             self.unmatched_reads += 1
             return
 
-        self.amplicons[amplicon].append(fragment)
+        #        self.amplicons[amplicon].append(fragment)
+        self.reads_per_amplicon[amplicon] += 1
 
         self.summary[amplicon.name][
             "total_mapped_bases"
         ] += fragment.total_mapped_bases()
         self.summary[amplicon.name]["total_depth"] += 1
+
+    def push_fragment(self, fragment):
+        amplicon = self.amplicon_set.match(fragment)
+        if not amplicon:
+            return
+
+        frags = len(self.amplicons[amplicon])
+
+        sample_rate = int(frags / self.target_depth)
+        # TODO count the observed primer extrema
+
+        if random.randint(0, sample_rate) == 0:
+            self.amplicons[amplicon].append(fragment)
+
+        self.summary[amplicon.name]["sampled_bases"] += fragment.total_mapped_bases()
+        self.summary[amplicon.name]["sampled_depth"] += 1
 
     def summarise_amplicons(self):
         # normalise the bases per amplicons and such
@@ -415,9 +441,8 @@ class ReadStore:
         print(f"consensus positions out of bounds: {conspos_oob}", file=sys.stderr)
         return pileup
 
-    def reads_to_fastas(self, amplicon, outfile):
+    def reads_to_fastas(self, amplicon, outfile, target_bases):
         bases_out = 0
-        target_bases = len(amplicon) * self.target_depth
         with open(outfile, "w") as f:
             for i, fragment in enumerate(self[amplicon]):
                 for j, read in enumerate(fragment.reads):
@@ -447,7 +472,8 @@ class ReadStore:
             )
             outname = f"{len(manifest_data)}.fa"
             outfile = os.path.join(outdir, outname)
-            bases_out = self.reads_to_fastas(amplicon, outfile)
+            target_bases = self.viridian_target_depth_factor * len(amplicon)
+            bases_out = self.reads_to_fastas(amplicon, outfile, target_bases)
 
             if bases_out == 0:
                 manifest_data[amplicon.name] = None

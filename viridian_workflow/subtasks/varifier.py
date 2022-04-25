@@ -9,7 +9,8 @@ class Varifier(Task):
     def __init__(self, outdir, ref, consensus, min_coord=0, max_coord=None):
         vcf = os.path.join(outdir, "04.truth.vcf")
         msa = os.path.join(outdir, "04.msa")
-        self.output = (vcf, msa, consensus)
+        consensus_out = os.path.join(outdir, "04.qry_sanitised_gaps.fa")
+        self.output = (vcf, msa, consensus_out)
 
         self.options = ["--global_align"]
         if min_coord is not None:
@@ -21,7 +22,7 @@ class Varifier(Task):
             "make_truth_vcf",
             "--sanitise_truth_gaps",
             *self.options,
-            assembly,
+            consensus,
             ref,
             outdir,
         ]

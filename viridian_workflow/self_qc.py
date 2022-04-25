@@ -146,11 +146,10 @@ class Pileup:
         self.qc = {}
         for position, stats in enumerate(self.seq):
             if position >= len(sequence):
-                print(
-                    f"Invalid condition: mapped position {position} greater than consensus length {len(sequence)}",
-                    file=sys.stderr,
+                raise Exception(
+                    f"Invalid condition: mapped position {position} greater than consensus length {len(sequence)}"
                 )
-                continue
+
             self.summary["consensus_length"] += 1
             if sequence[position] == "N":
                 # if a position is already masked by an upstream process skip it

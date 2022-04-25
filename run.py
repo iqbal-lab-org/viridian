@@ -16,7 +16,7 @@ def run_pipeline(work_dir, platform, fqs):
     if platform == "illumina":
         fq1, fq2 = fqs
         minimap = Minimap(work_dir / "name_sorted.bam", ref, fq1, fq2=fq2, sort=False)
-    elif platform == "onp":
+    elif platform == "ont":
         fq = fqs[0]
         minimap = Minimap(work_dir / "name_sorted.bam", ref, fq, sort=False)
     elif platform == "iontorrent":
@@ -59,11 +59,11 @@ def run_pipeline(work_dir, platform, fqs):
         min_coord=rs.start_pos,
         max_coord=rs.end_pos,
     )
-    varifier.run()
+    vcf, msa, varifier_consensus = varifier.run()
     log["varifier"] = varifier.log
 
     # self qc: remap reads to consensus
-    pileup = rs.pileup(consensus, msa=msa)
+    pileup = rs.pileup(varifier_consensus, msa=msa)
 
     # mask output
     masked_fasta = pileup.mask()
@@ -118,12 +118,11 @@ if __name__ == "__main__":
     if True:
         results = run_pipeline(work_dir, platform, fqs)
         log["results"] = results
+        log["summary"]["status"] = "Success"
     # except Exception as e:
     elif False:
         log["summary"]["status"] = {"Failure": str(e)}
         print(f"Pipeline failed with exception: {e}", file=sys.stderr)
-    else:
-        log["summary"]["status"] = "Success"
 
     with open(work_dir / "log.json", "w") as json_out:
         json.dump(log, json_out, indent=4)
