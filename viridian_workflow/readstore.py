@@ -336,17 +336,14 @@ class ReadStore:
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             return
-        if len(self.amplicons[amplicon]) >= self.target_depth:
-            return
+        #        if len(self.amplicons[amplicon]) >= self.target_depth:
+        #            return
 
         frags = self.reads_per_amplicon[amplicon]
-        sample_rate = int(frags / self.target_depth) - 1
+        sample_rate = self.target_depth / frags
 
-        if frags < self.target_depth:
-            sample_rate = 0
-        # TODO count the observed primer extrema
-
-        if random.randint(0, sample_rate) == 0:
+        if frags < self.target_depth or random.random() < sample_rate:
+            # TODO count the observed primer extrema
             self.amplicons[amplicon].append(fragment)
             self.summary[amplicon.name][
                 "sampled_bases"
