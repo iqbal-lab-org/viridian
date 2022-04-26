@@ -34,11 +34,12 @@ def run_pipeline(work_dir, platform, fqs):
 
     # detect amplicon set
     amplicon_set = bam.detect_amplicon_set(amplicon_sets)
-    log["amplicons"] = bam.stats
+    # log["amplicons"] = bam.stats
 
     # construct readstore
     # this subsamples the reads
     rs = readstore.ReadStore(amplicon_set, bam)
+    log["amplcions"] = rs.summary
 
     # save reads for viridian assembly
     amp_dir = work_dir / "amplicons"

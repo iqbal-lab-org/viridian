@@ -310,13 +310,14 @@ class ReadStore:
 
         random.seed(42)
         for fragment in bam.syncronise_fragments():
+            # truncate number of reads to target count per amplicon
             self.push_fragment(fragment)
 
         for amplicon in self.amplicons:
+            # we still want to randomise the order of the downsampled
+            # amplicons. Viridian will further downsample from these
+            # lists
             random.shuffle(self.amplicons[amplicon])
-
-            # truncate number of reads to target count per amplicon
-            self.amplicons[amplicon] = self.amplicons[amplicon][:target_depth]
 
         self.summarise_amplicons()
 
@@ -342,7 +343,6 @@ class ReadStore:
             self.unmatched_reads += 1
             return
 
-        #        self.amplicons[amplicon].append(fragment)
         self.reads_per_amplicon[amplicon] += 1
 
         self.summary[amplicon.name][
@@ -354,17 +354,22 @@ class ReadStore:
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             return
+        if len(self.amplicons[amplicon]) >= self.target_depth:
+            return
 
-        frags = len(self.amplicons[amplicon])
+        frags = self.reads_per_amplicon[amplicon]
+        sample_rate = int(frags / self.target_depth) - 1
 
-        sample_rate = int(frags / self.target_depth)
+        if frags < self.target_depth:
+            sample_rate = 0
         # TODO count the observed primer extrema
 
         if random.randint(0, sample_rate) == 0:
             self.amplicons[amplicon].append(fragment)
-
-        self.summary[amplicon.name]["sampled_bases"] += fragment.total_mapped_bases()
-        self.summary[amplicon.name]["sampled_depth"] += 1
+            self.summary[amplicon.name][
+                "sampled_bases"
+            ] += fragment.total_mapped_bases()
+            self.summary[amplicon.name]["sampled_depth"] += 1
 
     def summarise_amplicons(self):
         # normalise the bases per amplicons and such
