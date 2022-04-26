@@ -38,43 +38,6 @@ def rm(fn):
     os.remove(os.path.abspath(fn))
 
 
-def load_json(infile):
-    with open(infile) as f:
-        return json.load(f)
-
-
-def write_json(outfile, data):
-    with open(outfile, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def run_process(cmd, ignore_error=False, stdout=None):
-    cmd = list(map(str, cmd))
-    print(f"Running: {' '.join(cmd)}")
-    stdout_fd = subprocess.PIPE
-    if stdout:
-        stdout_fd = open(stdout, "w")
-    start_time = time.time()
-    result = subprocess.run(
-        cmd,
-        shell=False,
-        stderr=subprocess.PIPE,
-        stdout=stdout_fd,
-        universal_newlines=True,
-    )
-    if stdout:
-        stdout_fd.close()
-    time_elapsed = time.time() - start_time
-    print(f"Process ({' '.join(cmd)}) completed in {time_elapsed} seconds.")
-
-    if not ignore_error and result.returncode != 0:
-        raise Exception(f"Process returned {result.returncode}: {result.stderr}")
-
-    if not stdout:
-        print(result.stdout)
-        return result.stdout
-
-
 def amplicons_json_to_bed_and_range(infile, outfile):
     """Converts the amplicons JSON file to a BED file, which is used in
     various stages of the pipeline. Returns the 0-based inclusive coordinates

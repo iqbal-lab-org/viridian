@@ -2,7 +2,6 @@
 """
 import sys
 import subprocess
-from viridian_workflow.utils import run_process, check_file
 from .task import Task
 
 
@@ -61,10 +60,10 @@ class Minimap(Task):
                 if map_proc.returncode:
                     raise Exception("minimap2 subprocess failed")
 
-        check_file(self.output)
+        Task._check_file(self.output)
 
-        if self.sort:
-            run_process(["samtools", "index", self.output])
-            check_file(self.output + ".bai")
+        # if self.sort:
+        #    run_process(["samtools", "index", self.output])
+        #    check_file(self.output + ".bai")
 
         return self.output
