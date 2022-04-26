@@ -1,6 +1,5 @@
 """Viridian wrapper
 """
-import os
 import json
 from .task import Task
 

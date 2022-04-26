@@ -1,7 +1,6 @@
 """Varifier wrapper
 """
 import os
-from viridian_workflow.utils import run_process, check_file
 from .task import Task
 
 

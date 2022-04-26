@@ -1,10 +1,11 @@
 import sys
 import shutil
 from pathlib import Path
-import tempfile
+
+# import tempfile
 import json
 
-from viridian_workflow import primers, readstore, utils, self_qc
+from viridian_workflow import primers, readstore
 from viridian_workflow.subtasks import Minimap, Varifier, Viridian
 
 
@@ -115,13 +116,11 @@ if __name__ == "__main__":
     work_dir.mkdir()
 
     log = {"summary": {"version": "test-0.1", "status": "Interrupted"}}
-    # try:
-    if True:
+    try:
         results = run_pipeline(work_dir, platform, fqs)
         log["results"] = results
         log["summary"]["status"] = "Success"
-    # except Exception as e:
-    elif False:
+    except Exception as e:
         log["summary"]["status"] = {"Failure": str(e)}
         print(f"Pipeline failed with exception: {e}", file=sys.stderr)
 

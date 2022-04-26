@@ -1,8 +1,5 @@
 import sys
 
-import mappy as mp
-import pysam
-
 from collections import namedtuple, defaultdict
 
 BaseProfile = namedtuple(
@@ -113,7 +110,7 @@ class Pileup:
             ),
             "amplicon_bias": (
                 test_amplicon_bias,
-                lambda s: f"Per-amplicon FRS failure",
+                lambda s: "Per-amplicon FRS failure",
             ),
             #            "strand_bias": (
             #                test_strand_bias,
@@ -133,7 +130,7 @@ class Pileup:
         return self.seq[pos]
 
     def __setitem__(self, pos, profile):
-        raise Exception(f"don't set Pileup positions")
+        raise Exception("don't set Pileup positions")
 
     def update(self, pos, profile):
         self.seq[pos].update(profile)
@@ -194,7 +191,7 @@ class Pileup:
             stats = self.seq[cons_coord - 1]
             info_field = stats.info()
             vcf_filters = original_filters
-            if stats.position_failed == True:
+            if stats.position_failed:
                 if original_filters == "PASS":
                     vcf_filters = ";".join(stats.get_failures())
                 else:
@@ -337,7 +334,7 @@ def parse_cigar(ref, query, alignment):
 
     Returns a list of query basecalls per reference position
 
-    ref: AATGG 
+    ref: AATGG
     qry: AACT-
     (1, "A")
     (2, "AC")
@@ -396,21 +393,3 @@ def parse_cigar(ref, query, alignment):
             raise Exception(f"invalid cigar op {op}")
 
     return positions
-
-
-def mask(fasta, stats, outpath=None, name=None, config=default_config):
-    if not outpath:
-        output = f"{name}.masked.fasta"
-    ref = mp.Aligner(fasta)
-    if len(ref.seq_names) != 1:
-        Exception(f"Consensus fasta {fasta} has more than one sequence")
-    sequence = ref.seq(ref.seq_names[0])
-    if not name:
-        name = ref.seq_names[0]
-
-    masked, log = mask_sequence(sequence, stats, config=default_config)
-
-    # write masked fasta
-    with open(outpath, "w") as maskfd:
-        print(f">{name}\n{masked}", file=maskfd, end="")
-    return outpath, log

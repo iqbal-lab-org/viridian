@@ -1,7 +1,7 @@
 import csv
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from intervaltree import IntervalTree
-from viridian_workflow.readstore import PairedReads, SingleRead, ReadStore, in_range
+from viridian_workflow.readstore import in_range
 
 Primer = namedtuple(
     "Primer", ["name", "seq", "left", "forward", "ref_start", "ref_end"]

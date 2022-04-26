@@ -1,7 +1,6 @@
 from collections import namedtuple, defaultdict
 import sys
 from pathlib import Path
-import json
 import os
 import random
 
@@ -50,27 +49,6 @@ def score(matches, mismatches):
             winner = amplicon_set
             m = matches[amplicon_set]
     return winner
-
-
-def match_read_to_amplicons(read, amplicon_sets):
-    if read.is_unmapped:
-        return None
-    matches = {}
-    for amplicons in amplicon_sets:
-        m = amplicons.match(*read_interval(read))
-        if m:
-            matches[amplicons.name] = m
-    return matches
-
-
-def match_reads(reads, amplicon_sets):
-    """given a stream of reads, yield reads with a set of matched amplicons"""
-    for read in reads:
-        if read.is_unmapped:
-            continue
-
-        matches = match_read_to_amplicons(read, amplicon_sets)
-        yield read, matches
 
 
 def amplicon_set_counts_to_naive_total_counts(scheme_counts):
@@ -165,7 +143,6 @@ class Bam:
     def detect_amplicon_set(self, amplicon_sets):
         """return inferred amplicon set from list
         """
-        match_any_amplicon = 0
 
         self.stats = {
             "unpaired_reads": 0,
@@ -175,18 +152,23 @@ class Bam:
             "mapped": 0,
             "read_lengths": defaultdict(int),
             "template_lengths": defaultdict(int),
+            "match_no_amplicon_sets": 0,
         }
 
         mismatches = defaultdict(int)
         matches = defaultdict(int)
 
         for fragment in self.syncronise_fragments():
+            match_any = False
             for amplicon_set in amplicon_sets:
                 hit = amplicon_set.match(fragment)
                 if hit:
+                    match_any = True
                     matches[amplicon_set] += 1
                 else:
                     mismatches[amplicon_set] += 1
+            if not match_any:
+                self.stats["match_no_amplicon_sets"] += 1
 
         #        self.stats["match_any_amplicon"] = match_any_amplicon
         self.stats["amplicon_scheme_set_matches"] = {}
@@ -416,8 +398,10 @@ class ReadStore:
                     assert alignment.r_en > alignment.r_st
 
                     aln = self_qc.parse_cigar(consensus_seq, read.seq, alignment)
-                    ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
-                    c = consensus_seq[alignment.r_st : alignment.r_en]
+
+                    # testing for indel conditions:
+                    # ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
+                    # c = consensus_seq[alignment.r_st : alignment.r_en]
 
                     primers = amplicon.match_primers(fragment)
 
