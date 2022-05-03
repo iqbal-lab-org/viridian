@@ -105,7 +105,7 @@ class Pileup:
                 lambda s: f"Insufficient depth; {s.total} < {self.config.min_depth}. {s.total_reads} including primer regions.",
             ),
             "low_frs": (
-                lambda s: s.refs / s.total < self.config.min_frs,
+                lambda s: s.refs / s.total < self.config.min_frs if s.total > 0 else False,
                 lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {self.config.min_frs}. {s.total_reads} including primer regions.",
             ),
             "amplicon_bias": (
