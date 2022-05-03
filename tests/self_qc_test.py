@@ -1,5 +1,6 @@
 import os
 import pytest
+from collections import namedtuple
 
 from intervaltree import Interval
 from viridian_workflow import self_qc, primers
@@ -19,17 +20,19 @@ class StatsTest:
 
 
 def test_cigar_tuple_construction():
+
+    Alignment = namedtuple("Alignment", ["r_st", "cigar", "q_st"])
     ref = "AAA"
     query = "AAA"
-    cigar = [
-        (3, 0),
-    ]
-    assert self_qc.cigar_to_alts(ref, query, cigar) == [(0, "A"), (1, "A"), (2, "A")]
+    cigar = [(3,0)]
+
+    alignment = Alignment(0, cigar, 0)
+    assert self_qc.parse_cigar(ref, query, alignment) == [(0, "A"), (1, "A"), (2, "A")]
 
     ref = "AAA"
     query = "ATTAA"
     cigar = [(1, 0), (2, 1), (2, 0)]
-    assert self_qc.cigar_to_alts(ref, query, cigar) == [
+    assert self_qc.parse_cigar(ref, query, cigar) == [
         (0, "A"),
         #        (1, "TT"),
         (1, "A"),
@@ -39,7 +42,7 @@ def test_cigar_tuple_construction():
     ref = "ATTAA"
     query = "AAA"
     cigar = [(1, 0), (2, 2), (2, 0)]
-    assert self_qc.cigar_to_alts(ref, query, cigar) == [
+    assert self_qc.parse_cigar(ref, query, cigar) == [
         (0, "A"),
         (1, "-"),
         (2, "-"),
@@ -50,7 +53,7 @@ def test_cigar_tuple_construction():
     ref = "ATTAA"
     query = "AAA"
     cigar = [(0, 1), (2, 2), (0, 2)]
-    assert self_qc.cigar_to_alts(ref, query, cigar, pysam=True) == [
+    assert self_qc.parse_cigar(ref, query, cigar, pysam=True) == [
         (0, "A"),
         (1, "-"),
         (2, "-"),
@@ -61,7 +64,7 @@ def test_cigar_tuple_construction():
     ref = "AAAA"
     query = "GGGAAAA"
     cigar = [(3, 4), (4, 0)]
-    assert self_qc.cigar_to_alts(ref, query, cigar, q_pos=3) == [
+    assert self_qc.parse_cigar(ref, query, cigar, q_pos=3) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
@@ -109,7 +112,7 @@ def test_mappy_cigar_liftover():
         (4, 70),
     ]
 
-    self_qc.cigar_to_alts(seq, seq, cigar, pysam=True)
+    self_qc.parse_cigar(seq, seq, cigar)
 
 
 def test_bias_test():

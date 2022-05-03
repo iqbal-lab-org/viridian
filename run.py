@@ -90,7 +90,7 @@ def run_pipeline(work_dir, platform, fqs):
 
 if __name__ == "__main__":
     # set up the pipeline
-    platform, *fqs = sys.argv[1:]
+    platform, work_dir, *fqs = sys.argv[1:]
 
     # load amplicon sets
     amplicon_sets = []
@@ -108,11 +108,12 @@ if __name__ == "__main__":
     ]:
         amplicon_sets.append(primers.AmpliconSet.from_tsv(tsv, name=name))
 
-    work_dir = "/tmp/vwf/"
+    #work_dir = "/tmp/vwf/"
     work_dir = Path(work_dir)
     if work_dir.exists():
-        print(f"work dir {work_dir} exists, clobbering", file=sys.stderr)
-        shutil.rmtree(work_dir)
+        exit(1)
+        #print(f"work dir {work_dir} exists, clobbering", file=sys.stderr)
+        #shutil.rmtree(work_dir)
     work_dir.mkdir()
 
     log = {"summary": {"version": "test-0.1", "status": "Interrupted"}}

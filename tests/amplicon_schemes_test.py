@@ -3,7 +3,7 @@ import os
 import pytest
 import subprocess
 
-from viridian_workflow import amplicon_schemes, primers
+from viridian_workflow import primers
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "amplicon_schemes")

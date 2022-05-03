@@ -5,7 +5,7 @@ import subprocess
 
 import pyfastaq
 
-from viridian_workflow import sample_reads
+from viridian_workflow import readstore
 
 # Make a 1kb reference genome with 4 amplicons, and then some read pairs
 # that do different things (both mapped, one mapped, mapped to different

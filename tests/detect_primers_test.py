@@ -7,7 +7,8 @@ from unittest import mock
 
 import pyfastaq
 
-from viridian_workflow import detect_primers, minimap, primers
+from viridian_workflow import primers
+from viridian_workflow.subtasks import minimap
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "detect_primers")

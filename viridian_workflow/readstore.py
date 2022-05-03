@@ -96,6 +96,7 @@ class Bam:
 
     def syncronise_fragments(self):
         reads_by_name = {}
+        improper_pairs = 0
 
         reads = pysam.AlignmentFile(self.bam, "rb")
 
@@ -129,6 +130,7 @@ class Bam:
                 yield SingleRead(Bam.read_from_pysam(read))
 
             if not read.is_proper_pair:
+                improper_pairs += 1
                 continue
 
             if read.is_read1:
@@ -139,6 +141,7 @@ class Bam:
                 read1 = reads_by_name[read.query_name]
                 yield PairedReads(read1, Bam.read_from_pysam(read))
                 del reads_by_name[read.query_name]
+        print(f"{improper_pairs} improper pairs", file=sys.stderr)
 
     def detect_amplicon_set(self, amplicon_sets):
         """return inferred amplicon set from list

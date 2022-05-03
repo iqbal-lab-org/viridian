@@ -6,7 +6,7 @@ import subprocess
 
 import pyfastaq
 
-from viridian_workflow import one_sample_pipeline, utils
+from viridian_workflow import utils
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "one_sample_pipeline")

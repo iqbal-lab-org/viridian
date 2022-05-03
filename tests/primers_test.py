@@ -4,7 +4,7 @@ import pytest
 from collections import defaultdict
 
 from intervaltree import Interval
-from viridian_workflow import primers, detect_primers
+from viridian_workflow import primers
 
 import pysam
 
