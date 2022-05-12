@@ -28,8 +28,8 @@ def test_paired_unsorted():
     reads2 = os.path.join(data_dir, "reads_2.fq")
     bam = "tmp.minimap_paired_unsorted.bam"
     subprocess.check_output(f"rm -f {bam}", shell=True)
-    Minimap(bam, ref, reads1, rq=reads2, sort=False).run()
-    #minimap.run(bam, ref, reads1, fq2=reads2, sort=False)
+    Minimap(bam, ref, reads1, fq2=reads2, sort=False).run()
+    # minimap.run(bam, ref, reads1, fq2=reads2, sort=False)
     assert os.path.exists(bam)
     assert not bam_is_sorted_and_indexed(bam)
     os.unlink(bam)
@@ -41,7 +41,7 @@ def test_paired_sorted():
     reads2 = os.path.join(data_dir, "reads_2.fq")
     bam = "tmp.minimap_paired_sorted.bam"
     subprocess.check_output(f"rm -f {bam}", shell=True)
-    minimap.run(bam, ref, reads1, fq2=reads2, sort=True)
+    Minimap(bam, ref, reads1, fq2=reads2, sort=True).run()
     assert os.path.exists(bam)
     assert bam_is_sorted_and_indexed(bam)
     os.unlink(bam)
@@ -53,7 +53,7 @@ def test_unpaired_unsorted():
     reads = os.path.join(data_dir, "reads.fq")
     bam = "tmp.minimap_unpaired_unsorted.bam"
     subprocess.check_output(f"rm -f {bam}", shell=True)
-    minimap.run(bam, ref, reads, sort=False)
+    Minimap(bam, ref, reads, sort=False).run()
     assert os.path.exists(bam)
     assert not bam_is_sorted_and_indexed(bam)
     os.unlink(bam)
@@ -64,7 +64,7 @@ def test_unpaired_sorted():
     reads = os.path.join(data_dir, "reads.fq")
     bam = "tmp.minimap_unpaired_sorted.bam"
     subprocess.check_output(f"rm -f {bam}", shell=True)
-    minimap.run(bam, ref, reads, sort=True)
+    Minimap(bam, ref, reads, sort=True).run()
     assert os.path.exists(bam)
     assert bam_is_sorted_and_indexed(bam)
     os.unlink(bam)

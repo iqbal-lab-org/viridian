@@ -51,6 +51,8 @@ class Minimap(Task):
             sort_proc.wait()
             if sort_proc.returncode:
                 raise Exception("minimap2 subprocess failed")
+            subprocess.Popen(["samtools", "index", self.output]).wait()
+            Task._check_file(self.output + ".bai")
 
         else:
             with open(self.output, "w") as out_fd:
@@ -61,9 +63,4 @@ class Minimap(Task):
                     raise Exception("minimap2 subprocess failed")
 
         Task._check_file(self.output)
-
-        # if self.sort:
-        #    run_process(["samtools", "index", self.output])
-        #    check_file(self.output + ".bai")
-
         return self.output
