@@ -43,7 +43,7 @@ def amplicons_json_to_bed_and_range(infile, outfile):
     various stages of the pipeline. Returns the 0-based inclusive coordinates
     of the start of the first amplicon and end of the last amplicon, as
     a tuple (start, end)"""
-    data = load_json(infile)
+    data = json.load(open(infile))
     start = float("inf")
     end = -1
 

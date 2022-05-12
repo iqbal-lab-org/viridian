@@ -24,32 +24,39 @@ class Pileup:
     """A pileup is an array of Stats objects indexed by position in a reference
     """
 
-    def __init__(self, ref, msa=None, config=default_config):
+    def __init__(self, refseq, msa=None, config=default_config):
         self.config = config
-        self.ref = ref
+        self.ref = refseq
         self.seq = []
 
         # 1-based index translation tables
         self.ref_to_consensus = {}
         self.consensus_to_ref = {}
-        for r in ref:
+        for r in refseq:
             self.seq.append(Stats(ref_base=r))
 
         if msa:
             with open(msa) as msa_fd:
                 seq1 = msa_fd.readline().strip()  # consensus
                 seq2 = msa_fd.readline().strip()  # reference
-                ref = 0  # we're using 1-based coords (vcf)
-                con = 0
+                assert seq1.replace("-", "") == self.ref
+                ref = None  # we're using 1-based coords (vcf)
+                con = None
 
                 for a, b in zip(seq1, seq2):
                     if a != "-":
+                        if ref is None:
+                            ref = 0
                         ref += 1
                     if b != "-":
+                        if con is None:
+                            con = 0
                         con += 1
 
-                    self.ref_to_consensus[ref] = con
-                    self.consensus_to_ref[con] = ref
+                    if ref is not None:
+                        self.ref_to_consensus[ref] = con
+                    if con is not None:
+                        self.consensus_to_ref[con] = ref
         else:
             for i in range(1, len(self.ref) + 1):
                 self.ref_to_consensus[i] = i
@@ -105,7 +112,9 @@ class Pileup:
                 lambda s: f"Insufficient depth; {s.total} < {self.config.min_depth}. {s.total_reads} including primer regions.",
             ),
             "low_frs": (
-                lambda s: s.refs / s.total < self.config.min_frs if s.total > 0 else False,
+                lambda s: s.refs / s.total < self.config.min_frs
+                if s.total > 0
+                else False,
                 lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {self.config.min_frs}. {s.total_reads} including primer regions.",
             ),
             "amplicon_bias": (
@@ -202,20 +211,6 @@ class Pileup:
             )
 
         return header, records
-
-
-def test_bias(n, trials, threshold=0.3):
-    """Test whether a number of boolean trials fit the binomial
-    distribution (returns true if unbiased)
-    """
-    if trials == 0:
-        return False
-
-    # TODO: decide whether to include scipy to use binom_test
-    # or a pure python implementation.
-    bias = abs(0.5 - (n / trials))
-
-    return bias >= threshold
 
 
 class Stats:
