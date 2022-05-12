@@ -74,46 +74,15 @@ def test_cigar_tuple_construction():
 
 
 def test_mappy_cigar_liftover():
-    amplicon = primers.Amplicon("test_amplicon")
-    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
-
-    cigar = [
-        (4, 32),
-        (0, 29),
-        (2, 2),
-        (0, 7),
-        (1, 1),
-        (0, 4),
-        (1, 1),
-        (0, 8),
-        (2, 1),
-        (0, 11),
-        (1, 3),
-        (0, 1),
-        (2, 1),
-        (0, 26),
-        (1, 1),
-        (0, 8),
-        (2, 1),
-        (0, 76),
-        (1, 2),
-        (0, 46),
-        (1, 1),
-        (0, 4),
-        (2, 1),
-        (0, 11),
-        (2, 1),
-        (0, 77),
-        (1, 2),
-        (0, 5),
-        (2, 1),
-        (0, 40),
-        (1, 1),
-        (0, 54),
-        (4, 70),
-    ]
-
-    self_qc.parse_cigar(seq, seq, cigar)
+    """
+        This test case comes from when we were lifting-over coords with mappy.
+        the sequence has a complicated cigar string and can be problematic, but
+        we do liftover elsewhere now.
+    """
+    #    amplicon = primers.Amplicon("test_amplicon")
+    #    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
+    assert True
+    # self_qc.parse_cigar(seq, seq, cigar)
 
 
 def test_stat_evaluation():
@@ -142,7 +111,7 @@ def test_stat_evaluation():
 
 
 def test_pileup_msa_mapping():
-    ref = "ACTGACT--ATCGATCGATCGATCAG"
+    ref = "ACTGACTATCGATCGATCGATCAG"
     msa = Path(data_dir) / "ref_first.msa"
     pileup = self_qc.Pileup(ref, msa)
 
@@ -170,7 +139,16 @@ def test_ref_cons_position_translation():
 
     print(pileup.consensus_to_ref)
     print(pileup.ref_to_consensus)
-    assert False
+    assert pileup.ref_to_consensus[1] == None
+    #    assert pileup.ref_to_consensus[7] == 4
+    assert pileup.consensus_to_ref[4] == 7
+    assert pileup.ref_to_consensus[13] == 10
+    assert pileup.ref_to_consensus[8] == 7
+    assert pileup.consensus_to_ref[7] == 8
+    assert pileup.consensus_to_ref[10] == 13
+    #    assert pileup.ref_to_consensus[24] == None
+    #    assert pileup.consensus_to_ref[16] == 19 # not strictly true
+    assert pileup.ref_to_consensus[8] == 7
 
 
 def test_position_table_cons_shorter():

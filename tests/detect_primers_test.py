@@ -8,35 +8,39 @@ from unittest import mock
 import pyfastaq
 
 from viridian_workflow import primers
-from viridian_workflow.subtasks import minimap
+from viridian_workflow.subtasks import Minimap
+from viridian_workflow.readstore import PairedReads, SingleRead
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "detect_primers")
 
 
 def test_read_interval_paired():
-    read = mock.Mock()
-    read.is_paired = True
-    read.is_reverse = False
-    read.reference_start = 42
-    read.next_reference_start = 262
-    read.template_length = 250
-    assert detect_primers.read_interval(read) == (42, 292)
+    read1 = mock.Mock()
+    read1.is_reverse = False
+    read1.ref_start = 42
+    read1.ref_end = 142
 
-    read.is_reverse = True
-    read.reference_start = 262
-    read.next_reference_start = 42
-    read.template_length = -250
-    assert detect_primers.read_interval(read) == (42, 292)
+    read2 = mock.Mock()
+    read2.is_reverse = True
+    read2.ref_start = 142
+    read2.ref_end = 242
+
+    fragment = PairedReads(read1, read2)
+    interval = fragment.ref_end - fragment.ref_start
+    assert fragment.ref_start == 42
+    assert fragment.ref_end == 242
+    assert interval == 200
 
 
 def test_read_interval_unpaired():
     read = mock.Mock()
-    read.is_paired = False
     read.is_reverse = False
     read.reference_start = 42
     read.reference_end = 300
-    assert detect_primers.read_interval(read) == (42, 300)
+    fragment = SingleRead(read)
+
+    assert (fragment.ref_start, fragment.ref_end) == (42, 300)
 
 
 def test_match_read_to_amplicons():
@@ -147,7 +151,7 @@ def test_gather_stats_from_bam():
     unpaired_reads_fa = "tmp.gather_stats_from_bam.reads.fa"
     _write_sim_reads(ref_seq, unpaired_read_coords, unpaired_reads_fa)
     unpaired_bam = "tmp.gather_stats_from_bam.unpaired.bam"
-    minimap.run(unpaired_bam, ref_fasta, unpaired_reads_fa, sort=False)
+    Minimap(unpaired_bam, ref_fasta, unpaired_reads_fa, sort=False).run()
 
     reads1_coords = [(100, 200), (110, 210), (310, 410)]
     reads2_coords = [(200, 300), (200, 300), (900, 1000)]
@@ -156,7 +160,7 @@ def test_gather_stats_from_bam():
     _write_sim_reads(ref_seq, reads1_coords, reads1_fa, suffix="/1")
     _write_sim_reads(ref_seq, reads2_coords, reads2_fa, revcomp=True, suffix="/2")
     paired_bam = "tmp.gather_stats_from_bam.paired.bam"
-    minimap.run(paired_bam, ref_fasta, reads1_fa, fq2=reads2_fa, sort=False)
+    Minimap(paired_bam, ref_fasta, reads1_fa, fq2=reads2_fa, sort=False).run()
 
     amplicon_sets = [
         primers.AmpliconSet.from_tsv(v, name=k) for k, v in tsv_files.items()
