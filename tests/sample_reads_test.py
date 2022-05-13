@@ -5,7 +5,7 @@ import subprocess
 
 import pyfastaq
 
-from viridian_workflow import readstore
+from viridian_workflow import readstore, primers
 
 # Make a 1kb reference genome with 4 amplicons, and then some read pairs
 # that do different things (both mapped, one mapped, mapped to different
@@ -18,12 +18,50 @@ def make_test_ref_genome(outfile):
     return ref
 
 
-def make_test_amplicons_bed(outfile):
-    with open(outfile, "w") as f:
-        print("amp1", 0, 400, sep="\t", file=f)
-        print("amp2", 300, 700, sep="\t", file=f)
-        print("amp3", 650, 850, sep="\t", file=f)
-        print("amp4", 820, 1000, sep="\t", file=f)
+def make_amplicon_set(outfile, ref):
+    assert len(ref) == 1000
+    with open(outfile, "w") as out:
+        print(
+            "\t".join(
+                [
+                    "Amplicon_name",
+                    "Primer_name",
+                    "Left_or_right",
+                    "Sequence",
+                    "Position",
+                ]
+            ),
+            file=out,
+        )
+        for i, (l_pos, r_pos) in enumerate(
+            [(0, 300), (175, 475), (350, 650), (525, 825), (700, 1000)]
+        ):
+            primer_len = 20
+            r_primer = revcomp(ref[r_pos, r_pos + primer_len])
+            print(
+                "\t".join(
+                    [
+                        f"amp{i+1}",
+                        f"amp{i+1}_left",
+                        "left",
+                        ref[l_pos, l_pos + primer_len],
+                        str(position),
+                    ]
+                ),
+                file=out,
+            )
+            print(
+                "\t".join(
+                    [
+                        f"amp{i+1}",
+                        f"amp{i+1}_right",
+                        "right",
+                        r_primer,
+                        str(position - primer_len),
+                    ]
+                ),
+                file=out,
+            )
 
 
 def write_read(name, ref_seq, start, end, filehandle, revcomp=False):
@@ -86,7 +124,7 @@ def test_data():
     os.mkdir(outdir)
     data = {
         "dirname": outdir,
-        "amplicons_bed": os.path.join(outdir, "amplicons.bed"),
+        "amplicons_tsv": os.path.join(outdir, "amplicons.tsv"),
         "ref_fasta": os.path.join(outdir, "ref.fasta"),
         "paired_fq1": os.path.join(outdir, "paired_reads_1.fq"),
         "paired_fq2": os.path.join(outdir, "paired_reads_2.fq"),
@@ -96,7 +134,7 @@ def test_data():
     }
 
     data["ref_seq"] = make_test_ref_genome(data["ref_fasta"])
-    make_test_amplicons_bed(data["amplicons_bed"])
+    make_amplicons_tsv(data["amplicons_tsv"], data["ref_seq"])
     make_test_unpaired_fastq(data["unpaired_fq"], data["ref_seq"])
     make_test_paired_fastq(data["paired_fq1"], data["paired_fq2"], data["ref_seq"])
     map_reads(
@@ -131,6 +169,12 @@ def test_sample_unpaired_reads(test_data):
 def test_sample_paired_reads(test_data):
     outprefix = "tmp.sample_paired_reads.out"
     subprocess.check_output(f"rm -f {outprefix}.*", shell=True)
+    amplicons = primers.AmpliconSet.from_tsv(test_data["amplicons_bed"])
+    bam = readstore.Bam(test_data["paired_bam"])
+    print(bam)
+    print(amplicons)
+    reads = readstore.Readstore(bam, amplicons)
+
     sampler = sample_reads.sample_reads(
         test_data["ref_fasta"],
         test_data["paired_bam"],
