@@ -98,6 +98,17 @@ class Bam:
         reads_by_name = {}
         improper_pairs = 0
 
+        self.stats = {
+            "unpaired_reads": 0,
+            "reads1": 0,
+            "reads2": 0,
+            "total_reads": 0,
+            "mapped": 0,
+            "read_lengths": defaultdict(int),
+            "template_lengths": defaultdict(int),
+            "match_no_amplicon_sets": 0,
+        }
+
         reads = pysam.AlignmentFile(self.bam, "rb")
 
         for read in reads:
@@ -138,6 +149,8 @@ class Bam:
                 reads_by_name[read.query_name] = Bam.read_from_pysam(read)
 
             elif read.is_read2:
+                if read.query_name not in reads_by_name:
+                    raise Exception("Bam file is not sorted by name")
                 read1 = reads_by_name[read.query_name]
                 yield PairedReads(read1, Bam.read_from_pysam(read))
                 del reads_by_name[read.query_name]
@@ -146,17 +159,6 @@ class Bam:
     def detect_amplicon_set(self, amplicon_sets):
         """return inferred amplicon set from list
         """
-
-        self.stats = {
-            "unpaired_reads": 0,
-            "reads1": 0,
-            "reads2": 0,
-            "total_reads": 0,
-            "mapped": 0,
-            "read_lengths": defaultdict(int),
-            "template_lengths": defaultdict(int),
-            "match_no_amplicon_sets": 0,
-        }
 
         mismatches = defaultdict(int)
         matches = defaultdict(int)
@@ -454,20 +456,27 @@ class ReadStore:
         manifest_data = {}
         self.failed_amplicons = set()
 
+        fasta_number = 0  # let's find another way
         for amplicon in self.amplicon_set:
+            if len(self[amplicon]) == 0:
+                self.failed_amplicons.add(amplicon)
+                continue
+            outname = f"{fasta_number}.fa"
+            outfile = os.path.join(outdir, outname)
+            target_bases = self.viridian_target_depth_factor * len(amplicon)
+            bases_out = self.reads_to_fastas(amplicon, outfile, target_bases)
             print(
                 f"writing out {amplicon.name} reads {len(self[amplicon])}, {len(manifest_data)}.fa",
                 file=sys.stderr,
             )
-            outname = f"{len(manifest_data)}.fa"
-            outfile = os.path.join(outdir, outname)
-            target_bases = self.viridian_target_depth_factor * len(amplicon)
-            bases_out = self.reads_to_fastas(amplicon, outfile, target_bases)
+            fasta_number += 1
 
-            if bases_out == 0:
-                manifest_data[amplicon.name] = None
-                self.failed_amplicons.add(amplicon)
-            else:
-                manifest_data[amplicon.name] = outname
+            # TODO: define failure
+            # if bases_out < target_bases:
+            # manifest_data[amplicon.name] = None
+            #    self.failed_amplicons.add(amplicon)
+
+            # TODO: check if we should output failed but not empty amplicon fastas
+            manifest_data[amplicon.name] = outname
 
         return manifest_data
