@@ -14,8 +14,8 @@ data_dir = os.path.join(this_dir, "data", "primers")
 
 def test_basic_Amplicon_methods():
     amp = primers.Amplicon("name", shortname=0)
-    amp.add(primers.Primer("left_primer", "ACGTA", True, True, 100))
-    amp.add(primers.Primer("right_primer", "TCT", False, False, 300))
+    amp.add(primers.Primer("left_primer", "ACGTA", True, True, 100, 100 + 5))
+    amp.add(primers.Primer("right_primer", "TCT", False, False, 300, 300 + 3))
     assert amp.start == 100
     # End position is one past the end (ie in the style of python ranges)
     assert amp.end == 303
@@ -23,14 +23,14 @@ def test_basic_Amplicon_methods():
     assert len(amp) == 203
     # If we add in a new primer that's contained in the existing amplicon,
     # end positions and length should not change.
-    amp.add(primers.Primer("left_primer_alt", "AAAA", True, True, 120))
+    amp.add(primers.Primer("left_primer_alt", "AAAA", True, True, 120, 124))
     assert amp.start == 100
     assert amp.end == 303
     assert len(amp) == 203
     # Add new primers outside the current coords - then start, end, length
     # should all change
-    amp.add(primers.Primer("left_primer_alt2", "CCC", True, True, 90))
-    amp.add(primers.Primer("rightt_primer_alt", "G", False, False, 305))
+    amp.add(primers.Primer("left_primer_alt2", "CCC", True, True, 90, 93))
+    amp.add(primers.Primer("rightt_primer_alt", "G", False, False, 305, 306))
     assert amp.start == 90
     assert amp.end == 306
     assert len(amp) == 216
@@ -44,10 +44,20 @@ def test_AmpliconSet_from_json():
 def test_AmpliconSet_from_tsv():
     tsv_file = os.path.join(data_dir, "AmpliconSet_from_tsv.tsv")
     got = primers.AmpliconSet.from_tsv(tsv_file)
-    primer1_l = primers.Primer("amp1_left_primer", "ACGTACGTAC", True, True, 100)
-    primer1_r = primers.Primer("amp1_right_primer", "TCTCTTCTCAG", False, False, 300)
-    primer2_l = primers.Primer("amp2_left_primer", "GGGCGCGTAGTC", True, True, 290)
-    primer2_r = primers.Primer("amp2_right_primer", "ATGCGCGTAAGCT", False, False, 500)
+
+    p1 = "ACGTACGTAC"
+    p2 = "TCTCTTCTCAG"
+    p3 = "GGGCGCGTAGTC"
+    p4 = "ATGCGCGTAAGCT"
+
+    primer1_l = primers.Primer("amp1_left_primer", p1, True, True, 100, 100 + len(p1))
+    primer1_r = primers.Primer(
+        "amp1_right_primer", p2, False, False, 300, 300 + len(p2)
+    )
+    primer2_l = primers.Primer("amp2_left_primer", p3, True, True, 290, 290 + len(p3))
+    primer2_r = primers.Primer(
+        "amp2_right_primer", p4, False, False, 500, 500 + len(p4)
+    )
     amp1 = primers.Amplicon("amp1", shortname=0)
     amp1.add(primer1_l)
     amp1.add(primer1_r)
@@ -66,12 +76,23 @@ def test_AmpliconSet_from_tsv_viridian_workflow_format():
         data_dir, "AmpliconSet_from_tsv_viridian_workflow_format.tsv"
     )
     got = primers.AmpliconSet.from_tsv(tsv_file)
-    primer1_l = primers.Primer("amp1_left_primer", "ACGTACGTAC", True, True, 100)
-    primer1_r = primers.Primer("amp1_right_primer", "TCTCTTCTCAG", False, False, 300)
-    primer2_l = primers.Primer("amp2_left_primer", "GGGCGCGTAGTC", True, True, 290)
-    primer2_r = primers.Primer("amp2_right_primer", "ATGCGCGTAAGCT", False, False, 500)
+
+    p1 = "ACGTACGTAC"
+    p2 = "TCTCTTCTCAG"
+    p3 = "GGGCGCGTAGTC"
+    p4 = "ATGCGCGTAAGCT"
+    p2a = "TGCGCGTAAGCTA"
+    primer1_l = primers.Primer("amp1_left_primer", p1, True, True, 100, 100 + len(p1))
+    primer1_r = primers.Primer(
+        "amp1_right_primer", p2, False, False, 300, 300 + len(p2)
+    )
+    primer2_l = primers.Primer("amp2_left_primer", p3, True, True, 290, 290 + len(p3))
+    primer2_r = primers.Primer(
+        "amp2_right_primer", p4, False, False, 500, 500 + len(p4)
+    )
+
     primer2_r_alt = primers.Primer(
-        "amp2_right_primer_alt", "TGCGCGTAAGCTA", False, False, 501
+        "amp2_right_primer_alt", p2a, False, False, 501, 501 + len(p2a)
     )
     amp1 = primers.Amplicon("amp1", shortname=0)
     amp1.add(primer1_l)
@@ -91,22 +112,32 @@ def test_AmpliconSet_match():
     tsv_file = os.path.join(data_dir, "AmpliconSet_match.amplicons.tsv")
     amplicons = primers.AmpliconSet.from_tsv(tsv_file)
     amplicon_set = primers.AmpliconSet.from_tsv(tsv_file, name="NAME", tolerance=5)
-    f = amplicon_set.match
-    assert f(0, 0) is None
-    assert f(0, 10000) is None
-    assert f(0, 100) is None
-    assert f(90, 100) is None
-    assert f(90, 150) is None
-    assert f(94, 150) is None
-    print("f(95, 150)", f(95, 150))
-    print("amp1:", amplicons.amplicons["amp1"])
-    assert f(95, 150) == [amplicons.amplicons["amp1"]]
-    assert f(96, 150) == [amplicons.amplicons["amp1"]]
-    assert f(96, 315) == [amplicons.amplicons["amp1"]]
-    assert f(96, 316) is None
-    assert f(110, 120) == [amplicons.amplicons["amp1"]]
-    assert f(150, 350) is None
-    assert f(300, 400) == [amplicons.amplicons["amp2"]]
+    matchfn = amplicon_set.match
+
+    for interval, truth in [
+        ((0, 0), None),
+        ((0, 10000), None),
+        ((0, 100), None),
+        ((90, 100), None),
+        ((90, 150), None),
+        ((94, 150), None),
+        ((95, 150), [amplicons.amplicons["amp1"]]),
+        ((96, 150), [amplicons.amplicons["amp1"]]),
+        ((96, 315), [amplicons.amplicons["amp1"]]),
+        ((96, 316), None),
+        ((110, 120), [amplicons.amplicons["amp1"]]),
+        ((150, 350), None),
+        ((300, 400), [amplicons.amplicons["amp2"]]),
+    ]:
+        fragment = readstore.Fragment([])
+        start, end = interval
+        fragment.ref_start = start
+        fragment.ref_end = end
+        matches = matchfn(fragment)
+        if matches is not None:
+            assert matches.name == truth[0].name
+        else:
+            assert matches == truth  # None matches
 
 
 def test_fragment_syncronisation_position_sorted():
