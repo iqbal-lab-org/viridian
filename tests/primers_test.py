@@ -4,7 +4,7 @@ import pytest
 from collections import defaultdict
 
 from intervaltree import Interval
-from viridian_workflow import primers
+from viridian_workflow import primers, readstore
 
 import pysam
 
@@ -109,20 +109,52 @@ def test_AmpliconSet_match():
     assert f(300, 400) == [amplicons.amplicons["amp2"]]
 
 
-def test_fragment_syncronisation():
-    stats = {
-        "unpaired_reads": 0,
-        "reads1": 0,
-        "reads2": 0,
-        "total_reads": 0,
-        "mapped": 0,
-        "read_lengths": defaultdict(int),
-        "template_lengths": defaultdict(int),
-    }
+def test_fragment_syncronisation_position_sorted():
+    # this case should raise an exception now
+    # actually has 38 read pairs and 1 unmated
+    bam_file = data_dir + "/truncated_position_sorted_40_reads.bam"
 
-    name_sorted_paired_reads = pysam.AlignmentFile(
-        os.path.join(data_dir, "truncated_name_sorted_40_reads.bam")
-    )
-    for r1, r2 in detect_primers.syncronise_fragments(name_sorted_paired_reads, stats):
-        assert r1.qname == r2.qname
-        assert r1.is_reverse != r2.is_reverse
+    bam = readstore.Bam(bam_file)
+
+    r2_for_qn = {}
+    qns_for_r1s = defaultdict(set)
+
+    for read in pysam.AlignmentFile(bam_file, "rb"):
+        if read.is_read2:
+            r2_for_qn[read.query_name] = read.query_sequence
+        elif read.is_read1:
+            qns_for_r1s[read.query_sequence].add(read.query_name)
+
+    count = 0
+    try:
+        for fragment in bam.syncronise_fragments():
+            count += 1
+            r1, r2 = fragment.reads
+            names = qns_for_r1s[r1.seq]
+            assert r2.seq in map(lambda x: r2_for_qn[x], names)
+    except Exception as e:
+        assert str(e) == "Bam file is not sorted by name"
+
+
+def test_fragment_syncronisation():
+    # actually has 38 read pairs and 1 unmated
+    bam_file = data_dir + "/truncated_name_sorted_40_reads.bam"
+
+    bam = readstore.Bam(bam_file)
+
+    r2_for_qn = {}
+    qns_for_r1s = defaultdict(set)
+
+    for read in pysam.AlignmentFile(bam_file, "rb"):
+        if read.is_read2:
+            r2_for_qn[read.query_name] = read.query_sequence
+        elif read.is_read1:
+            qns_for_r1s[read.query_sequence].add(read.query_name)
+
+    count = 0
+    for fragment in bam.syncronise_fragments():
+        count += 1
+        r1, r2 = fragment.reads
+        names = qns_for_r1s[r1.seq]
+        assert r2.seq in map(lambda x: r2_for_qn[x], names)
+    assert count == 18
