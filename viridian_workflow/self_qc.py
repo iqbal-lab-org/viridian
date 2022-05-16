@@ -39,7 +39,8 @@ class Pileup:
             with open(msa) as msa_fd:
                 seq1 = msa_fd.readline().strip()  # consensus
                 seq2 = msa_fd.readline().strip()  # reference
-                assert seq1.replace("-", "") == self.ref
+                # this is valid for testing when the consensus is complete
+                # assert seq1.replace("-", "") == self.ref
                 ref = None  # we're using 1-based coords (vcf)
                 con = None
 
@@ -58,7 +59,7 @@ class Pileup:
                     if con is not None:
                         self.consensus_to_ref[con] = ref
         else:
-            for i in range(1, len(self.ref) + 1):
+            for i in range(0, len(self.ref) + 1):
                 self.ref_to_consensus[i] = i
                 self.consensus_to_ref[i] = i
 

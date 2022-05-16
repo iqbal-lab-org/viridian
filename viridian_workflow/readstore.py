@@ -420,7 +420,8 @@ class ReadStore:
                             # primers can be None
                             if primer and in_range(
                                 (primer.ref_start, primer.ref_end),
-                                pileup.consensus_to_ref[consensus_pos],
+                                # consensus_to_ref is 1-indexed!!
+                                pileup.consensus_to_ref[consensus_pos + 1],
                             ):
                                 in_primer = True
                                 break
@@ -460,6 +461,7 @@ class ReadStore:
         for amplicon in self.amplicon_set:
             if len(self[amplicon]) == 0:
                 self.failed_amplicons.add(amplicon)
+                manifest_data[amplicon.name] = None
                 continue
             outname = f"{fasta_number}.fa"
             outfile = os.path.join(outdir, outname)

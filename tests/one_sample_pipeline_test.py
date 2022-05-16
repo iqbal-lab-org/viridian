@@ -27,8 +27,8 @@ def run_one_sample(
         if name == "Name":
             continue
         amplicon_sets.append(primers.AmpliconSet.from_tsv(path, name=name))
-    fqs = [fq1] if fq2 is None else [fq1, fq2]
-    run.run_pipeline(outdir, "illumina", fqs, amplicon_sets, ref=ref)
+    fqs = [fq1,] if fq2 is None else [fq1, fq2]
+    run.run_pipeline(outdir, platform, fqs, amplicon_sets, ref=ref)
 
 
 def perfect_paired_reads_from_sublist(

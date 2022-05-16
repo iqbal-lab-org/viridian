@@ -45,7 +45,8 @@ def test_make_reads_dir_for_viridian_unpaired():
     got_failed = read_store.failed_amplicons
     assert got_failed == {amplicons[1]}
     expect_manifest = {
-        "amp1": "0.fa",  # amp1 should fail? or does fail just mean empty?
+        "amp1": "0.fa",
+        "amp2": None,
         "amp3": "1.fa",
     }
     assert manifest == expect_manifest
