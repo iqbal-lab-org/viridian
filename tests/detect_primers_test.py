@@ -9,10 +9,17 @@ import pyfastaq
 
 from viridian_workflow import primers
 from viridian_workflow.subtasks import Minimap
-from viridian_workflow.readstore import PairedReads, SingleRead
+from viridian_workflow.readstore import PairedReads, SingleRead, Bam
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "detect_primers")
+
+
+def match_read_to_amplicon_sets(read, amplicon_sets):
+    matches = {}
+    for amplicon_set in amplicon_sets:
+        matches[amplicon_set.name] = amplicon_set.match(read)
+    return matches == {}
 
 
 def test_read_interval_paired():
@@ -59,29 +66,34 @@ def test_match_read_to_amplicons():
     #
     # scheme2:
     # 100-300, 290-500, 490-700, 790-1001
-    read = mock.Mock()
-    read.is_unmapped = True
-    assert detect_primers.match_read_to_amplicons(read, amplicon_sets) is None
-    read.is_unmapped = False
-    read.is_paired = False
-    read.reference_start = 100
-    read.reference_end = 290
-    assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {
+    fragment = mock.Mock()
+    fragment.ref_start = None
+    fragment.ref_end = None
+    matches = {}
+
+    # this test is no longer valid. fragments must be aligned.
+    # for amplicon_set in amplicon_sets:
+    #    matches[amplicon_set.name] = amplicon_set.match(fragment)
+    # assert matches == {}
+
+    fragment.ref_start = 100
+    fragment.ref_end = 290
+    assert match_read_to_amplicon_sets(fragment, amplicon_sets) == {
         "scheme1": [amplicons1.amplicons["amp1"]],
         "scheme2": [amplicons2.amplicons["amp1"]],
     }
 
-    read.reference_start = 250
-    read.reference_end = 400
-    assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {}
+    fragment.reference_start = 250
+    fragment.reference_end = 400
+    assert match_read_to_amplicons(fragment, amplicon_sets) == {}
 
-    read.reference_start = 100
-    read.reference_end = 500
-    assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {}
+    fragment.reference_start = 100
+    fragment.reference_end = 500
+    assert match_read_to_amplicons(fragment, amplicon_sets) == {}
 
-    read.reference_start = 400
-    read.reference_end = 750
-    assert detect_primers.match_read_to_amplicons(read, amplicon_sets) == {
+    fragment.reference_start = 400
+    fragment.reference_end = 750
+    assert match_read_to_amplicons(fragment, amplicon_sets) == {
         "scheme1": [amplicons1.amplicons["amp2"]],
     }
 
@@ -167,19 +179,31 @@ def test_gather_stats_from_bam():
     ]
     tmp_bam_out = "tmp.bam"
     subprocess.check_output(f"rm -f {tmp_bam_out}", shell=True)
-    got = detect_primers.gather_stats_from_bam(unpaired_bam, tmp_bam_out, amplicon_sets)
+    rs = Bam(unpaired_bam)
+    try:
+        rs.detect_amplicon_set(amplicon_sets)
+    except Exception as error:
+        # this test case should fail to match any of the sets
+        if str(error) != "failed to choose amplicon scheme":
+            raise Error
+    got = rs.stats
+    # got = detect_primers.gather_stats_from_bam(unpaired_bam, tmp_bam_out, amplicon_sets)
+    for k in rs.stats:
+        print(k, rs.stats[k])
     assert got == {
         "total_reads": 4,
         "reads1": 0,
         "reads2": 0,
         "unpaired_reads": 4,
         "mapped": 4,
-        "match_any_amplicon": 3,
+        # "match_any_amplicon": 3,
+        "match_no_amplicon_sets": 1,
         "read_lengths": {190: 1, 180: 1, 500: 1, 150: 1},
         "template_lengths": {190: 1, 180: 1, 500: 1, 150: 1},  # TODO: check this
-        "amplicon_scheme_set_matches": {("scheme1",): 1, ("scheme1", "scheme2"): 2},
-        "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
-        "chosen_amplicon_scheme": "scheme1",
+        # "amplicon_scheme_set_matches": {("scheme1",): 1, ("scheme1", "scheme2"): 2},
+        "amplicon_scheme_set_matches": {"scheme1": 3, "scheme2": 2},
+        # "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
+        # "chosen_amplicon_scheme": "scheme1",
     }
     assert os.path.exists(tmp_bam_out)
     os.unlink(tmp_bam_out)
