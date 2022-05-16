@@ -6,10 +6,29 @@ import subprocess
 
 import pyfastaq
 
-from viridian_workflow import utils
+from viridian_workflow import utils, run, primers
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "one_sample_pipeline")
+
+
+def run_one_sample(
+    platform,
+    outdir,
+    ref,
+    fq1,
+    fq2=None,
+    tsv_of_amp_schemes=None,
+    keep_intermediate=None,
+):
+    amplicon_sets = []
+    for line in open(tsv_of_amp_schemes):
+        name, path = line.strip().split("\t")
+        if name == "Name":
+            continue
+        amplicon_sets.append(primers.AmpliconSet.from_tsv(path, name=name))
+    fqs = [fq1] if fq2 is None else [fq1, fq2]
+    run.run_pipeline(outdir, "illumina", fqs, amplicon_sets, ref=ref)
 
 
 def perfect_paired_reads_from_sublist(
@@ -199,8 +218,17 @@ def _test_complete_assembly_no_reads_map(test_data):
         print("@read1/1", "A" * 100, "+", "I" * 100, sep="\n", file=f1)
         print("@read1/2", "A" * 100, "+", "I" * 100, sep="\n", file=f2)
     outdir = f"{pre_out}.out"
+
+    amplicon_sets = []
+    ref = test_data["ref_fasta"]
+    for line in open(test_data["amplicons_tsv"]):
+        print(line)
+        assert False
+        name, path = line.strip().split("\t")
+        amplicon_sets.append((name, path))
+
     try:
-        one_sample_pipeline.run_one_sample(
+        run_one_sample(
             "illumina",
             outdir,
             test_data["ref_fasta"],
@@ -210,12 +238,8 @@ def _test_complete_assembly_no_reads_map(test_data):
         )
         # This test should fail on viridian, producing no consensus
         # TODO specify that it was the consensus file that's missing
-    except utils.OutputFileError as error:
-        if str(error) != str(
-            os.path.abspath(
-                os.path.join(outdir, "Processing/viridian/consensus.final_assembly.fa")
-            )
-        ):
+    except Exception as error:
+        if str(error) != "failed to choose amplicon scheme":
             raise error
 
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
@@ -230,7 +254,7 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
     make_catted_paired_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
-    one_sample_pipeline.run_one_sample(
+    run_one_sample(
         "illumina",
         outdir,
         test_data["ref_fasta"],
@@ -251,7 +275,7 @@ def test_complete_assembly_from_all_good_amplicons_unpaired(test_data):
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
     make_catted_unpaired_reads_for_amplicon_set(test_data, all_amplicon_names, fq)
     outdir = f"{pre_out}.out"
-    one_sample_pipeline.run_one_sample(
+    run_one_sample(
         "ont",
         outdir,
         test_data["ref_fasta"],
@@ -272,7 +296,7 @@ def test_assembly_amplicon_3_no_reads(test_data):
     amplicon_names = {"amplicon1", "amplicon2", "amplicon4", "amplicon5"}
     make_catted_paired_reads_for_amplicon_set(test_data, amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
-    one_sample_pipeline.run_one_sample(
+    run_one_sample(
         "illumina",
         outdir,
         test_data["ref_fasta"],
@@ -300,7 +324,7 @@ def test_complete_assembly_with_snps_and_indels(test_data):
     ref_seq.insert(1100, "A")
     ref_seq.pop(1200)
     nucleotides_list_to_fasta_file(ref_seq, "ref", ref_fasta)
-    one_sample_pipeline.run_one_sample(
+    run_one_sample(
         "illumina",
         outdir,
         ref_fasta,
@@ -326,16 +350,20 @@ def test_reads_are_wgs_not_amplicon(test_data):
     fq2 = f"{pre_out}.2.fq"
     tiling_reads(test_data["ref_seq"], 150, 350, fq1, fq2, step=2)
     outdir = f"{pre_out}.out"
-    one_sample_pipeline.run_one_sample(
-        "illumina",
-        outdir,
-        test_data["ref_fasta"],
-        fq1,
-        fq2=fq2,
-        tsv_of_amp_schemes=test_data["schemes_tsv"],
-        keep_intermediate=True,
-    )
-    # TODO: check that we got the expected output
+    try:
+        run_one_sample(
+            "illumina",
+            outdir,
+            test_data["ref_fasta"],
+            fq1,
+            fq2=fq2,
+            tsv_of_amp_schemes=test_data["schemes_tsv"],
+            keep_intermediate=True,
+        )
+    # we should throw fail on detecting the amplicon scheme
+    except Exception as error:
+        if str(error) != "failed to choose amplicon scheme":
+            raise error
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
 
@@ -359,7 +387,7 @@ def _test_not_expected_amplicons(test_data):
     make_amplicons(amplicons_json, amplicons=amplicons)
     outdir = f"{pre_out}.out"
     try:
-        one_sample_pipeline.run_one_sample(
+        run_one_sample(
             "illumina",
             outdir,
             test_data["ref_fasta"],
