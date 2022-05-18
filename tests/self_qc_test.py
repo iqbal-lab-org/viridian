@@ -33,28 +33,17 @@ def test_cigar_tuple_construction():
     ref = "AAA"
     query = "ATTAA"
     cigar = [(1, 0), (2, 1), (2, 0)]
-    assert self_qc.parse_cigar(ref, query, cigar) == [
+    assert self_qc.parse_cigar(ref, query, alignment) == [
         (0, "A"),
-        #        (1, "TT"),
-        (1, "A"),
+        (1, "TT"),
         (2, "A"),
-    ]
-
-    ref = "ATTAA"
-    query = "AAA"
-    cigar = [(1, 0), (2, 2), (2, 0)]
-    assert self_qc.parse_cigar(ref, query, cigar) == [
-        (0, "A"),
-        (1, "-"),
-        (2, "-"),
         (3, "A"),
-        (4, "A"),
     ]
 
     ref = "ATTAA"
     query = "AAA"
-    cigar = [(0, 1), (2, 2), (0, 2)]
-    assert self_qc.parse_cigar(ref, query, cigar, pysam=True) == [
+    alignment = Alignment(0, [(1, 0), (2, 2), (2, 0)], 0)
+    assert self_qc.parse_cigar(ref, query, alignment) == [
         (0, "A"),
         (1, "-"),
         (2, "-"),
@@ -64,8 +53,8 @@ def test_cigar_tuple_construction():
 
     ref = "AAAA"
     query = "GGGAAAA"
-    cigar = [(3, 4), (4, 0)]
-    assert self_qc.parse_cigar(ref, query, cigar, q_pos=3) == [
+    alignment = Alignment(0, [(3, 4), (4, 0)], 0)
+    assert self_qc.parse_cigar(ref, query, alignment, q_pos=3) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
@@ -73,16 +62,16 @@ def test_cigar_tuple_construction():
     ]
 
 
-def test_mappy_cigar_liftover():
-    """
-        This test case comes from when we were lifting-over coords with mappy.
-        the sequence has a complicated cigar string and can be problematic, but
-        we do liftover elsewhere now.
-    """
-    #    amplicon = primers.Amplicon("test_amplicon")
-    #    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
-    assert True
-    # self_qc.parse_cigar(seq, seq, cigar)
+# def test_mappy_cigar_liftover():
+#    """
+#        This test case comes from when we were lifting-over coords with mappy.
+#        the sequence has a complicated cigar string and can be problematic, but
+#        we do liftover elsewhere now. It's a good case and we should find ground truth
+#    """
+#    amplicon = primers.Amplicon("test_amplicon")
+#    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
+#    assert True
+# self_qc.parse_cigar(seq, seq, cigar)
 
 
 def test_stat_evaluation():

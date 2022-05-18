@@ -134,7 +134,7 @@ def test_data():
     }
 
     data["ref_seq"] = make_test_ref_genome(data["ref_fasta"])
-    make_amplicons_tsv(data["amplicons_tsv"], data["ref_seq"])
+    # make_amplicons_tsv(data["amplicons_tsv"], data["ref_seq"])
     make_test_unpaired_fastq(data["unpaired_fq"], data["ref_seq"])
     make_test_paired_fastq(data["paired_fq1"], data["paired_fq2"], data["ref_seq"])
     map_reads(

@@ -348,7 +348,7 @@ def parse_cigar(ref, query, alignment):
         if op == 0:
             # match/mismatch
             for _ in range(count):
-                if len(query) == q_pos + 1:
+                if len(query) == q_pos:
                     # done? TODO: verify that this captures the full query sequence
                     # print(f"WARNING: invalid cigar string. {len(query)}, index {q_pos}. cigar: {cigar}", file=sys.stderr)
                     break

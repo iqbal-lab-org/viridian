@@ -7,7 +7,7 @@ from unittest import mock
 
 import pyfastaq
 
-from viridian_workflow import primers
+from viridian_workflow import primers, readstore
 from viridian_workflow.subtasks import Minimap
 from viridian_workflow.readstore import PairedReads, SingleRead, Bam
 
@@ -18,8 +18,10 @@ data_dir = os.path.join(this_dir, "data", "detect_primers")
 def match_read_to_amplicon_sets(read, amplicon_sets):
     matches = {}
     for amplicon_set in amplicon_sets:
-        matches[amplicon_set.name] = amplicon_set.match(read)
-    return matches == {}
+        read_match = amplicon_set.match(read)
+        if read_match:
+            matches[amplicon_set.name] = read_match.name
+    return matches
 
 
 def test_read_interval_paired():
@@ -43,8 +45,8 @@ def test_read_interval_paired():
 def test_read_interval_unpaired():
     read = mock.Mock()
     read.is_reverse = False
-    read.reference_start = 42
-    read.reference_end = 300
+    read.ref_start = 42
+    read.ref_end = 300
     fragment = SingleRead(read)
 
     assert (fragment.ref_start, fragment.ref_end) == (42, 300)
@@ -79,55 +81,22 @@ def test_match_read_to_amplicons():
     fragment.ref_start = 100
     fragment.ref_end = 290
     assert match_read_to_amplicon_sets(fragment, amplicon_sets) == {
-        "scheme1": [amplicons1.amplicons["amp1"]],
-        "scheme2": [amplicons2.amplicons["amp1"]],
+        "scheme1": "amp1",
+        "scheme2": "amp1",
     }
 
-    fragment.reference_start = 250
-    fragment.reference_end = 400
-    assert match_read_to_amplicons(fragment, amplicon_sets) == {}
+    fragment.ref_start = 250
+    fragment.ref_end = 400
+    assert match_read_to_amplicon_sets(fragment, amplicon_sets) == {}
 
-    fragment.reference_start = 100
-    fragment.reference_end = 500
-    assert match_read_to_amplicons(fragment, amplicon_sets) == {}
+    fragment.ref_start = 100
+    fragment.ref_end = 500
+    assert match_read_to_amplicon_sets(fragment, amplicon_sets) == {}
 
-    fragment.reference_start = 400
-    fragment.reference_end = 750
-    assert match_read_to_amplicons(fragment, amplicon_sets) == {
-        "scheme1": [amplicons1.amplicons["amp2"]],
-    }
-
-
-def test_pysam_open_mode():
-    assert detect_primers.pysam_open_mode("foo.sam") == ""
-    assert detect_primers.pysam_open_mode("foo.bam") == "b"
-    with pytest.raises(Exception):
-        detect_primers.pysam_open_mode("foo.bar")
-
-
-def test_amplicon_set_counts_to_naive_total_counts():
-    dict_in = {
-        (1, 2, 3): 42,
-        (1,): 11,
-        (2,): 100,
-    }
-    assert detect_primers.amplicon_set_counts_to_naive_total_counts(dict_in) == {
-        1: 53,
-        2: 142,
-        3: 42,
-    }
-
-
-def test_amplicon_set_counts_to_json_friendly():
-    dict_in = {
-        (3, 1, 2): 42,
-        (1,): 11,
-        (2,): 100,
-    }
-    assert detect_primers.amplicon_set_counts_to_json_friendly(dict_in) == {
-        "1;2;3": 42,
-        "1": 11,
-        "2": 100,
+    fragment.ref_start = 400
+    fragment.ref_end = 750
+    assert match_read_to_amplicon_sets(fragment, amplicon_sets) == {
+        "scheme1": "amp2",
     }
 
 
@@ -177,8 +146,7 @@ def test_gather_stats_from_bam():
     amplicon_sets = [
         primers.AmpliconSet.from_tsv(v, name=k) for k, v in tsv_files.items()
     ]
-    tmp_bam_out = "tmp.bam"
-    subprocess.check_output(f"rm -f {tmp_bam_out}", shell=True)
+
     rs = Bam(unpaired_bam)
     try:
         rs.detect_amplicon_set(amplicon_sets)
@@ -188,8 +156,6 @@ def test_gather_stats_from_bam():
             raise Error
     got = rs.stats
     # got = detect_primers.gather_stats_from_bam(unpaired_bam, tmp_bam_out, amplicon_sets)
-    for k in rs.stats:
-        print(k, rs.stats[k])
     assert got == {
         "total_reads": 4,
         "reads1": 0,
@@ -205,25 +171,30 @@ def test_gather_stats_from_bam():
         # "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
         # "chosen_amplicon_scheme": "scheme1",
     }
-    assert os.path.exists(tmp_bam_out)
-    os.unlink(tmp_bam_out)
 
-    got = detect_primers.gather_stats_from_bam(paired_bam, tmp_bam_out, amplicon_sets)
+    rs = Bam(paired_bam)
+    try:
+        rs.detect_amplicon_set(amplicon_sets)
+    except Exception as error:
+        if str(error) != "failed to choose amplicon scheme":
+            raise Error
+    got = rs.stats
+    # got = detect_primers.gather_stats_from_bam(paired_bam, tmp_bam_out, amplicon_sets)
     assert got == {
         "total_reads": 6,
         "reads1": 3,
         "reads2": 3,
         "unpaired_reads": 0,
         "mapped": 6,
-        "match_any_amplicon": 2,
+        # "match_any_amplicon": 2,
+        "match_no_amplicon_sets": 1,  # confirm
         "read_lengths": {100: 6},
         "template_lengths": {200: 1, 190: 1, 690: 1},  # TODO: check this
-        "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
-        "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},
-        "chosen_amplicon_scheme": "scheme2",
+        # "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
+        "amplicon_scheme_set_matches": {"scheme1": 2, "scheme2": 2}
+        # "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},
+        # "chosen_amplicon_scheme": "scheme2",
     }
-    assert os.path.exists(tmp_bam_out)
-    os.unlink(tmp_bam_out)
 
     os.unlink(ref_fasta)
     os.unlink(reads1_fa)
