@@ -326,7 +326,7 @@ class Stats:
 
 def parse_cigar(ref, query, alignment):
     """Interpret cigar string and query sequence in reference
-    coords from mappy (count, op) or pysam (op, count)
+    coords from mappy (count, op)
 
     Returns a list of query basecalls per reference position
 
@@ -359,9 +359,8 @@ def parse_cigar(ref, query, alignment):
 
         elif op == 1:
             # insertion
-            positions.append((r_pos, query[q_pos : q_pos + count + 1]))
-            q_pos += count + 1
-            r_pos += 1
+            # positions.append((r_pos, query[q_pos : q_pos + count + 1]))
+            q_pos += count
 
         elif op == 2:
             # deletion

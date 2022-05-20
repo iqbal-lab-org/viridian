@@ -32,12 +32,12 @@ def test_cigar_tuple_construction():
 
     ref = "AAA"
     query = "ATTAA"
-    cigar = [(1, 0), (2, 1), (2, 0)]
+    alignment = Alignment(0, [(1, 0), (2, 1), (2, 0)], 0)
     assert self_qc.parse_cigar(ref, query, alignment) == [
         (0, "A"),
-        (1, "TT"),
+        #        (1, "TT"),
+        (1, "A"),
         (2, "A"),
-        (3, "A"),
     ]
 
     ref = "ATTAA"
@@ -53,8 +53,8 @@ def test_cigar_tuple_construction():
 
     ref = "AAAA"
     query = "GGGAAAA"
-    alignment = Alignment(0, [(3, 4), (4, 0)], 0)
-    assert self_qc.parse_cigar(ref, query, alignment, q_pos=3) == [
+    alignment = Alignment(0, [(3, 4), (4, 0)], 3)
+    assert self_qc.parse_cigar(ref, query, alignment) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
@@ -62,16 +62,62 @@ def test_cigar_tuple_construction():
     ]
 
 
-# def test_mappy_cigar_liftover():
-#    """
-#        This test case comes from when we were lifting-over coords with mappy.
-#        the sequence has a complicated cigar string and can be problematic, but
-#        we do liftover elsewhere now. It's a good case and we should find ground truth
-#    """
-#    amplicon = primers.Amplicon("test_amplicon")
-#    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
-#    assert True
-# self_qc.parse_cigar(seq, seq, cigar)
+def test_mappy_cigar_liftover():
+    """
+        This test case comes from when we were lifting-over coords with mappy.
+        the sequence has a complicated cigar string and can be problematic, but
+        we do liftover elsewhere now. It's a good case and we should find ground truth
+    """
+    amplicon = primers.Amplicon("test_amplicon")
+    seq = "CTTCAGGTGATGGCACAACAAGTCCTATTTGAACATAGACTCACGAGATTGCGGTTATACTTTCGAAAATGGGAATCTGGAGTAAAAGACTAAAGTTAGATACACAGTTGCTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTGCCATCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGGTCCAATTCACACAACGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTGTTACTCAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
+    ref = "CTTCAGGTGATGGCACAACAAGTCCTATTTCTGAACATGACTACCAGATTGGTGGTTATACTGAAAAATGGGAATCTGGAGTAAAAGACTGTGTTGTATTACACAGTTACTTCACTTCAGACTATTACCAGCTGTACTCAACTCAATTGAGTACAGACACTGGTGTTGAACATGTTACCTTCTTCATCTACAATAAAATTGTTGATGAGCCTGAAGAACATGTCCAAATTCACACAATCGACGGTTCATCCGGAGTTGTTAATCCAGTAATGGAACCAATTTATGATGAACCGACGACGACTACTAGCGTGCCTTTGTAAGCACAAGCTGATGAGTACGAACTTATGTACTCATTCGTTTCGGAAGAGACAGGTACGTTAATAGTTAATAGCGTACTTCTTTTTCTTGCTTTCGT"
+
+    Alignment = namedtuple("Alignment", ["r_st", "cigar", "q_st"])
+
+    # these cigar ops are written in pysam order!
+    pysam_cigar = [
+        #        (4, 32),
+        (0, 29),
+        (2, 2),
+        (0, 7),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 8),
+        (2, 1),
+        (0, 11),
+        (1, 3),
+        (0, 1),
+        (2, 1),
+        (0, 26),
+        (1, 1),
+        (0, 8),
+        (2, 1),
+        (0, 76),
+        (1, 2),
+        (0, 46),
+        (1, 1),
+        (0, 4),
+        (2, 1),
+        (0, 11),
+        (2, 1),
+        (0, 77),
+        (1, 2),
+        (0, 5),
+        (2, 1),
+        (0, 40),
+        (1, 1),
+        (0, 54),
+        #        (4, 70),
+    ]
+    cigar = []
+    for op, count in pysam_cigar:
+        cigar.append((count, op))
+    alignment = Alignment(0, cigar, 0)
+    a = self_qc.parse_cigar(None, seq, alignment)
+
+    assert len(ref) - 1 == a[-1][0]
+    assert ref[-1] == a[-1][1]
 
 
 def test_stat_evaluation():
