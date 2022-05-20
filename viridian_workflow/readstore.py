@@ -261,8 +261,8 @@ class ReadStore:
 
         for _, amplicon in amplicon_set.amplicons.items():
             self.summary[amplicon.name] = {
-                "start": amplicon.start + 1,
-                "end": amplicon.end + 1,
+                "start": amplicon.start,
+                "end": amplicon.end,
                 "total_mapped_bases": 0,
                 "total_depth": 0,
                 "sampled_bases": 0,
@@ -273,14 +273,14 @@ class ReadStore:
             # store the global start and end position for the entire
             # primer scheme. This is used to help varifier.
             if not self.start_pos:
-                self.start_pos = amplicon.start + 1
+                self.start_pos = amplicon.start
             if not self.end_pos:
-                self.end_pos = amplicon.end + 1
+                self.end_pos = amplicon.end
 
-            if amplicon.start + 1 < self.start_pos:
-                self.start_pos = amplicon.start + 1
-            if amplicon.end + 1 > self.end_pos:
-                self.end_pos = amplicon.end + 1
+            if amplicon.start < self.start_pos:
+                self.start_pos = amplicon.start
+            if amplicon.end > self.end_pos:
+                self.end_pos = amplicon.end
 
             left_start, left_end = amplicon.left_primer_region
             right_start, right_end = amplicon.right_primer_region

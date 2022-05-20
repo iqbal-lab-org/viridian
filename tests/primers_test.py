@@ -50,13 +50,17 @@ def test_AmpliconSet_from_tsv():
     p3 = "GGGCGCGTAGTC"
     p4 = "ATGCGCGTAAGCT"
 
-    primer1_l = primers.Primer("amp1_left_primer", p1, True, True, 100, 100 + len(p1))
-    primer1_r = primers.Primer(
-        "amp1_right_primer", p2, False, False, 300, 300 + len(p2)
+    primer1_l = primers.Primer(
+        "amp1_left_primer", p1, True, True, 100, 100 + len(p1) - 1
     )
-    primer2_l = primers.Primer("amp2_left_primer", p3, True, True, 290, 290 + len(p3))
+    primer1_r = primers.Primer(
+        "amp1_right_primer", p2, False, False, 300, 300 + len(p2) - 1
+    )
+    primer2_l = primers.Primer(
+        "amp2_left_primer", p3, True, True, 290, 290 + len(p3) - 1
+    )
     primer2_r = primers.Primer(
-        "amp2_right_primer", p4, False, False, 500, 500 + len(p4)
+        "amp2_right_primer", p4, False, False, 500, 500 + len(p4) - 1
     )
     amp1 = primers.Amplicon("amp1", shortname=0)
     amp1.add(primer1_l)
@@ -82,17 +86,21 @@ def test_AmpliconSet_from_tsv_viridian_workflow_format():
     p3 = "GGGCGCGTAGTC"
     p4 = "ATGCGCGTAAGCT"
     p2a = "TGCGCGTAAGCTA"
-    primer1_l = primers.Primer("amp1_left_primer", p1, True, True, 100, 100 + len(p1))
-    primer1_r = primers.Primer(
-        "amp1_right_primer", p2, False, False, 300, 300 + len(p2)
+    primer1_l = primers.Primer(
+        "amp1_left_primer", p1, True, True, 100, 100 + len(p1) - 1
     )
-    primer2_l = primers.Primer("amp2_left_primer", p3, True, True, 290, 290 + len(p3))
+    primer1_r = primers.Primer(
+        "amp1_right_primer", p2, False, False, 300, 300 + len(p2) - 1
+    )
+    primer2_l = primers.Primer(
+        "amp2_left_primer", p3, True, True, 290, 290 + len(p3) - 1
+    )
     primer2_r = primers.Primer(
-        "amp2_right_primer", p4, False, False, 500, 500 + len(p4)
+        "amp2_right_primer", p4, False, False, 500, 500 + len(p4) - 1
     )
 
     primer2_r_alt = primers.Primer(
-        "amp2_right_primer_alt", p2a, False, False, 501, 501 + len(p2a)
+        "amp2_right_primer_alt", p2a, False, False, 501, 501 + len(p2a) - 1
     )
     amp1 = primers.Amplicon("amp1", shortname=0)
     amp1.add(primer1_l)
@@ -105,6 +113,8 @@ def test_AmpliconSet_from_tsv_viridian_workflow_format():
         "amp1": amp1,
         "amp2": amp2,
     }
+    for a in expect:
+        print(expect[a], got.amplicons[a])
     assert got.amplicons == expect
 
 

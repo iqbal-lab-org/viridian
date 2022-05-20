@@ -190,7 +190,8 @@ class AmpliconSet:
                     left,
                     forward,
                     pos,
-                    pos + len(d["Sequence"]),
+                    # off-by-one hazard: end position is index of last pos
+                    pos + len(d["Sequence"]) - 1,
                 )
                 amplicons[d["Amplicon_name"]].add(primer)
 

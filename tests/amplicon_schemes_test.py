@@ -40,9 +40,10 @@ def test_convert_tsv_to_viridian_json():
     expect = expect["amplicons"]
 
     # Only test the subset of old fields
-    for field in expect:
-        print(expect[field], got[field])
-        assert expect[field] == got[field]
+    for amplicon in got:
+        for field in got[amplicon]:
+            print(expect[amplicon][field], got[amplicon][field])
+            assert expect[amplicon][field] == got[amplicon][field]
 
 
 def test_load_list_of_amplicon_sets():
