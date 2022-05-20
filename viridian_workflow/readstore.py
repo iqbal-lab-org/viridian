@@ -364,10 +364,10 @@ class ReadStore:
             for fragment in self.amplicons[amplicon]:
                 self.amplicon_stats[amplicon][fragment.strand] += 1
 
-            print(
-                f"strand bias:\t{amplicon.name}\t{self.amplicon_stats[amplicon][False]}/{self.amplicon_stats[amplicon][True]}",
-                file=sys.stderr,
-            )
+            #print(
+            #    f"amplicon strand bias:\t{amplicon.name}\t{self.amplicon_stats[amplicon][False]}/{self.amplicon_stats[amplicon][True]}",
+            #    file=sys.stderr,
+            #)
 
     def pileup(self, fasta, msa=None, minimap_presets=None):
         """remap reads to consensus

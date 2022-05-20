@@ -6,6 +6,7 @@ import subprocess
 import pyfastaq
 
 from viridian_workflow import readstore, primers
+from viridian_workflow.utils import revcomp
 
 # Make a 1kb reference genome with 4 amplicons, and then some read pairs
 # that do different things (both mapped, one mapped, mapped to different
@@ -37,15 +38,15 @@ def make_amplicon_set(outfile, ref):
             [(0, 300), (175, 475), (350, 650), (525, 825), (700, 1000)]
         ):
             primer_len = 20
-            r_primer = revcomp(ref[r_pos, r_pos + primer_len])
+            r_primer = revcomp(ref[r_pos:r_pos + primer_len])
             print(
                 "\t".join(
                     [
                         f"amp{i+1}",
                         f"amp{i+1}_left",
                         "left",
-                        ref[l_pos, l_pos + primer_len],
-                        str(position),
+                        ref[l_pos:l_pos + primer_len],
+                        str(l_pos),
                     ]
                 ),
                 file=out,
@@ -57,7 +58,7 @@ def make_amplicon_set(outfile, ref):
                         f"amp{i+1}_right",
                         "right",
                         r_primer,
-                        str(position - primer_len),
+                        str(r_pos - primer_len),
                     ]
                 ),
                 file=out,
@@ -115,6 +116,16 @@ def map_reads(ref, reads1, reads2, bam_out):
     subprocess.check_output(command, shell=True)
     subprocess.check_output(f"samtools index {bam_out}", shell=True)
 
+def make_amplicons_tsv_from_template(amplicon_file, ref):
+    template = f"""
+Amplicon_name	Primer_name	Left_or_right	Sequence	Position
+amp1	amp1_left_primer	left\t{ref[100:110]}\t100
+amp1	amp1_right_primer	right\t{revcomp(ref[300:311])}\t300
+amp2	amp2_left_primer	left\t{ref[290:302]}\t290
+amp2	amp2_right_primer	right\t{revcomp(ref[500:513])}\t500"""
+
+    with open(amplicon_file, 'w') as fd:
+        print(template, file=fd)
 
 @pytest.fixture(scope="session")
 def test_data():
@@ -134,7 +145,7 @@ def test_data():
     }
 
     data["ref_seq"] = make_test_ref_genome(data["ref_fasta"])
-    # make_amplicons_tsv(data["amplicons_tsv"], data["ref_seq"])
+    make_amplicon_set(data["amplicons_tsv"], data["ref_seq"])
     make_test_unpaired_fastq(data["unpaired_fq"], data["ref_seq"])
     make_test_paired_fastq(data["paired_fq1"], data["paired_fq2"], data["ref_seq"])
     map_reads(
@@ -146,54 +157,34 @@ def test_data():
 
 
 def test_sample_unpaired_reads(test_data):
-    outprefix = "tmp.sample_unpaired_reads.out"
-    subprocess.check_output(f"rm -f {outprefix}.*", shell=True)
-    sampler = sample_reads.sample_reads(
-        test_data["ref_fasta"],
-        test_data["unpaired_bam"],
-        outprefix,
-        test_data["amplicons_bed"],
-        5,
-    )
+    outprefix = "tmp.sample_unpaired_reads.out/"
+    subprocess.check_output(f"rm -fr {outprefix}", shell=True)
+    amplicons = primers.AmpliconSet.from_tsv(test_data["amplicons_tsv"])
+    bam = readstore.Bam(test_data["paired_bam"])
+    reads = readstore.ReadStore(amplicons, bam)
+    reads.make_reads_dir_for_viridian(outprefix)
 
     # TODO: check contents of files, and add more cases to the type of
     # reads in the BAM we're sampling from.
-    assert sampler.number_of_amplicons() == 4
-    assert os.path.exists(sampler.bam_out)
-    assert os.path.exists(sampler.fq_out)
-    assert not os.path.exists(sampler.fq_out1)
-    assert not os.path.exists(sampler.fq_out2)
-    subprocess.check_output(f"rm -f {outprefix}.*", shell=True)
-
+    assert len(reads.amplicons) == 5
+    subprocess.check_output(f"rm -fr {outprefix}", shell=True)
 
 def test_sample_paired_reads(test_data):
-    outprefix = "tmp.sample_paired_reads.out"
-    subprocess.check_output(f"rm -f {outprefix}.*", shell=True)
-    amplicons = primers.AmpliconSet.from_tsv(test_data["amplicons_bed"])
+    outprefix = "tmp.sample_paired_reads.out/"
+    subprocess.check_output(f"rm -fr {outprefix}", shell=True)
+    amplicons = primers.AmpliconSet.from_tsv(test_data["amplicons_tsv"])
     bam = readstore.Bam(test_data["paired_bam"])
-    print(bam)
-    print(amplicons)
-    reads = readstore.Readstore(bam, amplicons)
+    reads = readstore.ReadStore(amplicons, bam)
+    reads.make_reads_dir_for_viridian(outprefix)
 
-    sampler = sample_reads.sample_reads(
-        test_data["ref_fasta"],
-        test_data["paired_bam"],
-        outprefix,
-        test_data["amplicons_bed"],
-        5,
-        min_sampled_depth_for_pass=5,
-    )
-
+    print(reads.amplicon_stats)
+    print(reads.amplicons)
     # TODO: check contents of files, and add more cases to the type of
     # reads in the BAM we're sampling from.
-    assert sampler.number_of_amplicons() == 4
-    assert os.path.exists(sampler.bam_out)
-    assert not os.path.exists(sampler.fq_out)
-    assert os.path.exists(sampler.fq_out1)
-    assert os.path.exists(sampler.fq_out2)
-    assert os.path.exists(sampler.failed_amps_file)
-    with open(sampler.failed_amps_file) as f:
-        got = [x.rstrip() for x in f]
-    assert got == ["amp2", "amp3", "amp4"]
-    assert sampler.failed_amplicons == 3
-    subprocess.check_output(f"rm -f {outprefix}.*", shell=True)
+    for a in reads.amplicons:
+        print(a.name)
+    assert len(reads.amplicons) == 5
+    got = set([a.name for a in reads.failed_amplicons])
+    assert got == set(["amp2", "amp3", "amp4", "amp5"])
+    assert len(reads.failed_amplicons) == 4
+    subprocess.check_output(f"rm -fr {outprefix}", shell=True)
