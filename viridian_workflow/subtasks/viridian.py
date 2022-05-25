@@ -18,7 +18,7 @@ class Viridian(Task):
             json.dump(amplicon_json, failed_amplicon_amps_fd, indent=2)
 
         self.cmd = [
-            "viridian",
+            "cylon",
             "assemble",
             "--reads_per_amp_dir",
             amplicon_dir,

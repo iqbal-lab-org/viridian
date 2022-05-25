@@ -61,16 +61,20 @@ cp -s vt-git/vt .
 
 #________________________ minimap2 __________________________#
 cd $install_root
-git clone https://github.com/lh3/minimap2.git minimap2_git
-cd minimap2_git
-git checkout 4dfd495cc2816f67556bc6318654e572636ee40a
-make
+MINIMAP2_V=2.24
+wget https://github.com/lh3/minimap2/releases/download/v${MINIMAP2_V}/minimap2-${MINIMAP2_V}.tar.bz2
+tar xf minimap2-${MINIMAP2_V}.tar.bz2
+rm minimap2-${MINIMAP2_V}.tar.bz2
+cd minimap2-${MINIMAP2_V}
+arch_is_arm=$(dpkg --print-architecture | grep '^arm' | wc -l)
+if [[ $arch_is_arm -gt 0 ]]
+then
+    make arm_neon=1 aarch64=1
+else
+    make
+fi
 cd ..
-cp -s minimap2_git/minimap2 .
-cp -s minimap2_git/misc/paftools.js .
-wget -q https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
-tar -jxvf k8-0.2.4.tar.bz2
-cp k8-0.2.4/k8-`uname -s` k8
+cp -s minimap2-${MINIMAP2_V}/minimap2 .
 
 #________________________ racon _____________________________#
 cd $install_root
@@ -83,11 +87,11 @@ make CC=gcc-10 CPP=g++-10 CXX=g++-10 LD=g++-10
 cd ../../
 cp -s racon-git/build/bin/racon .
 
-#________________________ viridian __________________________#
+#________________________ cylon _____________________________#
 cd $install_root
-git clone https://github.com/iqbal-lab-org/viridian.git
-cd viridian
-git checkout aa9a5ee8df291114637ea49a9670f28408d47311
+git clone https://github.com/iqbal-lab-org/cylon.git
+cd cylon
+git checkout 7529e76ad343f993310b3fb35e33d96fc334145a
 pip3 install .
 
 #________________________ mummer ____________________________#
@@ -105,6 +109,6 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout a6938f9730d21bef166472e635b48d99e765bcd0
+git checkout 38e708fbb1b069f0fce3041eac49920d22cd9cf3
 pip3 install .
 cd ..
