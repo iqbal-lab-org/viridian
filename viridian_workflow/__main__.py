@@ -89,29 +89,6 @@ def main(args=None):
     )
     reads_ref_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'."
 
-    # ------------------------ detect_amplicon_scheme --------------------
-    subparser_detect_amp = subparsers.add_parser(
-        "detect_amplicon_scheme",
-        parents=[common_parser, amplicons_parser, reads_ref_parser],
-        help="Detect amplicon scheme that best fits input reads",
-        usage=f"viridian_workflow detect_amplicon_scheme [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outprefix out <reads options (see help)>",
-        description="Detect amplicon scheme that best fits input reads",
-        epilog=reads_ref_epilog,
-    )
-    subparser_detect_amp.add_argument(
-        "--outprefix",
-        help="REQUIRED. Prefix of output files, which will be outprefix.json, and (depending on options), outprefix.tmp.sam and outprefix.bam",
-        required=True,
-        metavar="FILENAME",
-    )
-    subparser_detect_amp.add_argument(
-        "--make_bam",
-        help="Make a sorted by name BAM file of reads mapped to reference genome, with each read annotated with which amplicon(s) it belongs to",
-        metavar="FILENAME",
-    )
-    subparser_detect_amp.set_defaults(
-        func=viridian_workflow.tasks.detect_amplicon_scheme.run
-    )
 
     # ------------------------ run_one_sample ----------------------------
     subparser_run_one_sample = subparsers.add_parser(
