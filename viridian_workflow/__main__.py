@@ -191,7 +191,7 @@ def main(args=None):
         "--max_cons_n_percent",
         type=float,
         default=50.0,
-        help="Maximum allowed percentage of Ns in the consensus sequence from Viridian. Pipeline is stopped if too many Ns [%(default)s]",
+        help="Maximum allowed percentage of Ns in the consensus sequence. Pipeline is stopped if too many Ns [%(default)s]",
         metavar="FLOAT",
     )
     subparser_run_one_sample.set_defaults(

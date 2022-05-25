@@ -162,7 +162,7 @@ def test_sample_unpaired_reads(test_data):
     amplicons = primers.AmpliconSet.from_tsv(test_data["amplicons_tsv"])
     bam = readstore.Bam(test_data["paired_bam"])
     reads = readstore.ReadStore(amplicons, bam)
-    reads.make_reads_dir_for_viridian(outprefix)
+    reads.make_reads_dir_for_cylon(outprefix)
 
     # TODO: check contents of files, and add more cases to the type of
     # reads in the BAM we're sampling from.
@@ -175,7 +175,7 @@ def test_sample_paired_reads(test_data):
     amplicons = primers.AmpliconSet.from_tsv(test_data["amplicons_tsv"])
     bam = readstore.Bam(test_data["paired_bam"])
     reads = readstore.ReadStore(amplicons, bam)
-    reads.make_reads_dir_for_viridian(outprefix)
+    reads.make_reads_dir_for_cylon(outprefix)
 
     print(reads.amplicon_stats)
     print(reads.amplicons)
