@@ -236,7 +236,7 @@ def _test_complete_assembly_no_reads_map(test_data):
             fq2=fq2,
             amplicon_json=test_data["amplicons_tsv"],
         )
-        # This test should fail on viridian, producing no consensus
+        # This test should fail on cylon, producing no consensus
         # TODO specify that it was the consensus file that's missing
     except Exception as error:
         if str(error) != "failed to choose amplicon scheme":
@@ -367,7 +367,7 @@ def test_reads_are_wgs_not_amplicon(test_data):
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
 
-# TODO: at the time of writing, this test fails because viridian makes no
+# TODO: at the time of writing, this test fails because cylon makes no
 # output, because all the amplicons are failed. It hits this error:
 # viridian_workflow.utils.OutputFileError: /viridian_workflow/tmp.not_expected_amplicons.out/viridian/consensus.final_assembly.fa
 def _test_not_expected_amplicons(test_data):

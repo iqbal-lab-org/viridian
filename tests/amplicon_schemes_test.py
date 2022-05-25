@@ -26,15 +26,15 @@ class MockBam:
         yield self.l
 
 
-def test_convert_tsv_to_viridian_json():
-    tsv_in = os.path.join(data_dir, "convert_tsv_to_viridian_json.tsv")
-    expect_json = os.path.join(data_dir, "convert_tsv_to_viridian_json.json")
-    tmp_json = "tmp.convert_tsv_to_viridian_json.json"
+def test_convert_tsv_to_cylon_json():
+    tsv_in = os.path.join(data_dir, "convert_tsv_to_cylon_json.tsv")
+    expect_json = os.path.join(data_dir, "convert_tsv_to_cylon_json.json")
+    tmp_json = "tmp.convert_tsv_to_cylon_json.json"
     subprocess.check_output(f"rm -f {tmp_json}", shell=True)
     amplicon_set = primers.AmpliconSet.from_tsv(tsv_in, name="test_name")
     bam = mock.Mock()
     bam.syncronise_fragments = list
-    got = readstore.ReadStore(amplicon_set, bam).viridian_json["amplicons"]
+    got = readstore.ReadStore(amplicon_set, bam).cylon_json["amplicons"]
     with open(expect_json) as f:
         expect = json.load(f)
     expect = expect["amplicons"]

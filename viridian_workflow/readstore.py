@@ -246,14 +246,14 @@ class ReadStore:
 
         self.target_depth = target_depth
         # TODO find a home for this magic number
-        self.viridian_target_depth_factor = 200
+        self.cylon_target_depth_factor = 200
 
         self.start_pos = None
         self.end_pos = None
         self.amplicon_stats = {}
 
         self.summary = {}
-        self.viridian_json = {
+        self.cylon_json = {
             "name": amplicon_set.name,
             "source": amplicon_set.fn,
             "amplicons": {},
@@ -285,7 +285,7 @@ class ReadStore:
             left_start, left_end = amplicon.left_primer_region
             right_start, right_end = amplicon.right_primer_region
 
-            self.viridian_json["amplicons"][amplicon.name] = {
+            self.cylon_json["amplicons"][amplicon.name] = {
                 "start": left_start,
                 "end": right_end,
                 "left_primer_end": left_end,
@@ -302,7 +302,7 @@ class ReadStore:
 
         for amplicon in self.amplicons:
             # we still want to randomise the order of the downsampled
-            # amplicons. Viridian will further downsample from these
+            # amplicons. Cylon will further downsample from these
             # lists
             random.shuffle(self.amplicons[amplicon])
 
@@ -449,9 +449,9 @@ class ReadStore:
                     break
         return bases_out
 
-    def make_reads_dir_for_viridian(self, outdir):
+    def make_reads_dir_for_cylon(self, outdir):
         """Makes a directory of reads for each amplicon, in the format required
-        by `viridian assemble --reads_per_amp_dir`. Returns a set of amplicon
+        by `cylon assemble --reads_per_amp_dir`. Returns a set of amplicon
         names that should be failed because they had no reads"""
         os.mkdir(outdir)
         manifest_data = {}
@@ -465,7 +465,7 @@ class ReadStore:
                 continue
             outname = f"{fasta_number}.fa"
             outfile = os.path.join(outdir, outname)
-            target_bases = self.viridian_target_depth_factor * len(amplicon)
+            target_bases = self.cylon_target_depth_factor * len(amplicon)
             bases_out = self.reads_to_fastas(amplicon, outfile, target_bases)
             print(
                 f"writing out {amplicon.name} reads {len(self[amplicon])}, {len(manifest_data)}.fa",
