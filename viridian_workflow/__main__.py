@@ -67,13 +67,19 @@ def main(args=None):
     # ----------------- reads and ref options --------------------------------
     reads_ref_parser = argparse.ArgumentParser(add_help=False)
     reads_ref_parser.add_argument(
-        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
+        "--reads1",
+        help="Illumina reads file 1",
+        metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
+        "--reads2",
+        help="Illumina reads file 2",
+        metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
+        "--reads",
+        help="Unpaired reads (eg nanopore) file",
+        metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
         "--ref_fasta",
@@ -88,7 +94,6 @@ def main(args=None):
         metavar="STRING",
     )
     reads_ref_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'."
-
 
     # ------------------------ run_one_sample ----------------------------
     subparser_run_one_sample = subparsers.add_parser(
@@ -121,13 +126,6 @@ def main(args=None):
         metavar="STRING",
     )
     subparser_run_one_sample.add_argument(
-        "--target_sample_depth",
-        type=int,
-        default=1000,
-        help="Target coverage for amplicon depth normalisation [%(default)s]",
-        metavar="INT",
-    )
-    subparser_run_one_sample.add_argument(
         "--frs_threshold",
         type=float,
         default=0.7,
@@ -142,33 +140,17 @@ def main(args=None):
         metavar="INT",
     )
     subparser_run_one_sample.add_argument(
-        "--log_liftover", action="store_true", help=argparse.SUPPRESS,
-    )
-    subparser_run_one_sample.add_argument(
-        "--test_amplicon_frs", action="store_true", help=argparse.SUPPRESS,
-    )
-    subparser_run_one_sample.add_argument(
-        "--trim_5prime", action="store_true", help=argparse.SUPPRESS,
-    )
-    subparser_run_one_sample.add_argument(
-        "--min_sample_depth",
-        type=int,
-        default=10,
-        help="Minimum coverage required during amplicon depth normalisation. Any amplicon with depth below this is failed and it will have no consensus sequence generated [%(default)s]",
-        metavar="INT",
-    )
-    subparser_run_one_sample.add_argument(
         "--max_percent_amps_fail",
         type=float,
         default=50.0,
-        help="Maximum percent of amplicons allowed to fail during read sampling or making consensus for each amplicon. The pipeline is stopped as soon as too many failed amplicons are detected [%(default)s]",
+        help="Maximum percent of amplicons allowed to fail. The pipeline is stopped as soon as too many failed amplicons are detected [%(default)s]",
         metavar="FLOAT",
     )
     subparser_run_one_sample.add_argument(
         "--max_cons_n_percent",
         type=float,
         default=50.0,
-        help="Maximum allowed percentage of Ns in the consensus sequence. Pipeline is stopped if too many Ns [%(default)s]",
+        help="Maximum allowed percentage of Ns in the consensus sequence. The pipeline is stopped as soon as too many Ns are detected [%(default)s]",
         metavar="FLOAT",
     )
     subparser_run_one_sample.set_defaults(

@@ -6,6 +6,7 @@ except:
     __version__ = "local"
 
 __all__ = [
+    "amplicon_schemes",
     "primers",
     "self_qc",
     "readstore",
