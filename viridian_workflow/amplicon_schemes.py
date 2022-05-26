@@ -9,13 +9,17 @@ DATA_DIR = os.path.join(this_dir, "amplicon_scheme_data")
 
 
 def get_built_in_schemes():
-    json_index_file = os.path.join(DATA_DIR, "schemes.json")
-    if not os.path.exists(json_index_file):
+    tsv_index_file = os.path.join(DATA_DIR, "schemes.tsv")
+    if not os.path.exists(tsv_index_file):
         raise Exception(
             f"Amplicons scheme index file not found. Something wrong with installation? Looked for: {json_index_file}"
         )
-    with open(json_index_file) as f:
-        schemes = json.load(f)
+
+    schemes = {}
+    with open(tsv_index_file) as f:
+        for line in f:
+            name, tsv = line.strip().split()
+            schemes[name] = tsv
 
     for name in schemes:
         scheme_json = os.path.join(DATA_DIR, schemes[name])
