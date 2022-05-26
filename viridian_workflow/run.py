@@ -9,7 +9,23 @@ from viridian_workflow import primers, readstore
 from viridian_workflow.subtasks import Cylon, Minimap, Varifier
 
 
-def run_pipeline(work_dir, platform, fqs, amplicon_sets, ref="../covid/MN908947.fasta"):
+def run_pipeline(
+    work_dir,
+    platform,
+    fqs,
+    amplicon_sets,
+    ref="../covid/MN908947.fasta",
+    force_amp_scheme=None,
+    keep_intermediate=False,
+    keep_bam=False,
+    sample_name="sample",
+    frs_threshold=0.1,
+    self_qc_depth=20,
+    consensus_max_n_percent=50,
+    max_percent_amps_fail=50,
+    command_line_args={},
+):
+
     log = {}
     work_dir = Path(work_dir)
     if work_dir.exists():
@@ -42,17 +58,20 @@ def run_pipeline(work_dir, platform, fqs, amplicon_sets, ref="../covid/MN908947.
 
     # construct readstore
     # this subsamples the reads
-    rs = readstore.ReadStore(amplicon_set, bam)
-    log["amplcions"] = rs.summary
+    rs = (
+        readstore.ReadStore(amplicon_set, bam)
+        if force_amp_scheme is None
+        else readstore.ReadStore(force_amp_scheme, bam)
+    )
+
+    log["amplicons"] = rs.summary
 
     # save reads for cylon assembly
     amp_dir = work_dir / "amplicons"
     manifest_data = rs.make_reads_dir_for_cylon(amp_dir)
 
     # run cylon
-    cylon = Cylon(
-        work_dir, platform, ref, amp_dir, manifest_data, rs.cylon_json
-    )
+    cylon = Cylon(work_dir, platform, ref, amp_dir, manifest_data, rs.cylon_json)
     consensus = cylon.run()
     log["initial_assembly"] = cylon.log
 

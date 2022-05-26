@@ -1,14 +1,21 @@
+import os
 import logging
 import subprocess
-from viridian_workflow import run, utils
+from viridian_workflow import run, utils, primers
 
 
-def load_amplicon_index(index_tsv, subset=None):
+def load_amplicon_index(index_tsv, scheme_dir, subset=None):
     index = {}
-    for name, tsv in open(index_tsv):
+    for record in open(index_tsv):
+        name, tsv = record.strip().split()
         if name == "Name" and tsv == "File":
             continue
-        index[name] = tsv
+
+        tsv_path = os.path.join(scheme_dir, index_tsv)
+        if not os.path.exists(tsv_path):
+            raise Exception(f"Amplicon scheme {tsv_path} does not exist")
+        else:
+            index[name] = tsv_path
 
     if subset:
         for key in subset:
@@ -34,7 +41,10 @@ def run(options):
         fqs = [fq1, fq2]
 
     # Build the index of built-in schemes, possibly subsetted
-    amplicon_index = load_amplicon_index("", subset=options.built_in_amp_schemes)
+    data_dir = os.path.join(os.path.abspath(__file__), "amplicon_scheme_data")
+    amplicon_index = load_amplicon_index(
+        os.path.join(data_dir, "schemes.tsv"), subset=options.built_in_amp_schemes
+    )
 
     # If a set is forced, select it from the possibly subsetted built-ins
     chosen_amplicon_set = None
@@ -46,7 +56,9 @@ def run(options):
             raise Exception("Can only force amplicon scheme from built-in options")
 
         if options.force_amp_scheme in amplicon_index:
-            chosen_amplicon_set = amplicon_index[options.force_amp_scheme]
+            chosen_amplicon_set = primers.AmpliconSet.from_tsv(
+                amplicon_index[options.force_amp_scheme], name=options.force_amp_scheme
+            )
         else:
             raise Exception(
                 f"Chose to force amplicons scheme to be {options.force_amp_scheme}, but scheme not found. Found these: {','.join(amplicon_index.keys())}"
@@ -60,6 +72,11 @@ def run(options):
                 amplicon_index[name] = scheme
         else:
             amplicon_index = load_amplicon_index(options.amp_schemes_tsv)
+
+    amplicon_sets = [
+        primers.AmpliconSet.from_tsv(tsv, name=name)
+        for name, tsv in amplicon_index.items()
+    ]
 
     # TODO: this needs to run and handle the keyword args
     run.run_pipeline(
