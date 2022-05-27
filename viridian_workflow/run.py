@@ -29,7 +29,7 @@ def run_pipeline(
     log = {}
     work_dir = Path(work_dir)
     if work_dir.exists():
-        raise Exception
+        raise Exception(f"Output directory {work_dir} already exists")
     work_dir.mkdir()
 
     # generate name-sorted bam from fastqs

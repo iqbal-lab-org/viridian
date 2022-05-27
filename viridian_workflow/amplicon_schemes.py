@@ -32,6 +32,30 @@ def get_built_in_schemes():
     return schemes
 
 
+def load_amplicon_index(index_tsv, scheme_dir, subset=None):
+    index = {}
+    for record in open(os.path.join(scheme_dir, index_tsv)):
+        name, tsv = record.strip().split()
+        if name == "Name" and tsv == "File":
+            continue
+
+        tsv_path = os.path.join(scheme_dir, tsv)
+        if not os.path.exists(tsv_path):
+            raise Exception(f"Amplicon scheme {tsv_path} does not exist")
+        else:
+            index[name] = tsv_path
+
+    if subset:
+        for key in subset:
+            if key not in index:
+                raise Exception(
+                    f"Selected subset of amplicon schemes ({','.join(subset)}) are not in the builtin set: {','.join(index.keys())}"
+                )
+            else:
+                del index[key]
+    return index
+
+
 def load_list_of_amplicon_sets(built_in_names_to_use=None, tsv_others_to_use=None):
     assert built_in_names_to_use is not None or tsv_others_to_use is not None
     if isinstance(built_in_names_to_use, str):

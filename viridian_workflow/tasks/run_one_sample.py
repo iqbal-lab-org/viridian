@@ -1,31 +1,8 @@
 import os
 import logging
 import subprocess
-from viridian_workflow import run, utils, primers
-
-
-def load_amplicon_index(index_tsv, scheme_dir, subset=None):
-    index = {}
-    for record in open(index_tsv):
-        name, tsv = record.strip().split()
-        if name == "Name" and tsv == "File":
-            continue
-
-        tsv_path = os.path.join(scheme_dir, index_tsv)
-        if not os.path.exists(tsv_path):
-            raise Exception(f"Amplicon scheme {tsv_path} does not exist")
-        else:
-            index[name] = tsv_path
-
-    if subset:
-        for key in subset:
-            if key not in index:
-                raise Exception(
-                    f"Selected subset of amplicon schemes ({','.join(subset)}) are not in the builtin set: {','.join(index.keys())}"
-                )
-            else:
-                del index[key]
-    return index
+from viridian_workflow import utils, primers, amplicon_schemes
+from viridian_workflow.run import run_pipeline
 
 
 def run(options):
@@ -36,14 +13,19 @@ def run(options):
         subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
 
     # New function run.run_pipeline wants a list of fastq files
-    fqs = [fq1]
-    if fq2 is None:
+    fqs = [
+        fq1,
+    ]
+    if fq2 is not None:
         fqs = [fq1, fq2]
 
     # Build the index of built-in schemes, possibly subsetted
-    data_dir = os.path.join(os.path.abspath(__file__), "amplicon_scheme_data")
-    amplicon_index = load_amplicon_index(
-        os.path.join(data_dir, "schemes.tsv"), subset=options.built_in_amp_schemes
+    data_dir = os.path.join(
+        os.path.dirname(os.path.abspath(amplicon_schemes.__file__)),
+        "amplicon_scheme_data",
+    )
+    amplicon_index = amplicon_schemes.load_amplicon_index(
+        "schemes.tsv", data_dir, subset=options.built_in_amp_schemes
     )
 
     # If a set is forced, select it from the possibly subsetted built-ins
@@ -79,8 +61,8 @@ def run(options):
     ]
 
     # TODO: this needs to run and handle the keyword args
-    run.run_pipeline(
-        options.oudir,
+    run_pipeline(
+        options.outdir,
         options.tech,
         fqs,
         amplicon_sets,
