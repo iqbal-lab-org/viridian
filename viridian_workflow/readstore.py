@@ -259,6 +259,7 @@ class ReadStore:
             "amplicons": {},
         }
 
+        self.primer_histogram = {}
         for _, amplicon in amplicon_set.amplicons.items():
             self.summary[amplicon.name] = {
                 "start": amplicon.start,
@@ -269,6 +270,11 @@ class ReadStore:
                 "sampled_depth": 0,
                 "pass": False,
             }
+            if amplicon not in self.primer_histogram:
+                self.primer_histogram[amplicon] = {
+                    "left": defaultdict(int),
+                    "right": defaultdict(int),
+                }
 
             # store the global start and end position for the entire
             # primer scheme. This is used to help varifier.
@@ -293,17 +299,32 @@ class ReadStore:
             # truncate number of reads to target count per amplicon
             self.push_fragment(fragment)
 
-        # TODO at this point we know how many of each primer was counted,
-        # we can refine self.viridian_json
-        for amplicon in self.fragments:
+        for amplicon in self.amplicons:
 
             # decide if threshold for primers is met
-            p1_min, p2_max = self.filter_primer_counts(self.primer_histogram[amplicon])
+            p1_min, p2_max = self.filter_primer_counts(
+                self.primer_histogram[amplicon], start=self.start_pos, end=self.end_pos
+            )
+            # default to the inner-most primer coords if an extrema isn't found
+            p1_start = (
+                amplicon.left_primer_region[0] if p1_min is None else p1_min.ref_start
+            )
+            p2_end = (
+                amplicon.right_primer_region[1] if p2_max is None else p2_max.ref_end
+            )
+
+            p1_end = (
+                amplicon.left_primer_region[1] if p1_min is None else p1_min.ref_end
+            )
+            p2_start = (
+                amplicon.right_primer_region[0] if p2_max is None else p2_max.ref_start
+            )
+
             self.cylon_json["amplicons"][amplicon.name] = {
-                "start": p1_min.start,
-                "end": p2_max.end,
-                "left_primer_end": p1_min.end,
-                "right_primer_start": p2_max_start,
+                "start": p1_start,
+                "end": p2_end,
+                "left_primer_end": p1_end,
+                "right_primer_start": p2_start,
             }
 
         for amplicon in self.amplicons:
@@ -311,30 +332,26 @@ class ReadStore:
             # amplicons. Cylon will further downsample from these
             # lists
             random.shuffle(self.amplicons[amplicon])
-            if amplicon not in self.primer_histogram:
-                self.primer_histogram[amplicon]["left"] = defaultdict(int)
-                self.primer_histogram[amplicon]["right"] = defaultdict(int)
-
         self.summarise_amplicons()
 
     @staticmethod
-    def filter_primer_counts(primer_counts, threshold=100):
+    def filter_primer_counts(primer_counts, threshold=100, start=0, end=sys.maxsize):
         p1 = None
         p2 = None
-        p1_min = self.end_pos
-        p2_max = self.start_pos
+        p1_min = end
+        p2_max = start
         for primer, count in primer_counts["left"].items():
             if count < threshold:  # primer occurence threshold
                 # exclude this primer
                 continue
-            if primer.start < p1_min:
-                p1_min = primer.start
+            if primer.ref_start <= p1_min:
+                p1_min = primer.ref_start
                 p1 = primer
         for primer, count in primer_counts["right"].items():
             if count < threshold:
                 continue
-            if primer.end > p2_max:
-                p2_max = primer.end
+            if primer.ref_end >= p2_max:
+                p2_max = primer.ref_end
                 p2 = primer
         return p1, p2
 
@@ -379,8 +396,10 @@ class ReadStore:
         if frags < self.target_depth or random.random() < sample_rate:
             # TODO count the observed primer extrema
             p1, p2 = amplicon.match_primers(fragment)
-            self.primer_histogram[amplicon]["left"][p1] += 1
-            self.primer_histogram[amplicon]["right"][p2] += 1
+            if p1 is not None:
+                self.primer_histogram[amplicon]["left"][p1] += 1
+            if p2 is not None:
+                self.primer_histogram[amplicon]["right"][p2] += 1
 
             self.amplicons[amplicon].append(fragment)
             self.summary[amplicon.name][
@@ -411,8 +430,8 @@ class ReadStore:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])
 
-        qc_config = self_qc.Config(min_frs=frs_threshold, min_depth=min_depth)
-        pileup = self_qc.Pileup(consensus_seq, msa=msa, config=config)
+        qc_config = self_qc.Config(min_frs=min_frs, min_depth=min_depth)
+        pileup = self_qc.Pileup(consensus_seq, msa=msa, config=qc_config)
         conspos_oob = 0  # consensus positions out-of-bounds
         for amplicon in self.amplicons:
             fragments = (
