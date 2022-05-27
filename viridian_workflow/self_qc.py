@@ -6,18 +6,9 @@ BaseProfile = namedtuple(
     "BaseProfile", ["base", "in_primer", "forward_strand", "amplicon_name",],
 )
 
-Config = namedtuple(
-    "Config",
-    ["min_frs", "min_depth", "trim_5prime", "log_liftover", "test_amplicon_frs"],
-)
+Config = namedtuple("Config", ["min_frs", "min_depth"],)
 
-default_config = Config(
-    min_frs=0.7,
-    min_depth=10,
-    trim_5prime=False,
-    log_liftover=False,
-    test_amplicon_frs=False,
-)
+default_config = Config(min_frs=0.7, min_depth=10,)
 
 
 class Pileup:
