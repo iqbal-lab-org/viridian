@@ -285,13 +285,6 @@ class ReadStore:
             left_start, left_end = amplicon.left_primer_region
             right_start, right_end = amplicon.right_primer_region
 
-            self.cylon_json["amplicons"][amplicon.name] = {
-                "start": left_start,
-                "end": right_end,
-                "left_primer_end": left_end,
-                "right_primer_start": right_start,
-            }
-
         for fragment in bam.syncronise_fragments():
             self.count_fragment(fragment)
 
@@ -300,13 +293,50 @@ class ReadStore:
             # truncate number of reads to target count per amplicon
             self.push_fragment(fragment)
 
+        # TODO at this point we know how many of each primer was counted,
+        # we can refine self.viridian_json
+        for amplicon in self.fragments:
+
+            # decide if threshold for primers is met
+            p1_min, p2_max = self.filter_primer_counts(self.primer_histogram[amplicon])
+            self.cylon_json["amplicons"][amplicon.name] = {
+                "start": p1_min.start,
+                "end": p2_max.end,
+                "left_primer_end": p1_min.end,
+                "right_primer_start": p2_max_start,
+            }
+
         for amplicon in self.amplicons:
             # we still want to randomise the order of the downsampled
             # amplicons. Cylon will further downsample from these
             # lists
             random.shuffle(self.amplicons[amplicon])
+            if amplicon not in self.primer_histogram:
+                self.primer_histogram[amplicon]["left"] = defaultdict(int)
+                self.primer_histogram[amplicon]["right"] = defaultdict(int)
 
         self.summarise_amplicons()
+
+    @staticmethod
+    def filter_primer_counts(primer_counts, threshold=100):
+        p1 = None
+        p2 = None
+        p1_min = self.end_pos
+        p2_max = self.start_pos
+        for primer, count in primer_counts["left"].items():
+            if count < threshold:  # primer occurence threshold
+                # exclude this primer
+                continue
+            if primer.start < p1_min:
+                p1_min = primer.start
+                p1 = primer
+        for primer, count in primer_counts["right"].items():
+            if count < threshold:
+                continue
+            if primer.end > p2_max:
+                p2_max = primer.end
+                p2 = primer
+        return p1, p2
 
     def __eq__(self, other):
         pass
@@ -346,9 +376,12 @@ class ReadStore:
 
         frags = self.reads_per_amplicon[amplicon]
         sample_rate = self.target_depth / frags
-
         if frags < self.target_depth or random.random() < sample_rate:
             # TODO count the observed primer extrema
+            p1, p2 = amplicon.match_primers(fragment)
+            self.primer_histogram[amplicon]["left"][p1] += 1
+            self.primer_histogram[amplicon]["right"][p2] += 1
+
             self.amplicons[amplicon].append(fragment)
             self.summary[amplicon.name][
                 "sampled_bases"
@@ -364,12 +397,12 @@ class ReadStore:
             for fragment in self.amplicons[amplicon]:
                 self.amplicon_stats[amplicon][fragment.strand] += 1
 
-            #print(
+            # print(
             #    f"amplicon strand bias:\t{amplicon.name}\t{self.amplicon_stats[amplicon][False]}/{self.amplicon_stats[amplicon][True]}",
             #    file=sys.stderr,
-            #)
+            # )
 
-    def pileup(self, fasta, msa=None, minimap_presets=None):
+    def pileup(self, fasta, msa=None, minimap_presets=None, min_frs=0.7, min_depth=50):
         """remap reads to consensus
         """
 
@@ -377,7 +410,9 @@ class ReadStore:
         if len(cons.seq_names) != 1:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])
-        pileup = self_qc.Pileup(consensus_seq, msa=msa)
+
+        qc_config = self_qc.Config(min_frs=frs_threshold, min_depth=min_depth)
+        pileup = self_qc.Pileup(consensus_seq, msa=msa, config=config)
         conspos_oob = 0  # consensus positions out-of-bounds
         for amplicon in self.amplicons:
             fragments = (
@@ -405,6 +440,8 @@ class ReadStore:
                     # ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
                     # c = consensus_seq[alignment.r_st : alignment.r_en]
 
+                    # TODO: this is now made redundant. We could store the results
+                    # of match_primers from push_fragments
                     primers = amplicon.match_primers(fragment)
 
                     for consensus_pos, call in self_qc.parse_cigar(

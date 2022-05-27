@@ -87,8 +87,9 @@ def run_pipeline(
     log["varifier"] = varifier.log
 
     # self qc: remap reads to consensus
-    qc_config = self_qc.Config(min_frs=frs_threshold, min_depth=self_qc_depth)
-    pileup = rs.pileup(varifier_consensus, msa=msa, config=qc_config)
+    pileup = rs.pileup(
+        varifier_consensus, msa=msa, min_frs=frs_threshold, min_depth=self_qc_depth
+    )
 
     # mask output
     masked_fasta = pileup.mask()
