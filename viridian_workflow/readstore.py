@@ -517,7 +517,7 @@ class ReadStore:
         for amplicon in self.amplicon_set:
             if len(self[amplicon]) == 0:
                 self.failed_amplicons.add(amplicon)
-                manifest_data[amplicon.name] = None
+                # manifest_data[amplicon.name] = None
                 continue
             outname = f"{fasta_number}.fa"
             outfile = os.path.join(outdir, outname)
