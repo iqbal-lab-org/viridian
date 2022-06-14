@@ -163,6 +163,13 @@ class Pileup:
             self.qc["masking_summary"] = self.summary
         return "".join(sequence)
 
+    def dump_tsv(self, tsv):
+        fd = open(tsv, "w")
+        for pos, stats in enumerate(self.seq):
+            cons_pos = self.ref_to_consensus[pos + 1]
+            print(f"{cons_pos}\t{pos+1}\t{stats.tsv_row()}", file=fd)
+        return tsv
+
     def annotate_vcf(self, vcf):
         header = []
         records = []
@@ -219,7 +226,7 @@ class Stats:
 
         self.alts_in_amplicons = defaultdict(int)
         self.refs_in_amplicons = defaultdict(int)
-        self.refs_in_forward_strand = defaultdict(int)
+        self.refs_in_forward_strands = defaultdict(int)
         self.amplicon_totals = defaultdict(int)
 
         self.alts_forward = 0
@@ -261,7 +268,8 @@ class Stats:
             self.refs += 1
             if profile.amplicon_name:
                 self.refs_in_amplicons[profile.amplicon_name] += 1
-            #                self.refs_in_forward_strand[profile.strand] += 1
+                if profile.forward_strand:
+                    self.refs_in_forward_strands[profile.amplicon_name] += 1
 
             if profile.in_primer:
                 self.refs_in_primer += 1
@@ -309,6 +317,36 @@ class Stats:
         depth_symbol = ">=" if self.total >= 1000 else "="
         info = f"primer={self.refs_in_primer}/{self.alts_in_primer};total{depth_symbol}{self.total};amplicon_overlap={len(self.amplicon_totals)};amplicon_totals={amplicon_totals}"
         return info
+
+    def tsv_row(self):
+        # this will be None if the consensus is an 'N'. may not want to skip
+        # if self.position_failed is None:
+        #    raise Exception("pileup must be evaluated")
+
+        amplicon_totals = ";".join(
+            [
+                f"{str(self.refs_in_amplicons[amplicon])}:{self.refs_in_forward_strands[amplicon]}:{str(self.alts_in_amplicons[amplicon])}"
+                for amplicon in self.amplicon_totals
+            ]
+        )
+        alts = ";".join([f"{k}:{v}" for k, v in self.alt_bases.items()])
+        row = "\t".join(
+            map(
+                str,
+                [
+                    self.reference_pos,
+                    self.ref_base,
+                    alts,
+                    self.refs_in_primer,
+                    self.alts_in_primer,
+                    self.total,
+                    len(self.amplicon_totals),
+                    amplicon_totals,
+                ],
+            )
+        )
+
+        return row
 
     def __str__(self):
         alts = " ".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])

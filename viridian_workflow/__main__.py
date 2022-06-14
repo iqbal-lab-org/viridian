@@ -67,19 +67,13 @@ def main(args=None):
     # ----------------- reads and ref options --------------------------------
     reads_ref_parser = argparse.ArgumentParser(add_help=False)
     reads_ref_parser.add_argument(
-        "--reads1",
-        help="Illumina reads file 1",
-        metavar="FILENAME",
+        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads2",
-        help="Illumina reads file 2",
-        metavar="FILENAME",
+        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads",
-        help="Unpaired reads (eg nanopore) file",
-        metavar="FILENAME",
+        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
         "--ref_fasta",
@@ -119,6 +113,9 @@ def main(args=None):
         "--keep_bam",
         action="store_true",
         help="Keep BAM file of reads mapped to reference genome (it is deleted by default)",
+    )
+    subparser_run_one_sample.add_argument(
+        "--dump_tsv", action="store_true",
     )
     subparser_run_one_sample.add_argument(
         "--force_amp_scheme",

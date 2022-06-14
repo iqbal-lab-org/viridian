@@ -70,6 +70,7 @@ def run(options):
         force_amp_scheme=chosen_amplicon_set,
         keep_intermediate=options.debug,
         keep_bam=options.keep_bam,
+        dump_tsv=options.dump_tsv,
         sample_name=options.sample_name,
         frs_threshold=options.frs_threshold,
         self_qc_depth=options.self_qc_depth,

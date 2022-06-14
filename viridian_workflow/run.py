@@ -23,6 +23,7 @@ def run_pipeline(
     self_qc_depth=20,
     consensus_max_n_percent=50,
     max_percent_amps_fail=50,
+    dump_tsv=False,
     command_line_args={},
 ):
 
@@ -101,6 +102,10 @@ def run_pipeline(
 
     # annotate vcf
     annotated_vcf = pileup.annotate_vcf(vcf)
+
+    # dump tsv
+    if dump_tsv:
+        _ = pileup.dump_tsv(work_dir / "all_stats.tsv")
 
     with open(work_dir / "final.vcf", "w") as vcf_out:
         header, records = annotated_vcf
