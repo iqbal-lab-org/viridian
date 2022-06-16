@@ -98,6 +98,7 @@ def run_pipeline(
     log["qc"] = pileup.summary
 
     with open(work_dir / "masked.fasta", "w") as fasta_out:
+        print(f">{sample_name}", file=fasta_out)
         print(masked_fasta, file=fasta_out)
 
     # annotate vcf

@@ -166,7 +166,7 @@ class Pileup:
     def dump_tsv(self, tsv):
         fd = open(tsv, "w")
         for pos, stats in enumerate(self.seq):
-            cons_pos = self.ref_to_consensus[pos + 1]
+            cons_pos = self.consensus_to_ref[pos + 1]
             print(f"{cons_pos}\t{pos+1}\t{stats.tsv_row()}", file=fd)
         return tsv
 
