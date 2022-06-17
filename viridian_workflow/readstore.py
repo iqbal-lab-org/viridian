@@ -299,7 +299,7 @@ class ReadStore:
             # truncate number of reads to target count per amplicon
             self.push_fragment(fragment)
 
-        for amplicon in self.amplicons_set:
+        for amplicon in self.amplicon_set:
 
             # decide if threshold for primers is met
             p1_min, p2_max = None, None

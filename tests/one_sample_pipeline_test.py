@@ -293,7 +293,7 @@ def test_assembly_amplicon_3_no_reads(test_data):
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
     fq1 = f"{pre_out}.1.fq"
     fq2 = f"{pre_out}.2.fq"
-    amplicon_names = {"amplicon1", "amplicon2", "amplicon4", "amplicon5"}
+    amplicon_names = {"amplicon1", "amplicon2", "amplicon3", "amplicon4", "amplicon5"}
     make_catted_paired_reads_for_amplicon_set(test_data, amplicon_names, fq1, fq2)
     outdir = f"{pre_out}.out"
     run_one_sample(
