@@ -299,12 +299,16 @@ class ReadStore:
             # truncate number of reads to target count per amplicon
             self.push_fragment(fragment)
 
-        for amplicon in self.amplicons:
+        for amplicon in self.amplicons_set:
 
             # decide if threshold for primers is met
-            p1_min, p2_max = self.filter_primer_counts(
-                self.primer_histogram[amplicon], start=self.start_pos, end=self.end_pos
-            )
+            p1_min, p2_max = None, None
+            if amplicon in self.primer_histogram:
+                p1_min, p2_max = self.filter_primer_counts(
+                    self.primer_histogram[amplicon],
+                    start=self.start_pos,
+                    end=self.end_pos,
+                )
             # default to the inner-most primer coords if an extrema isn't found
             p1_start = (
                 amplicon.left_primer_region[0] if p1_min is None else p1_min.ref_start

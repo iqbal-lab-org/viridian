@@ -227,6 +227,7 @@ class Stats:
         self.alts_in_amplicons = defaultdict(int)
         self.refs_in_amplicons = defaultdict(int)
         self.refs_in_forward_strands = defaultdict(int)
+        self.alts_in_forward_strands = defaultdict(int)
         self.amplicon_totals = defaultdict(int)
 
         self.alts_forward = 0
@@ -258,6 +259,8 @@ class Stats:
             self.alts += 1
             if profile.amplicon_name:
                 self.alts_in_amplicons[profile.amplicon_name] += 1
+                if profile.forward_strand:
+                    self.alts_in_forward_strands[profile.amplicon_name] += 1
 
             if profile.in_primer:
                 self.alts_in_primer += 1
