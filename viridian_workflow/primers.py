@@ -46,7 +46,7 @@ class Amplicon:
             self.right_primer_region, position
         )
 
-    def match_primers(self, fragment, primer_match_threshold=3):
+    def match_primers(self, fragment, primer_match_threshold=5):
         """Attempt to match either end of a fragment against the amplicon's primers
         """
         p1, p2 = None, None
@@ -54,17 +54,17 @@ class Amplicon:
         min_dist = primer_match_threshold
         # closest leftmost position
         for primer in self.left:
-            dist = fragment.ref_start - primer.ref_start
-            if dist >= 0 and dist < primer_match_threshold:
+            dist = abs(fragment.ref_start - primer.ref_start)
+            if dist < primer_match_threshold:
                 if dist <= min_dist:
                     min_dist = dist
                     p1 = primer
 
         min_dist = primer_match_threshold
-        # closest leftmost position
+        # closest rightmost position
         for primer in self.right:
-            dist = primer.ref_end - fragment.ref_end
-            if dist >= 0 and dist < primer_match_threshold:
+            dist = abs(primer.ref_end - fragment.ref_end)
+            if dist < primer_match_threshold:
                 if dist <= min_dist:
                     min_dist = dist
                     p2 = primer
