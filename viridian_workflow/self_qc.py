@@ -23,9 +23,6 @@ class Pileup:
         # 1-based index translation tables
         self.ref_to_consensus = {}
         self.consensus_to_ref = {}
-        for r in refseq:
-            self.seq.append(Stats(ref_base=r))
-
         if msa:
             with open(msa) as msa_fd:
                 seq1 = msa_fd.readline().strip()  # consensus
@@ -54,10 +51,27 @@ class Pileup:
                 self.ref_to_consensus[i] = i
                 self.consensus_to_ref[i] = i
 
+        for i, r in enumerate(refseq):
+            if i + i in self.consensus_to_ref:
+                self.seq.append(Stats(self.consensus_to_ref[i + 1], ref_base=r))
+            else:
+                self.seq.append(Stats(None, ref_base=r))
+
         # define the filters
         # filter closures take a Stats and return True on failure
         def test_amplicon_bias(s):
             passing = []
+            # if len(s.amplicon_totals) > 2:
+            #    for _aa in s.amplicon_totals:
+            #        print(
+            #            "\t\t-->",
+            #            _aa.name,
+            #            _aa.start,
+            #            _aa.end,
+            #            s.amplicon_totals[_aa],
+            #            file=sys.stderr,
+            #        )
+
             for amplicon, total in s.amplicon_totals.items():
                 if total < self.config.min_depth:
                     continue
@@ -149,6 +163,7 @@ class Pileup:
                 )
 
             self.summary["consensus_length"] += 1
+            # print(position, self.consensus_to_ref[position + 1], file=sys.stderr)
             if sequence[position] == "N":
                 # if a position is already masked by an upstream process skip it
                 self.summary["already_masked"] += 1
@@ -214,11 +229,7 @@ class Pileup:
 
 class Stats:
     def __init__(
-        self,
-        ref_base=None,
-        cons_base=None,
-        reference_position=None,
-        config=default_config,
+        self, reference_pos, ref_base=None, cons_base=None, config=default_config,
     ):
         self.alts_in_primer = 0
         self.refs_in_primer = 0
@@ -241,7 +252,7 @@ class Stats:
         self.failures = None
 
         self.alts_matching_refs = 0
-        self.reference_pos = reference_position
+        self.reference_pos = reference_pos
         self.ref_base = ref_base
         self.cons_base = cons_base
 
@@ -250,36 +261,38 @@ class Stats:
         self.position_failed = None
 
     def update(self, profile, alt=None):
-        # TODO: check if alt
-        self.alt_bases[profile.base] += 1
-        if profile.amplicon_name:
-            self.amplicon_totals[profile.amplicon_name] += 1
 
-        if profile.base != self.ref_base:
-            self.alts += 1
-            if profile.amplicon_name:
-                self.alts_in_amplicons[profile.amplicon_name] += 1
-                if profile.forward_strand:
-                    self.alts_in_forward_strands[profile.amplicon_name] += 1
-
-            if profile.in_primer:
+        if profile.in_primer:
+            if profile.base != self.ref_base:
                 self.alts_in_primer += 1
-            if profile.forward_strand:
-                self.alts_forward += 1
-
-        else:
-            self.refs += 1
-            if profile.amplicon_name:
-                self.refs_in_amplicons[profile.amplicon_name] += 1
-                if profile.forward_strand:
-                    self.refs_in_forward_strands[profile.amplicon_name] += 1
-
-            if profile.in_primer:
+            else:
                 self.refs_in_primer += 1
-            if profile.forward_strand:
-                self.refs_forward += 1
+        else:
+            self.alt_bases[profile.base] += 1
+            if profile.amplicon_name:
+                self.amplicon_totals[profile.amplicon_name] += 1
 
-        self.total += 1
+            if profile.base != self.ref_base:
+                self.alts += 1
+                if profile.amplicon_name:
+                    self.alts_in_amplicons[profile.amplicon_name] += 1
+                    if profile.forward_strand:
+                        self.alts_in_forward_strands[profile.amplicon_name] += 1
+
+                if profile.forward_strand:
+                    self.alts_forward += 1
+
+            else:
+                self.refs += 1
+                if profile.amplicon_name:
+                    self.refs_in_amplicons[profile.amplicon_name] += 1
+                    if profile.forward_strand:
+                        self.refs_in_forward_strands[profile.amplicon_name] += 1
+
+                if profile.forward_strand:
+                    self.refs_forward += 1
+
+            self.total += 1
 
     def check_for_failure(self, filters):
         """return whether a position should be masked

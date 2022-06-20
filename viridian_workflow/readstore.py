@@ -392,13 +392,10 @@ class ReadStore:
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             return
-        #        if len(self.amplicons[amplicon]) >= self.target_depth:
-        #            return
 
         frags = self.reads_per_amplicon[amplicon]
         sample_rate = self.target_depth / frags
         if frags < self.target_depth or random.random() < sample_rate:
-            # TODO count the observed primer extrema
             p1, p2 = amplicon.match_primers(fragment)
             if p1 is not None:
                 self.primer_histogram[amplicon]["left"][p1] += 1
