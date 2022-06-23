@@ -89,6 +89,13 @@ def main(args=None):
     )
     reads_ref_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'."
 
+    # cuckoo mode
+
+    subparser_cuckoo = subparsers.add_parser(
+        "cuckoo", parents=[common_parser, amplicons_parser, reads_ref_parser],
+    )
+    subparser_cuckoo.add_argument("--consensus", required=True, metavar="FILENAME")
+
     # ------------------------ run_one_sample ----------------------------
     subparser_run_one_sample = subparsers.add_parser(
         "run_one_sample",
