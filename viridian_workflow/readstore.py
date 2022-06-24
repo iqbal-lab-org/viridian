@@ -33,7 +33,7 @@ def score(matches, mismatches):
     winner = None
     for amplicon_set in amplicon_sets:
         total = matches[amplicon_set] + mismatches[amplicon_set]
-        if mismatches[amplicon_set] / total >= 0.1:
+        if mismatches[amplicon_set] / total >= 0.2:
             # if more than 10% of reads break the amplicon boundaries
             # disqualify this amplicon set
             print(
