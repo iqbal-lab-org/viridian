@@ -5,7 +5,7 @@ from .task import Task
 
 
 class Varifier(Task):
-    def __init__(self, outdir, ref, consensus, min_coord=0, max_coord=None):
+    def __init__(self, outdir, ref, consensus, min_coord=0, max_coord=None, sanitise_gaps=True):
         vcf = os.path.join(outdir, "04.truth.vcf")
         msa = os.path.join(outdir, "04.msa")
         consensus_out = os.path.join(outdir, "04.qry_sanitised_gaps.fa")
@@ -19,7 +19,12 @@ class Varifier(Task):
         self.cmd = [
             "varifier",
             "make_truth_vcf",
-            "--sanitise_truth_gaps",
+            ]
+
+        if sanitise_gaps:
+            self.cmd.append("--sanitise_truth_gaps")
+
+        self.cmd += [
             *self.options,
             consensus,
             ref,

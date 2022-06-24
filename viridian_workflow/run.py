@@ -69,8 +69,8 @@ def run_cuckoo(
     log["amplicons"] = rs.summary
 
     # save reads for cylon assembly
-    amp_dir = work_dir / "amplicons"
-    manifest_data = rs.make_reads_dir_for_cylon(amp_dir)
+    #amp_dir = work_dir / "amplicons"
+    #manifest_data = rs.make_reads_dir_for_cylon(amp_dir)
 
     # run cylon
     # cylon = Cylon(work_dir, platform, ref, amp_dir, manifest_data, rs.cylon_json)
@@ -84,6 +84,7 @@ def run_cuckoo(
         consensus,
         min_coord=rs.start_pos,
         max_coord=rs.end_pos,
+        sanitise_gaps=False,
     )
     vcf, msa, varifier_consensus = varifier.run()
     log["varifier"] = varifier.log
