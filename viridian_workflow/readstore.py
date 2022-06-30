@@ -426,7 +426,7 @@ class ReadStore:
         """remap reads to consensus
         """
 
-        cons = mp.Aligner(str(fasta), preset=minimap_presets)
+        cons = mp.Aligner(str(fasta), preset=minimap_presets, n_threads=1)
         if len(cons.seq_names) != 1:
             Exception(f"Consensus fasta {fasta} has more than one sequence")
         consensus_seq = cons.seq(cons.seq_names[0])

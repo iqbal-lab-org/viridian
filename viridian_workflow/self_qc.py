@@ -123,10 +123,10 @@ class Pileup:
                 else False,
                 lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {self.config.min_frs}. {s.total_reads} including primer regions.",
             ),
-            "amplicon_bias": (
-                test_amplicon_bias,
-                lambda s: "Per-amplicon FRS failure",
-            ),
+            #            "amplicon_bias": (
+            #                test_amplicon_bias,
+            #                lambda s: "Per-amplicon FRS failure",
+            #            ),
             #            "strand_bias": (
             #                test_strand_bias,
             #                lambda s: f"Strand-biased FRS failure"),
