@@ -8,7 +8,7 @@ import json
 from viridian_workflow import primers, readstore
 from viridian_workflow.subtasks import Cylon, Minimap, Varifier
 
-
+# TODO factor out repeated pipeline defs here
 def run_cuckoo(
     work_dir,
     platform,
@@ -69,8 +69,8 @@ def run_cuckoo(
     log["amplicons"] = rs.summary
 
     # save reads for cylon assembly
-    #amp_dir = work_dir / "amplicons"
-    #manifest_data = rs.make_reads_dir_for_cylon(amp_dir)
+    # amp_dir = work_dir / "amplicons"
+    # manifest_data = rs.make_reads_dir_for_cylon(amp_dir)
 
     # run cylon
     # cylon = Cylon(work_dir, platform, ref, amp_dir, manifest_data, rs.cylon_json)

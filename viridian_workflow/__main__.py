@@ -90,77 +90,89 @@ def main(args=None):
     reads_ref_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Either use: 1) '--tech ont --reads reads.fq' or 2) '--tech illumina --reads1 reads1.fq --reads2 reads2.fq'."
 
     # ------------------------ run_one_sample ----------------------------
-    subparser_run_one_sample = subparsers.add_parser(
-        "run_one_sample",
-        parents=[common_parser, amplicons_parser, reads_ref_parser],
-        help="Run the complete pipeline on one sample",
-        usage=f"viridian_workflow run_one_sample [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)>",
-        description="Run the complete pipeline on one sample",
-        epilog=reads_ref_epilog,
-    )
-    subparser_run_one_sample.add_argument(
+
+    run_one_sample_parser = argparse.ArgumentParser(add_help=False)
+    run_one_sample_parser.add_argument(
         "--outdir",
         help="REQUIRED. Name of output directory (will be created). This must not exist already, unless the --force option is used to overwrite",
         required=True,
         metavar="FILENAME",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--force",
         action="store_true",
         help="Overwrite output directory, if it already exists. Use with caution!",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--keep_bam",
         action="store_true",
         help="Keep BAM file of reads mapped to reference genome (it is deleted by default)",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--dump_tsv", action="store_true",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--force_amp_scheme",
         help="Force choice of amplicon scheme. The value provided must exactly match a built-in name or a name in file given by --amp_schemes_tsv",
         metavar="STRING",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--frs_threshold",
         type=float,
         default=0.7,
         help="Masking threshold for consensus base support [%(default)s]",
         metavar="FLOAT",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--self_qc_depth",
         type=int,
         default=10,
         help="Masking threshold for consensus base depth [%(default)s]",
         metavar="INT",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--max_percent_amps_fail",
         type=float,
         default=50.0,
         help="Maximum percent of amplicons allowed to fail. The pipeline is stopped as soon as too many failed amplicons are detected [%(default)s]",
         metavar="FLOAT",
     )
-    subparser_run_one_sample.add_argument(
+    run_one_sample_parser.add_argument(
         "--max_cons_n_percent",
         type=float,
         default=50.0,
         help="Maximum allowed percentage of Ns in the consensus sequence. The pipeline is stopped as soon as too many Ns are detected [%(default)s]",
         metavar="FLOAT",
     )
+    subparser_run_one_sample = subparsers.add_parser(
+        "run_one_sample",
+        parents=[
+            run_one_sample_parser,
+            common_parser,
+            amplicons_parser,
+            reads_ref_parser,
+        ],
+        help="Run the complete pipeline on one sample",
+        usage=f"viridian_workflow run_one_sample [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)>",
+        description="Run the complete pipeline on one sample",
+        epilog=reads_ref_epilog,
+    )
     subparser_run_one_sample.set_defaults(
         func=viridian_workflow.tasks.run_one_sample.run
     )
-
     # cuckoo mode
 
     subparser_cuckoo = subparsers.add_parser(
-        "cuckoo", parents=[subparser_run_one_sample],
+        "cuckoo",
+        parents=[
+            run_one_sample_parser,
+            common_parser,
+            amplicons_parser,
+            reads_ref_parser,
+        ],
     )
     subparser_cuckoo.add_argument("--consensus", required=True, metavar="FILENAME")
-
+    subparser_cuckoo.set_defaults(func=viridian_workflow.tasks.cuckoo.run)
 
     args = parser.parse_args()
     if not hasattr(args, "func"):

@@ -2,7 +2,7 @@ import os
 import logging
 import subprocess
 from viridian_workflow import utils, primers, amplicon_schemes
-from viridian_workflow.run import run_pipeline
+from viridian_workflow.run import run_cuckoo
 
 
 def run(options):
@@ -60,14 +60,13 @@ def run(options):
         for name, tsv in amplicon_index.items()
     ]
 
-    # TODO: this needs to run and handle the keyword args
     run_cuckoo(
         options.outdir,
         options.tech,
         fqs,
         amplicon_sets,
         ref=options.ref_fasta,
-        consensus=options.consensus_fasta,
+        consensus=options.consensus,
         force_amp_scheme=chosen_amplicon_set,
         keep_intermediate=options.debug,
         keep_bam=options.keep_bam,
