@@ -77,15 +77,15 @@ def test_load_list_of_amplicon_sets():
         )
 
     built_in_schemes = amplicon_schemes.get_built_in_schemes()
-    expect_dict["COVID-ARTIC-V4"] = built_in_schemes["COVID-ARTIC-V4"]
+    expect_dict["COVID-ARTIC-V4.1"] = built_in_schemes["COVID-ARTIC-V4.1"]
     expect_list = [
         primers.AmpliconSet.from_tsv(
-            built_in_schemes["COVID-ARTIC-V4"], name="COVID-ARTIC-V4"
+            built_in_schemes["COVID-ARTIC-V4.1"], name="COVID-ARTIC-V4.1"
         ),
         primers.AmpliconSet.from_tsv(scheme1_tsv, name="Scheme1"),
     ]
     got_dict, got_list = amplicon_schemes.load_list_of_amplicon_sets(
-        built_in_names_to_use={"COVID-ARTIC-V4"}, tsv_others_to_use=tmp_tsv
+        built_in_names_to_use={"COVID-ARTIC-V4.1"}, tsv_others_to_use=tmp_tsv
     )
     assert got_list == expect_list
     assert got_dict == expect_dict
