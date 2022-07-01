@@ -214,6 +214,9 @@ class Pileup:
             stats = self.seq[cons_coord - 1]
             info_field = stats.info()
             vcf_filters = original_filters
+            if stats.position_failed is None:
+                print(f"Warning: attemped to evaluate N basecall", file=sys.stderr)
+                continue
             if stats.position_failed:
                 if original_filters == "PASS":
                     vcf_filters = ";".join(stats.get_failures())
