@@ -109,6 +109,6 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout 38e708fbb1b069f0fce3041eac49920d22cd9cf3
+git checkout b5d55af7efd49e9e6e57c88ba0c41e23d40a767d
 pip3 install .
 cd ..
