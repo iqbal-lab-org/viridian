@@ -451,11 +451,13 @@ class ReadStore:
                     a = cons.map(read.seq)  # remap to consensus
                     alignment = None
                     for x in a:
+                        # test that the re-alignment is still within the
+                        # original amplicon call
                         if (
                             x.is_primary
-                            and pileup.consensus_to_ref[alignment.r_st]
+                            and pileup.consensus_to_ref[x.r_st]
                             > (amplicon.ref_start - 10)
-                            and pileup.consensus_to_ref[alignment.r_en]
+                            and pileup.consensus_to_ref[x.r_en]
                             < (amplicon.ref_end + 10)
                         ):
                             alignment = x
