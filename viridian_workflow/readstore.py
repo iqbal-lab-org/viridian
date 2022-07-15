@@ -135,24 +135,30 @@ class Bam:
 
             if not read.is_paired:
                 self.stats["unpaired_reads"] += 1
-                self.stats["template_lengths"][
-                    abs(read.query_length)
-                ] += 1  # TODO: check this
-                yield SingleRead(Bam.read_from_pysam(read))
+                single_read = SingleRead(Bam.read_from_pysam(read))
+                tlen = single_read.ref_end - single_read.ref_start
+                if tlen < 150:
+                    self.stats["template_lengths"][tlen] += 1  # TODO: check this
+                    continue
+                yield single_read
 
             if not read.is_proper_pair:
                 improper_pairs += 1
                 continue
 
             if read.is_read1:
-                self.stats["template_lengths"][abs(read.template_length)] += 1
                 reads_by_name[read.query_name] = Bam.read_from_pysam(read)
 
             elif read.is_read2:
                 if read.query_name not in reads_by_name:
                     raise Exception("Bam file is not sorted by name")
                 read1 = reads_by_name[read.query_name]
-                yield PairedReads(read1, Bam.read_from_pysam(read))
+                paired_reads = PairedReads(read1, Bam.read_from_pysam(read))
+                tlen = paired_reads.ref_end - paired_reads.ref_start
+                if tlen < 150:
+                    self.stats["template_lengths"][tlen] += 1
+                    continue
+                yield paired_reads
                 del reads_by_name[read.query_name]
         print(f"{improper_pairs} improper pairs", file=sys.stderr)
 
@@ -445,7 +451,13 @@ class ReadStore:
                     a = cons.map(read.seq)  # remap to consensus
                     alignment = None
                     for x in a:
-                        if x.is_primary:
+                        if (
+                            x.is_primary
+                            and pileup.consensus_to_ref[alignment.r_st]
+                            > (amplicon.ref_start - 10)
+                            and pileup.consensus_to_ref[alignment.r_en]
+                            < (amplicon.ref_end + 10)
+                        ):
                             alignment = x
 
                     if not alignment:

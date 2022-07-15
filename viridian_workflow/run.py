@@ -208,6 +208,8 @@ def run_pipeline(
     # log["self_qc"] = pileup.log
     log["qc"] = pileup.summary
 
+    print(json.dumps(log), file=open(work_dir / "log.json", "w"))
+
     with open(work_dir / "masked.fasta", "w") as fasta_out:
         print(f">{sample_name}", file=fasta_out)
         print(masked_fasta, file=fasta_out)
