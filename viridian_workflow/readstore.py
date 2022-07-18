@@ -461,9 +461,9 @@ class ReadStore:
                         if (
                             x.is_primary
                             and pileup.consensus_to_ref[x.r_st]
-                            > (amplicon.ref_start - 10)
+                            > (amplicon.start - 10)
                             and pileup.consensus_to_ref[x.r_en]
-                            < (amplicon.ref_end + 10)
+                            < (amplicon.end + 10)
                         ):
                             alignment = x
 
