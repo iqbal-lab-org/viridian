@@ -166,6 +166,7 @@ def test_gather_stats_from_bam():
         "match_no_amplicon_sets": 1,
         "read_lengths": {190: 1, 180: 1, 500: 1, 150: 1},
         "template_lengths": {190: 1, 180: 1, 500: 1, 150: 1},  # TODO: check this
+        "templates_that_were_too_short": {},
         # "amplicon_scheme_set_matches": {("scheme1",): 1, ("scheme1", "scheme2"): 2},
         "amplicon_scheme_set_matches": {"scheme1": 3, "scheme2": 2},
         # "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
@@ -190,6 +191,7 @@ def test_gather_stats_from_bam():
         "match_no_amplicon_sets": 1,  # confirm
         "read_lengths": {100: 6},
         "template_lengths": {200: 1, 190: 1, 690: 1},  # TODO: check this
+        "templates_that_were_too_short": {},
         # "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
         "amplicon_scheme_set_matches": {"scheme1": 2, "scheme2": 2}
         # "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},

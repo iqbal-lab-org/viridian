@@ -106,6 +106,7 @@ class Bam:
             "mapped": 0,
             "read_lengths": defaultdict(int),
             "template_lengths": defaultdict(int),
+            "templates_that_were_too_short": defaultdict(int),
             "match_no_amplicon_sets": 0,
         }
 
@@ -137,8 +138,9 @@ class Bam:
                 self.stats["unpaired_reads"] += 1
                 single_read = SingleRead(Bam.read_from_pysam(read))
                 tlen = single_read.ref_end - single_read.ref_start
+                self.stats["template_lengths"][tlen] += 1  # TODO: check this
                 if tlen < 150:
-                    self.stats["template_lengths"][tlen] += 1  # TODO: check this
+                    self.stats["templates_that_were_too_short"][tlen] += 1
                     continue
                 yield single_read
 
@@ -155,8 +157,9 @@ class Bam:
                 read1 = reads_by_name[read.query_name]
                 paired_reads = PairedReads(read1, Bam.read_from_pysam(read))
                 tlen = paired_reads.ref_end - paired_reads.ref_start
+                self.stats["template_lengths"][tlen] += 1
                 if tlen < 150:
-                    self.stats["template_lengths"][tlen] += 1
+                    self.stats["templates_that_were_too_short"][tlen] += 1
                     continue
                 yield paired_reads
                 del reads_by_name[read.query_name]
@@ -460,10 +463,8 @@ class ReadStore:
                             continue
                         if (
                             x.is_primary
-                            and pileup.consensus_to_ref[x.r_st]
-                            > (amplicon.start - 10)
-                            and pileup.consensus_to_ref[x.r_en]
-                            < (amplicon.end + 10)
+                            and pileup.consensus_to_ref[x.r_st] > (amplicon.start - 10)
+                            and pileup.consensus_to_ref[x.r_en] < (amplicon.end + 10)
                         ):
                             alignment = x
 
