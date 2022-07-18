@@ -454,6 +454,11 @@ class ReadStore:
                         # test that the re-alignment is still within the
                         # original amplicon call
                         if (
+                            x.r_st not in pileup.consensus_to_ref
+                            or x.r_en not in pileup.consensus_to_ref
+                        ):
+                            continue
+                        if (
                             x.is_primary
                             and pileup.consensus_to_ref[x.r_st]
                             > (amplicon.ref_start - 10)
