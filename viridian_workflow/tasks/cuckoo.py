@@ -2,7 +2,7 @@ import os
 import logging
 import subprocess
 from viridian_workflow import utils, primers, amplicon_schemes
-from viridian_workflow.run import run_cuckoo
+from viridian_workflow.run import run_pipeline
 
 
 def run(options):
@@ -60,13 +60,12 @@ def run(options):
         for name, tsv in amplicon_index.items()
     ]
 
-    run_cuckoo(
+    run_pipeline(
         options.outdir,
         options.tech,
         fqs,
         amplicon_sets,
         ref=options.ref_fasta,
-        consensus=options.consensus,
         force_amp_scheme=chosen_amplicon_set,
         keep_intermediate=options.debug,
         keep_bam=options.keep_bam,
@@ -77,4 +76,5 @@ def run(options):
         consensus_max_n_percent=options.max_cons_n_percent,
         max_percent_amps_fail=options.max_percent_amps_fail,
         command_line_args=options,
+        force_consensus=options.consensus,
     )

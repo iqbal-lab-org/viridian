@@ -197,7 +197,7 @@ def test_gather_stats_from_bam():
         # "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
         "amplicon_scheme_set_matches": {"scheme1": 2, "scheme2": 2},
         # "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},
-        "chosen_amplicon_scheme": "scheme2",
+        "chosen_amplicon_scheme": "scheme1",
     }
 
     os.unlink(ref_fasta)
