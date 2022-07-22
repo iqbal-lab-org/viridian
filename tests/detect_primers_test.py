@@ -147,7 +147,7 @@ def test_gather_stats_from_bam():
         primers.AmpliconSet.from_tsv(v, name=k) for k, v in tsv_files.items()
     ]
 
-    rs = Bam(unpaired_bam)
+    rs = Bam(unpaired_bam, template_length_threshold=20)
     try:
         rs.detect_amplicon_set(amplicon_sets)
     except Exception as error:
@@ -156,6 +156,8 @@ def test_gather_stats_from_bam():
             raise Error
     got = rs.stats
     # got = detect_primers.gather_stats_from_bam(unpaired_bam, tmp_bam_out, amplicon_sets)
+    for k, v in got.items():
+        print(k, v)
     assert got == {
         "total_reads": 4,
         "reads1": 0,
@@ -170,7 +172,7 @@ def test_gather_stats_from_bam():
         # "amplicon_scheme_set_matches": {("scheme1",): 1, ("scheme1", "scheme2"): 2},
         "amplicon_scheme_set_matches": {"scheme1": 3, "scheme2": 2},
         # "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
-        # "chosen_amplicon_scheme": "scheme1",
+        "chosen_amplicon_scheme": "scheme1",
     }
 
     rs = Bam(paired_bam)
@@ -193,9 +195,9 @@ def test_gather_stats_from_bam():
         "template_lengths": {200: 1, 190: 1, 690: 1},  # TODO: check this
         "templates_that_were_too_short": {},
         # "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
-        "amplicon_scheme_set_matches": {"scheme1": 2, "scheme2": 2}
+        "amplicon_scheme_set_matches": {"scheme1": 2, "scheme2": 2},
         # "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},
-        # "chosen_amplicon_scheme": "scheme2",
+        "chosen_amplicon_scheme": "scheme2",
     }
 
     os.unlink(ref_fasta)

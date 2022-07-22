@@ -12,9 +12,9 @@ import mappy as mp
 # "seq" is the read sequence in the direction of the reference genome, ie what
 # you get in a BAM file.
 # We will enforce that  ref_start < ref_end, and qry_start < qry_end. Then we
-# can use is_reverse to resolve the direcrtion of the read.
-# qry_end and ref_end one past the position, so slicing/subtracting
-# coords follows the python string convention.
+# can use is_reverse to resolve the direction of the read.
+# qry_end and ref_end one past the position, so slicing and subtracting
+# coords follow the python string convention.
 Read = namedtuple(
     "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse"],
 )
@@ -25,7 +25,7 @@ def in_range(interval, position):
     return position < end and position > start
 
 
-def score(matches, mismatches):
+def score(matches, mismatches, disqualification_threshold=0.35):
     """Assign winning amplicon set id based on match stats"""
     amplicon_sets = set([*matches.keys(), *mismatches.keys()])
 
@@ -33,14 +33,15 @@ def score(matches, mismatches):
     winner = None
     for amplicon_set in amplicon_sets:
         total = matches[amplicon_set] + mismatches[amplicon_set]
-        if mismatches[amplicon_set] / total >= 0.2:
-            # if more than 10% of reads break the amplicon boundaries
+        mismatch_proportion = mismatches[amplicon_set] / total
+        if mismatch_proportion > disqualification_threshold:
+            # if more than 3% of reads break the amplicon boundaries
             # disqualify this amplicon set
             print(
                 amplicon_set.name,
                 mismatches[amplicon_set],
                 matches[amplicon_set],
-                "[disqualified]",
+                f" disqualified: {mismatch_proportion * 100}% ({disqualification_threshold * 100}% threshold)",
             )
             continue
         else:
@@ -68,12 +69,13 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
 
 
 class Bam:
-    def __init__(self, bam, infile_is_paired=None):
+    def __init__(self, bam, infile_is_paired=None, template_length_threshold=150):
         self.stats = None
         self.infile_is_paired = infile_is_paired
         if not Path(bam).is_file():
             raise Exception(f"bam file {bam} does not exist")
         self.bam = bam
+        self.template_length_threshold = template_length_threshold
 
     @staticmethod
     def read_from_pysam(read):
@@ -138,8 +140,8 @@ class Bam:
                 self.stats["unpaired_reads"] += 1
                 single_read = SingleRead(Bam.read_from_pysam(read))
                 tlen = single_read.ref_end - single_read.ref_start
-                self.stats["template_lengths"][tlen] += 1  # TODO: check this
-                if tlen < 150:
+                self.stats["template_lengths"][tlen] += 1
+                if tlen < self.template_length_threshold:
                     self.stats["templates_that_were_too_short"][tlen] += 1
                     continue
                 yield single_read
@@ -158,7 +160,7 @@ class Bam:
                 paired_reads = PairedReads(read1, Bam.read_from_pysam(read))
                 tlen = paired_reads.ref_end - paired_reads.ref_start
                 self.stats["template_lengths"][tlen] += 1
-                if tlen < 150:
+                if tlen < self.template_length_threshold:
                     self.stats["templates_that_were_too_short"][tlen] += 1
                     continue
                 yield paired_reads
