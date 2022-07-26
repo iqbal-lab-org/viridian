@@ -169,18 +169,16 @@ def test_ref_cons_position_translation():
     msa = Path(data_dir) / "ref_first.msa"
     pileup = self_qc.Pileup(ref, msa)
 
-    print(pileup.consensus_to_ref)
-    print(pileup.ref_to_consensus)
-    assert pileup.ref_to_consensus[1] == None
+    assert pileup.ref_to_consensus(1) == None
     #    assert pileup.ref_to_consensus[7] == 4
-    assert pileup.consensus_to_ref[4] == 7
-    assert pileup.ref_to_consensus[13] == 10
-    assert pileup.ref_to_consensus[8] == 7
-    assert pileup.consensus_to_ref[7] == 8
-    assert pileup.consensus_to_ref[10] == 13
-    #    assert pileup.ref_to_consensus[24] == None
-    #    assert pileup.consensus_to_ref[16] == 19 # not strictly true
-    assert pileup.ref_to_consensus[8] == 7
+    assert pileup.consensus_to_ref(4) == 7
+    assert pileup.ref_to_consensus(13) == 10
+    assert pileup.ref_to_consensus(8) == 7
+    assert pileup.consensus_to_ref(7) == 8
+    assert pileup.consensus_to_ref(10) == 13
+    #    assert pileup.ref_to_consensus(24) == None
+    #    assert pileup.consensus_to_ref(16) == 19 # not strictly true
+    assert pileup.ref_to_consensus(8) == 7
 
 
 def test_position_table_cons_shorter():
@@ -196,16 +194,16 @@ def test_position_table_cons_shorter():
     msa = Path(data_dir) / "cons_shorter.msa"
     pileup = self_qc.Pileup(ref, msa)
 
-    assert pileup.ref_to_consensus[1] == None
-    assert pileup.ref_to_consensus[3] == None
+    assert pileup.ref_to_consensus(1) == None
+    assert pileup.ref_to_consensus(3) == None
 
-    assert pileup.ref_to_consensus[5] == 1
-    assert pileup.consensus_to_ref[1] == 5
+    assert pileup.ref_to_consensus(5) == 1
+    assert pileup.consensus_to_ref(1) == 5
 
-    assert pileup.ref_to_consensus[10] == 4
-    assert pileup.consensus_to_ref[4] == 10
-    assert pileup.ref_to_consensus[15] == 11
-    assert pileup.consensus_to_ref[11] == 15
+    assert pileup.ref_to_consensus(10) == 4
+    assert pileup.consensus_to_ref(4) == 10
+    assert pileup.ref_to_consensus(15) == 11
+    assert pileup.consensus_to_ref(11) == 15
 
 
 def test_position_table_ref_shorter():
@@ -223,10 +221,10 @@ def test_position_table_ref_shorter():
     msa = Path(data_dir) / "ref_shorter.msa"
     pileup = self_qc.Pileup(ref, msa)
 
-    assert pileup.consensus_to_ref[10] == 4
-    assert pileup.ref_to_consensus[4] == 10
-    assert pileup.consensus_to_ref[15] == 11
-    assert pileup.ref_to_consensus[11] == 15
+    assert pileup.consensus_to_ref(10) == 4
+    assert pileup.ref_to_consensus(4) == 10
+    assert pileup.consensus_to_ref(15) == 11
+    assert pileup.ref_to_consensus(11) == 15
 
 
 def test_pileup_masking():

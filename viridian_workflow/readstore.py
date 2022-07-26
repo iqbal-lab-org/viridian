@@ -459,14 +459,14 @@ class ReadStore:
                         # test that the re-alignment is still within the
                         # original amplicon call
                         if (
-                            x.r_st not in pileup.consensus_to_ref
-                            or x.r_en not in pileup.consensus_to_ref
+                            pileup.consensus_to_ref(x.r_st) is None
+                            or pileup.consensus_to_ref(x.r_en) is None
                         ):
                             continue
                         if (
                             x.is_primary
-                            and pileup.consensus_to_ref[x.r_st] > (amplicon.start - 10)
-                            and pileup.consensus_to_ref[x.r_en] < (amplicon.end + 10)
+                            and pileup.consensus_to_ref(x.r_st) > (amplicon.start - 10)
+                            and pileup.consensus_to_ref(x.r_en) < (amplicon.end + 10)
                         ):
                             alignment = x
 
@@ -500,7 +500,7 @@ class ReadStore:
                             if primer and in_range(
                                 (primer.ref_start, primer.ref_end),
                                 # consensus_to_ref is 1-indexed!!
-                                pileup.consensus_to_ref[consensus_pos + 1],
+                                pileup.consensus_to_ref(consensus_pos + 1),
                             ):
                                 in_primer = True
                                 break

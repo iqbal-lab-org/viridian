@@ -1,28 +1,52 @@
+from __future__ import annotations
+
 import sys
 
-from collections import namedtuple, defaultdict
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import NewType, Callable, Optional
+from pathlib import Path
 
-BaseProfile = namedtuple(
-    "BaseProfile", ["base", "in_primer", "forward_strand", "amplicon_name",],
-)
 
-Config = namedtuple("Config", ["min_frs", "min_depth"],)
+@dataclass
+class BaseProfile:
+    base: chr
+    in_primer: bool
+    forward_strand: bool
+    amplicon_name: str
+
+
+@dataclass
+class Config:
+    min_frs: float
+    min_depth: int
+
 
 default_config = Config(min_frs=0.7, min_depth=10,)
+
+Index0 = NewType("Index0", int)
+Index1 = NewType("Index1", int)
+
+Filter = Callable[["Stats"], bool]
 
 
 class Pileup:
     """A pileup is an array of Stats objects indexed by position in a reference
     """
 
-    def __init__(self, refseq, msa=None, config=default_config):
+    def __init__(
+        self,
+        refseq: str,
+        msa: Optional[tuple[str, str]] = None,
+        config: Config = default_config,
+    ):
         self.config = config
         self.ref = refseq
         self.seq = []
 
         # 1-based index translation tables
-        self.ref_to_consensus = {}
-        self.consensus_to_ref = {}
+        self._ref_to_consensus: Map[Index1, Index1] = {}
+        self._consensus_to_ref: Map[Index1, Index1] = {}
         if msa:
             with open(msa) as msa_fd:
                 seq1 = msa_fd.readline().strip()  # consensus
@@ -43,23 +67,21 @@ class Pileup:
                         con += 1
 
                     if ref is not None:
-                        self.ref_to_consensus[ref] = con
+                        self._ref_to_consensus[ref] = con
                     if con is not None:
-                        self.consensus_to_ref[con] = ref
+                        self._consensus_to_ref[con] = ref
         else:
             for i in range(0, len(self.ref) + 1):
-                self.ref_to_consensus[i] = i
-                self.consensus_to_ref[i] = i
+                self._ref_to_consensus[i] = i
+                self._consensus_to_ref[i] = i
 
         for i, r in enumerate(refseq):
-            if i + i in self.consensus_to_ref:
-                self.seq.append(Stats(self.consensus_to_ref[i + 1], ref_base=r))
-            else:
-                self.seq.append(Stats(None, ref_base=r))
+            p = Index1(i + 1)
+            self.seq.append(Stats(self.consensus_to_ref(p), ref_base=r))
 
         # define the filters
-        # filter closures take a Stats and return True on failure
-        def test_amplicon_bias(s):
+        # filter closures take a Stats struct and return True on failure
+        def test_amplicon_bias(s: "Stats") -> bool:
             passing = []
             # if len(s.amplicon_totals) > 2:
             #    for _aa in s.amplicon_totals:
@@ -93,7 +115,7 @@ class Pileup:
                 return True
             return False
 
-        def test_strand_bias(s):
+        def test_strand_bias(s: "Stats") -> bool:
             passing = []
             for amplicon, total in s.amplicon_totals.items():
                 if total < self.config.min_depth:
@@ -137,23 +159,33 @@ class Pileup:
         for f in self.filters:
             self.summary[f] = 0
 
-    def __getitem__(self, pos):
+    def ref_to_consensus(self, p: Index1) -> Optional[Index1]:
+        if p in self._ref_to_consensus:
+            return self._ref_to_consensus[p]
+        raise Exception
+
+    def consensus_to_ref(self, p: Index1) -> Optional[Index1]:
+        if p in self._consensus_to_ref:
+            return self._consensus_to_ref[p]
+        return None
+
+    def __getitem__(self, pos: Index0) -> "Stats":
         if pos > len(self.seq):
             # be mindful of 0 vs. 1 indexing here
             print(f"position too big: {pos} {len(self.seq)}", file=sys.stderr)
             return None
         return self.seq[pos]
 
-    def __setitem__(self, pos, profile):
+    def __setitem__(self, pos: Index0, profile: BaseProfile):
         raise Exception("don't set Pileup positions")
 
-    def update(self, pos, profile):
+    def update(self, pos: Index0, profile: BaseProfile):
         self.seq[pos].update(profile)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.seq)
 
-    def mask(self):
+    def mask(self) -> str:
         sequence = list(self.ref)
         self.qc = {}
         for position, stats in enumerate(self.seq):
@@ -178,14 +210,14 @@ class Pileup:
             self.qc["masking_summary"] = self.summary
         return "".join(sequence)
 
-    def dump_tsv(self, tsv):
+    def dump_tsv(self, tsv: Path) -> Path:
         fd = open(tsv, "w")
         for pos, stats in enumerate(self.seq):
             cons_pos = self.consensus_to_ref[pos + 1]
             print(f"{cons_pos}\t{pos+1}\t{stats.tsv_row()}", file=fd)
         return tsv
 
-    def annotate_vcf(self, vcf):
+    def annotate_vcf(self, vcf: Path) -> tuple[list[str], Any]:
         header = []
         records = []
 
@@ -208,10 +240,11 @@ class Pileup:
                 fmt,
                 *r,
             ) = line.split("\t")
-            pos = int(pos)
 
-            cons_coord = self.ref_to_consensus[pos]
-            stats = self.seq[cons_coord - 1]
+            pos: Index1 = int(pos)
+            cons_coord: Index1 = self.ref_to_consensus(pos)
+
+            stats: Stats = self.seq[Index0(cons_coord - 1)]
             info_field = stats.info()
             vcf_filters = original_filters
             if stats.position_failed is None:
@@ -263,7 +296,7 @@ class Stats:
 
         self.position_failed = None
 
-    def update(self, profile, alt=None):
+    def update(self, profile: BaseProfile, alt=None):
 
         if profile.in_primer:
             if profile.base != self.ref_base:
@@ -297,7 +330,7 @@ class Stats:
 
             self.total += 1
 
-    def check_for_failure(self, filters):
+    def check_for_failure(self, filters: list[Filter]) -> bool:
         """return whether a position should be masked
 
         optionally accepts a mutable reference to a dictionary that summarises masking decisions
@@ -315,14 +348,14 @@ class Stats:
 
         return self.position_failed
 
-    def get_failures(self):
+    def get_failures(self) -> list[str]:
         """return list of failed filters for VCF FILTER field
         """
         if self.position_failed is None:
             raise Exception("pileup must be evaluated for failure first")
         return self.failures
 
-    def info(self):
+    def info(self) -> str:
         """Output position stats as VCF INFO field
         """
         if self.position_failed is None:
@@ -337,7 +370,7 @@ class Stats:
         info = f"primer={self.refs_in_primer}/{self.alts_in_primer};total{depth_symbol}{self.total};amplicon_overlap={len(self.amplicon_totals)};amplicon_totals={amplicon_totals}"
         return info
 
-    def tsv_row(self):
+    def tsv_row(self) -> str:
         # this will be None if the consensus is an 'N'. may not want to skip
         # if self.position_failed is None:
         #    raise Exception("pileup must be evaluated")
@@ -367,12 +400,12 @@ class Stats:
 
         return row
 
-    def __str__(self):
+    def __str__(self) -> str:
         alts = " ".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])
         return f"{self.ref_base}: {alts}"
 
 
-def parse_cigar(ref, query, alignment):
+def parse_cigar(ref, query: str, alignment: Alignment) -> list[tuple[Index0, str]]:
     """Interpret cigar string and query sequence in reference
     coords from mappy (count, op)
 
