@@ -95,7 +95,7 @@ def run_pipeline(
     log["varifier"] = varifier.log
 
     pileup = rs.pileup(
-        varifier_consensus, msa=msa, min_frs=frs_threshold, min_depth=self_qc_depth
+        varifier_consensus, msa=msa, min_frs=frs_threshold, min_depth=self_qc_depth, multiple_amplicon_support=rs.multiple_amplicon_support
     )
 
     # mask output

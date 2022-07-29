@@ -188,18 +188,22 @@ class Pileup:
         consensus_seq: str,
         msa: Optional[Path] = None,
         config: Config = default_config,
+        multiple_amplicon_support: Optional[list[bool]] = None,
     ):
         self.config: Config = config
         self.consensus_seq: str = consensus_seq
         self.seq: list[Stats] = []
 
-        # Store an array indicating which positions are supported by two amplicons
-        # in 0-based coordinates
-        self.overlapping_amplicons: list[bool] = []
-
         # 1-based index translation tables
         self._ref_to_consensus: dict[Index1, Index1] = {}
         self._consensus_to_ref: dict[Index1, Index1] = {}
+
+        # 0-based index of positions that are not supported by more than
+        # one overlapping amplicon
+        if multiple_amplicon_support is None:
+            self.multiple_amplicon_support: list[bool] = [False for _ in len(self.consensus_seq)]
+        else:
+            self.multiple_amplicon_support: list[bool] = multiple_amplicon_support
 
         if msa is not None:
             with open(msa) as msa_fd:
@@ -210,7 +214,7 @@ class Pileup:
                     raise Exception("Invalid multiple sequence alignment file")
 
                 # this is valid for testing when the consensus is complete:
-                # assert seq1.replace("-", "") == self.consensus_seq
+                assert con_seq.replace("-", "") == self.consensus_seq
 
                 ref_pos = 0  # we're using 1-based coords (vcf)
                 con_pos = 0
@@ -240,7 +244,7 @@ class Pileup:
                 Stats(
                     self.consensus_to_ref(p),
                     ref_base=r,
-                    permit_primer_bases=self.overlapping_amplicons[Index0(i)],
+                    permit_primer_bases=self.multiple_amplicon_support[Index0(i)]
                 )
             )
 

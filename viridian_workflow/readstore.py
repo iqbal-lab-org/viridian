@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import namedtuple, defaultdict
 import sys
 from pathlib import Path
@@ -256,6 +258,7 @@ class ReadStore:
         self.amplicon_set = amplicon_set
         self.reads_all_paired = bam.infile_is_paired
         self.unmatched_reads = 0
+#        self.multiple_amplicon_support: list[bool] = [False for _ in range]
 
         self.target_depth = target_depth
         # TODO find a home for this magic number
