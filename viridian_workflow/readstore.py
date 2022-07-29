@@ -6,8 +6,8 @@ import random
 
 from viridian_workflow import utils, self_qc
 
-import pysam
-import mappy as mp
+import pysam  # type: ignore
+import mappy as mp  # type: ignore
 
 # "seq" is the read sequence in the direction of the reference genome, ie what
 # you get in a BAM file.
@@ -167,7 +167,7 @@ class Bam:
                 del reads_by_name[read.query_name]
         print(f"{improper_pairs} improper pairs", file=sys.stderr)
 
-    def detect_amplicon_set(self, amplicon_sets):
+    def detect_amplicon_set(self, amplicon_sets, disqualification_threshold=0.35):
         """return inferred amplicon set from list
         """
 
@@ -196,7 +196,9 @@ class Bam:
         #        ] = amplicon_set_counts_to_naive_total_counts(
         #            self.stats["amplicon_scheme_set_matches"]
         #        )
-        chosen_scheme = score(matches, mismatches)
+        chosen_scheme = score(
+            matches, mismatches, disqualification_threshold=disqualification_threshold
+        )
         if chosen_scheme:
             self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
         else:

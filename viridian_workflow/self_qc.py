@@ -1,4 +1,4 @@
-from __future__ import __annotations__
+from __future__ import annotations
 
 import sys
 
@@ -27,8 +27,8 @@ default_config = Config(0.7, 10)
 Index0 = NewType("Index0", int)
 Index1 = NewType("Index1", int)
 
-Filter = Callable[[Stats], bool]
-FilterMsg = Callable[[Stats], str]
+Filter = Callable[["Stats"], bool]
+FilterMsg = Callable[["Stats"], str]
 
 
 class Stats:
@@ -203,22 +203,25 @@ class Pileup:
                 con_pos = 0
 
                 for con_base, ref_base in zip(con_seq, ref_seq):
-                    if con_base != "-":
+                    if con_base != "-" and ref_base != "-":
                         ref_pos += 1
-                    else:
-                        self._ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
-
-                    if ref_base != "-":
                         con_pos += 1
-                    else:
+                        self._ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
                         self._consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+                    elif con_base != "-" and ref_base == "-":
+                        ref_pos += 1
+                        self._ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
+                    elif ref_base != "-" and con_base == "-":
+                        con_pos += 1
+                        self._consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+
         else:
-            for i in range(1, len(self.ref) + 1):
-                pos = Index1(i)
+            for i, _ in enumerate(self.ref):
+                pos = Index1(i + 1)
                 self._ref_to_consensus[pos] = pos
                 self._consensus_to_ref[pos] = pos
 
-        for i, r in enumerate(refseq):
+        for i, r in enumerate(self.ref):
             p = Index1(i + 1)
             self.seq.append(Stats(self.consensus_to_ref(p), ref_base=r))
 
@@ -250,10 +253,6 @@ class Pileup:
                 else:
                     passing.append(True)
             if len(passing) > 1 and not all(passing[0] == e for e in passing):
-                #                print(f"{s.reference_pos}\t{passing}")
-                #                for amplicon, total in s.amplicon_totals.items():
-                #                    print(f"\t{amplicon.name}\t{total}\t{s.refs_in_amplicons[amplicon]} / {s.amplicon_totals[amplicon]}")
-
                 # this is a failure
                 return True
             return False
@@ -302,16 +301,26 @@ class Pileup:
         for f in self.filters:
             self.summary[f] = 0
 
-    def ref_to_consensus(self, p: Index1) -> Index1:  # -> Optional[Index1]:
+    def ref_to_consensus(self, p: Index1) -> Optional[Index1]:
         if p in self._ref_to_consensus:
             return self._ref_to_consensus[p]
-        raise Exception
+        return None
 
-    def consensus_to_ref(self, p: Index1) -> Index1:  # Optional[Index1]:
+    def consensus_to_ref(self, p: Index1) -> Index1:
         if p in self._consensus_to_ref:
             return self._consensus_to_ref[p]
-        raise Exception
-        # return None
+        # raise Exception("Failure mapping consensus coordinates to reference sequence")
+        print("")
+        print(f"tried map {p} to reference coord")
+        print("cons -> ref")
+        for k, v in self._consensus_to_ref.items():
+            print(k, v)
+
+        print("ref -> cons")
+        for k, v in self._ref_to_consensus.items():
+            print(k, v)
+
+        return Index1(0)
 
     def __getitem__(self, pos: Index0) -> Stats:
         if pos > len(self.seq):

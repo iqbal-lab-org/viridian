@@ -6,7 +6,7 @@ import os
 import subprocess
 import time
 
-import pyfastaq
+import pyfastaq  # type: ignore
 
 
 class PrimerError(Exception):
