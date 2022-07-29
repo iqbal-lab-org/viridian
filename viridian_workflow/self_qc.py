@@ -33,11 +33,17 @@ FilterMsg = Callable[["Stats"], str]
 
 class Stats:
     def __init__(
-        self, reference_pos, ref_base=None, cons_base=None, config=default_config,
+        self,
+        reference_pos: Index0,
+        ref_base=None,
+        cons_base=None,
+        config=default_config,
+        permit_primer_bases=False,
     ):
-        self.alts_in_primer = 0
-        self.refs_in_primer = 0
+        self.alts_in_primer: int = 0
+        self.refs_in_primer: int = 0
         self.alt_bases = defaultdict(int)
+        self.permit_primer_bases: bool = permit_primer_bases
 
         self.alts_in_amplicons = defaultdict(int)
         self.refs_in_amplicons = defaultdict(int)
@@ -45,15 +51,15 @@ class Stats:
         self.alts_in_forward_strands = defaultdict(int)
         self.amplicon_totals = defaultdict(int)
 
-        self.alts_forward = 0
-        self.refs_forward = 0
+        self.alts_forward: int = 0
+        self.refs_forward: int = 0
 
-        self.alts = 0
-        self.refs = 0
-        self.total = 0
-        self.log = []
-        self.total_reads = 0
-        self.failures = None
+        self.alts: int = 0
+        self.refs: int = 0
+        self.total: int = 0
+        self.log: list[str] = []
+        self.total_reads: int = 0
+        self.failures: Optional[list[str]] = None
 
         self.alts_matching_refs = 0
         self.reference_pos = reference_pos
@@ -66,7 +72,7 @@ class Stats:
 
     def update(self, profile: BaseProfile, alt=None):
 
-        if profile.in_primer:
+        if profile.in_primer and not self.permit_primer_bases:
             if profile.base != self.ref_base:
                 self.alts_in_primer += 1
             else:
@@ -178,11 +184,18 @@ class Pileup:
     """
 
     def __init__(
-        self, refseq: str, msa: Optional[Path] = None, config: Config = default_config,
+        self,
+        consensus_seq: str,
+        msa: Optional[Path] = None,
+        config: Config = default_config,
     ):
         self.config: Config = config
-        self.ref: str = refseq
+        self.consensus_seq: str = consensus_seq
         self.seq: list[Stats] = []
+
+        # Store an array indicating which positions are supported by two amplicons
+        # in 0-based coordinates
+        self.overlapping_amplicons: list[bool] = []
 
         # 1-based index translation tables
         self._ref_to_consensus: dict[Index1, Index1] = {}
@@ -197,7 +210,7 @@ class Pileup:
                     raise Exception("Invalid multiple sequence alignment file")
 
                 # this is valid for testing when the consensus is complete:
-                # assert seq1.replace("-", "") == self.ref
+                # assert seq1.replace("-", "") == self.consensus_seq
 
                 ref_pos = 0  # we're using 1-based coords (vcf)
                 con_pos = 0
@@ -216,29 +229,25 @@ class Pileup:
                         self._consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
 
         else:
-            for i, _ in enumerate(self.ref):
+            for i, _ in enumerate(self.consensus_seq):
                 pos = Index1(i + 1)
                 self._ref_to_consensus[pos] = pos
                 self._consensus_to_ref[pos] = pos
 
-        for i, r in enumerate(self.ref):
+        for i, r in enumerate(self.consensus_seq):
             p = Index1(i + 1)
-            self.seq.append(Stats(self.consensus_to_ref(p), ref_base=r))
+            self.seq.append(
+                Stats(
+                    self.consensus_to_ref(p),
+                    ref_base=r,
+                    permit_primer_bases=self.overlapping_amplicons[Index0(i)],
+                )
+            )
 
         # define the filters
         # filter closures take a Stats struct and return True on failure
         def test_amplicon_bias(s: Stats) -> bool:
             passing = []
-            # if len(s.amplicon_totals) > 2:
-            #    for _aa in s.amplicon_totals:
-            #        print(
-            #            "\t\t-->",
-            #            _aa.name,
-            #            _aa.start,
-            #            _aa.end,
-            #            s.amplicon_totals[_aa],
-            #            file=sys.stderr,
-            #        )
 
             for amplicon, total in s.amplicon_totals.items():
                 if total < self.config.min_depth:
