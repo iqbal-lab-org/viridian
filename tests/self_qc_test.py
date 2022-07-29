@@ -169,15 +169,15 @@ def test_ref_cons_position_translation():
     msa = Path(data_dir) / "ref_first.msa"
     pileup = self_qc.Pileup(ref, msa)
 
-    assert pileup.ref_to_consensus(1) == None
-    #    assert pileup.ref_to_consensus[7] == 4
+    assert pileup.ref_to_consensus(1) == 0  # None
+    assert pileup.ref_to_consensus(7) == 4
     assert pileup.consensus_to_ref(4) == 7
     assert pileup.ref_to_consensus(13) == 10
     assert pileup.ref_to_consensus(8) == 7
     assert pileup.consensus_to_ref(7) == 8
     assert pileup.consensus_to_ref(10) == 13
-    #    assert pileup.ref_to_consensus(24) == None
-    #    assert pileup.consensus_to_ref(16) == 19 # not strictly true
+    assert pileup.ref_to_consensus(24) == 16
+    assert pileup.consensus_to_ref(16) == 19
     assert pileup.ref_to_consensus(8) == 7
 
 
@@ -194,8 +194,8 @@ def test_position_table_cons_shorter():
     msa = Path(data_dir) / "cons_shorter.msa"
     pileup = self_qc.Pileup(ref, msa)
 
-    assert pileup.ref_to_consensus(1) == None
-    assert pileup.ref_to_consensus(3) == None
+    assert pileup.ref_to_consensus(1) == 0  # None
+    assert pileup.ref_to_consensus(3) == 0  # None
 
     assert pileup.ref_to_consensus(5) == 1
     assert pileup.consensus_to_ref(1) == 5
@@ -208,6 +208,7 @@ def test_position_table_cons_shorter():
 
 def test_position_table_ref_shorter():
     """
+    Note that this situation is nonsensical
                     1  1
         1    4      1  4
     ----ACT--ATCGATCGATT---
@@ -219,6 +220,7 @@ def test_position_table_ref_shorter():
     ref = "ACTATCGATCGATT"
     # ref_alignment = "----ACT--ATCGATCGATT---"
     msa = Path(data_dir) / "ref_shorter.msa"
+
     pileup = self_qc.Pileup(ref, msa)
 
     assert pileup.consensus_to_ref(10) == 4
