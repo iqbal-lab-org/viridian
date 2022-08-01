@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import NewType
 from collections import namedtuple
 import json
 import logging
@@ -21,16 +24,24 @@ class PipelineProcessError(Exception):
     pass
 
 
+Index0 = NewType("Index0", int)
+Index1 = NewType("Index1", int)
+
 TRANSLATE_TABLE = str.maketrans("ATCGatcg", "TAGCtagc")
 
 
-def revcomp(seq):
+def revcomp(seq: str) -> str:
     return seq.translate(TRANSLATE_TABLE)[::-1]
 
 
 def check_file(fn):
     if not os.path.isfile(fn):
         raise OutputFileError(os.path.abspath(fn))
+
+
+def in_range(interval: tuple[int, int], position: int) -> bool:
+    start, end = interval
+    return position < end and position > start
 
 
 def rm(fn):
