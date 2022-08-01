@@ -245,7 +245,7 @@ def test_pileup_masking():
 
     for p, base in enumerate(ref):
         profile = self_qc.BaseProfile(
-            base=base, in_primer=False, forward_strand=True, amplicon_name=None
+            base=base, in_primer=False, forward_strand=True, amplicon=None
         )
         for i in range(0, 50):
             pileup[p].update(profile)

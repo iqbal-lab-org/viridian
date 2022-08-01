@@ -1,11 +1,22 @@
+from __future__ import annotations
+
 import csv
 from collections import namedtuple
-from intervaltree import IntervalTree
-from viridian_workflow.readstore import in_range
+from intervaltree import IntervalTree  # type: ignore
+from viridian_workflow.utils import Index0, Index1, in_range
 
 Primer = namedtuple(
     "Primer", ["name", "seq", "left", "forward", "ref_start", "ref_end"]
 )
+
+# @dataclass
+# class Primer:
+#    name: str
+#    seq: str
+#    left: bool
+#    forward: bool
+#    ref_start: Index0
+#    ref_end: Index0
 
 
 class Amplicon:
@@ -25,7 +36,7 @@ class Amplicon:
 
     def __str__(self):
         return ", ".join(
-            [self.name, str(self.start), str(self.end), str(self.left), str(self.right)]
+            map(str, [self.name, self.start, self.end, self.left, self.right])
         )
 
     def __hash__(self):

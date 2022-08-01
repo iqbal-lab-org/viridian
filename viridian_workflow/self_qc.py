@@ -7,13 +7,16 @@ from dataclasses import dataclass
 from typing import NewType, Callable, Optional, Any
 from pathlib import Path
 
+from viridian_workflow.utils import Index0, Index1
+from viridian_workflow.primers import Amplicon
+
 
 @dataclass
 class BaseProfile:
     base: str
     in_primer: bool
     forward_strand: bool
-    amplicon_name: str
+    amplicon: Amplicon
 
 
 @dataclass
@@ -23,9 +26,6 @@ class Config:
 
 
 default_config = Config(0.7, 10)
-
-Index0 = NewType("Index0", int)
-Index1 = NewType("Index1", int)
 
 Filter = Callable[["Stats"], bool]
 FilterMsg = Callable[["Stats"], str]
@@ -42,14 +42,14 @@ class Stats:
     ):
         self.alts_in_primer: int = 0
         self.refs_in_primer: int = 0
-        self.alt_bases = defaultdict(int)
+        self.alt_bases: defaultdict[str, int] = defaultdict(int)
         self.permit_primer_bases: bool = permit_primer_bases
 
-        self.alts_in_amplicons = defaultdict(int)
-        self.refs_in_amplicons = defaultdict(int)
-        self.refs_in_forward_strands = defaultdict(int)
-        self.alts_in_forward_strands = defaultdict(int)
-        self.amplicon_totals = defaultdict(int)
+        self.alts_in_amplicons: defaultdict[Amplicon, int] = defaultdict(int)
+        self.refs_in_amplicons: defaultdict[Amplicon, int] = defaultdict(int)
+        self.refs_in_forward_strands: defaultdict[Amplicon, int] = defaultdict(int)
+        self.alts_in_forward_strands: defaultdict[Amplicon, int] = defaultdict(int)
+        self.amplicon_totals: defaultdict[Amplicon, int] = defaultdict(int)
 
         self.alts_forward: int = 0
         self.refs_forward: int = 0
@@ -59,7 +59,7 @@ class Stats:
         self.total: int = 0
         self.log: list[str] = []
         self.total_reads: int = 0
-        self.failures: Optional[list[str]] = None
+        self.failures: list[str] = []
 
         self.alts_matching_refs = 0
         self.reference_pos = reference_pos
@@ -68,7 +68,7 @@ class Stats:
 
         # self.config = config
 
-        self.position_failed = None
+        self.position_failed: Optional[bool] = None
 
     def update(self, profile: BaseProfile, alt=None):
 
@@ -79,25 +79,25 @@ class Stats:
                 self.refs_in_primer += 1
         else:
             self.alt_bases[profile.base] += 1
-            if profile.amplicon_name:
-                self.amplicon_totals[profile.amplicon_name] += 1
+            if profile.amplicon:
+                self.amplicon_totals[profile.amplicon] += 1
 
             if profile.base != self.ref_base:
                 self.alts += 1
-                if profile.amplicon_name:
-                    self.alts_in_amplicons[profile.amplicon_name] += 1
+                if profile.amplicon:
+                    self.alts_in_amplicons[profile.amplicon] += 1
                     if profile.forward_strand:
-                        self.alts_in_forward_strands[profile.amplicon_name] += 1
+                        self.alts_in_forward_strands[profile.amplicon] += 1
 
                 if profile.forward_strand:
                     self.alts_forward += 1
 
             else:
                 self.refs += 1
-                if profile.amplicon_name:
-                    self.refs_in_amplicons[profile.amplicon_name] += 1
+                if profile.amplicon:
+                    self.refs_in_amplicons[profile.amplicon] += 1
                     if profile.forward_strand:
-                        self.refs_in_forward_strands[profile.amplicon_name] += 1
+                        self.refs_in_forward_strands[profile.amplicon] += 1
 
                 if profile.forward_strand:
                     self.refs_forward += 1
@@ -115,8 +115,6 @@ class Stats:
         for filter_name, (filter_func, msg_format) in filters.items():
             if filter_func(self):
                 self.log.append(msg_format(self))
-                if self.failures is None:
-                    self.failures = []
                 self.failures.append(filter_name)
                 self.position_failed = True
 
@@ -201,7 +199,9 @@ class Pileup:
         # 0-based index of positions that are not supported by more than
         # one overlapping amplicon
         if multiple_amplicon_support is None:
-            self.multiple_amplicon_support: list[bool] = [False for _ in len(self.consensus_seq)]
+            self.multiple_amplicon_support: list[bool] = [
+                False for _ in range(len(self.consensus_seq))
+            ]
         else:
             self.multiple_amplicon_support: list[bool] = multiple_amplicon_support
 
@@ -214,7 +214,7 @@ class Pileup:
                     raise Exception("Invalid multiple sequence alignment file")
 
                 # this is valid for testing when the consensus is complete:
-                assert con_seq.replace("-", "") == self.consensus_seq
+                # assert con_seq.replace("-", "") == self.consensus_seq
 
                 ref_pos = 0  # we're using 1-based coords (vcf)
                 con_pos = 0
@@ -244,7 +244,7 @@ class Pileup:
                 Stats(
                     self.consensus_to_ref(p),
                     ref_base=r,
-                    permit_primer_bases=self.multiple_amplicon_support[Index0(i)]
+                    permit_primer_bases=self.multiple_amplicon_support[Index0(i)],
                 )
             )
 
@@ -350,7 +350,7 @@ class Pileup:
         return len(self.seq)
 
     def mask(self) -> str:
-        sequence: list[str] = list(self.ref)
+        sequence: list[str] = list(self.consensus_seq)
         self.qc = {}
 
         for p, stats in enumerate(self.seq):

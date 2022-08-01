@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Optional, Any
 from collections import namedtuple, defaultdict
 import sys
 from pathlib import Path
@@ -7,6 +8,7 @@ import os
 import random
 
 from viridian_workflow import utils, self_qc
+from viridian_workflow.primers import Amplicon, AmpliconSet, Primer
 
 import pysam  # type: ignore
 import mappy as mp  # type: ignore
@@ -22,12 +24,11 @@ Read = namedtuple(
 )
 
 
-def in_range(interval, position):
-    start, end = interval
-    return position < end and position > start
-
-
-def score(matches, mismatches, disqualification_threshold=0.35):
+def score(
+    matches: defaultdict[AmpliconSet, int],
+    mismatches: defaultdict[AmpliconSet, int],
+    disqualification_threshold: float = 0.35,
+) -> Optional[AmpliconSet]:
     """Assign winning amplicon set id based on match stats"""
     amplicon_sets = set([*matches.keys(), *mismatches.keys()])
 
@@ -71,13 +72,18 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
 
 
 class Bam:
-    def __init__(self, bam, infile_is_paired=None, template_length_threshold=150):
-        self.stats = None
+    def __init__(
+        self,
+        bam: Path,
+        infile_is_paired: Optional[bool] = None,
+        template_length_threshold: int = 150,
+    ):
         self.infile_is_paired = infile_is_paired
         if not Path(bam).is_file():
             raise Exception(f"bam file {bam} does not exist")
         self.bam = bam
         self.template_length_threshold = template_length_threshold
+        self.stats: dict[str, Any] = {}
 
     @staticmethod
     def read_from_pysam(read):
@@ -169,12 +175,14 @@ class Bam:
                 del reads_by_name[read.query_name]
         print(f"{improper_pairs} improper pairs", file=sys.stderr)
 
-    def detect_amplicon_set(self, amplicon_sets, disqualification_threshold=0.35):
-        """return inferred amplicon set from list
+    def detect_amplicon_set(
+        self, amplicon_sets: list[AmpliconSet], disqualification_threshold: float = 0.35
+    ) -> AmpliconSet:
+        """return inferred amplicon set from list of amplicon sets
         """
 
-        mismatches = defaultdict(int)
-        matches = defaultdict(int)
+        mismatches: defaultdict[AmpliconSet, int] = defaultdict(int)
+        matches: defaultdict[AmpliconSet, int] = defaultdict(int)
 
         for fragment in self.syncronise_fragments():
             match_any = False
@@ -208,11 +216,6 @@ class Bam:
             # current policy: abort
             raise Exception("failed to choose amplicon scheme")
         return chosen_scheme
-
-    def stats(self):
-        """return pre-computed stats (or compute)
-        """
-        pass
 
 
 class Fragment:
@@ -252,21 +255,21 @@ class SingleRead(Fragment):
 
 
 class ReadStore:
-    def __init__(self, amplicon_set, bam, target_depth=1000):
-        self.amplicons = defaultdict(list)
-        self.reads_per_amplicon = defaultdict(int)
-        self.amplicon_set = amplicon_set
-        self.reads_all_paired = bam.infile_is_paired
-        self.unmatched_reads = 0
-#        self.multiple_amplicon_support: list[bool] = [False for _ in range]
+    def __init__(self, amplicon_set: AmpliconSet, bam: Bam, target_depth: int = 1000):
+        self.amplicons: defaultdict[Amplicon, list[Read]] = defaultdict(list)
+        self.reads_per_amplicon: defaultdict[Amplicon, int] = defaultdict(int)
+        self.amplicon_set: AmpliconSet = amplicon_set
+        self.reads_all_paired: Optional[bool] = bam.infile_is_paired
+        self.unmatched_reads: int = 0
+        #        self.multiple_amplicon_support: list[bool] = [False for _ in range]
 
-        self.target_depth = target_depth
+        self.target_depth: int = target_depth
         # TODO find a home for this magic number
         self.cylon_target_depth_factor = 200
 
         self.start_pos = None
         self.end_pos = None
-        self.amplicon_stats = {}
+        self.amplicon_stats: dict[Amplicon, dict[bool, int]] = {}
 
         self.summary = {}
         self.cylon_json = {
@@ -275,7 +278,7 @@ class ReadStore:
             "amplicons": {},
         }
 
-        self.primer_histogram = {}
+        self.primer_histogram: dict[Amplicon, dict[str, defaultdict[Primer, int]]] = {}
         for _, amplicon in amplicon_set.amplicons.items():
             self.summary[amplicon.name] = {
                 "start": amplicon.start,
@@ -502,7 +505,7 @@ class ReadStore:
                         in_primer = False
                         for primer in primers:
                             # primers can be None
-                            if primer and in_range(
+                            if primer and utils.in_range(
                                 (primer.ref_start, primer.ref_end),
                                 # consensus_to_ref is 1-indexed!!
                                 pileup.consensus_to_ref(consensus_pos + 1),
