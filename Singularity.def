@@ -21,7 +21,7 @@ export LANG=C.UTF-8
     pip3 install tox
     pip3 install mypy
     cd /viridian_workflow
-    python -m mypy --python-version 3.10 viridian_workflow
+    mypy --python-version 3.10 viridian_workflow
     tox
     pip3 install .
 
