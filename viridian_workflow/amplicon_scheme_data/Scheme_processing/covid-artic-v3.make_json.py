@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# type: ignore
 
 import csv
 import hashlib
@@ -23,13 +24,14 @@ with open(tsv_file, "rb") as f:
 
 with open(tsv_file) as f_in, open("../covid-artic-v3.vwf.tsv", "w") as f_out:
     reader = csv.DictReader(f_in, delimiter="\t")
-    print("Amplicon_name",
+    print(
+        "Amplicon_name",
         "Primer_name",
         "Left_or_right",
         "Sequence",
         "Position",
         sep="\t",
-        file=f_out
+        file=f_out,
     )
 
     for d in reader:
@@ -54,7 +56,7 @@ with open(tsv_file) as f_in, open("../covid-artic-v3.vwf.tsv", "w") as f_out:
             d["original_data"]["seq"],
             d["start"],
             sep="\t",
-            file=f_out
+            file=f_out,
         )
 
 for amplicon_name, d in amplicons.items():

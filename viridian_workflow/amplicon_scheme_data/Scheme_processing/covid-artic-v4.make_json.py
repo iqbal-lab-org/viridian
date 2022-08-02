@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# type: ignore
 
 import csv
 import hashlib
@@ -23,13 +24,14 @@ with open(bed_file, "rb") as f:
 
 
 with open(bed_file) as f_in, open("../covid-artic-v4.vwf.tsv", "w") as f_out:
-    print("Amplicon_name",
+    print(
+        "Amplicon_name",
         "Primer_name",
         "Left_or_right",
         "Sequence",
         "Position",
         sep="\t",
-        file=f_out
+        file=f_out,
     )
 
     for line in f_in:
@@ -59,13 +61,7 @@ with open(bed_file) as f_in, open("../covid-artic-v4.vwf.tsv", "w") as f_out:
         assert d["end"] + 1 == end
         amplicons[amplicon_name][l_or_r.lower() + "_primers"].append(d)
         print(
-            amplicon_name,
-            primer_name,
-            l_or_r.lower(),
-            seq,
-            start,
-            sep="\t",
-            file=f_out
+            amplicon_name, primer_name, l_or_r.lower(), seq, start, sep="\t", file=f_out
         )
 
 for amplicon_name, d in amplicons.items():
