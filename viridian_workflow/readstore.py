@@ -219,7 +219,7 @@ class Bam:
 
 
 class Fragment:
-    def __init__(self, reads):
+    def __init__(self, reads: list[Read]):
         """fragment ref bounds ignore softclipping
         """
         self.ref_start = None
@@ -227,7 +227,7 @@ class Fragment:
         self.reads = reads
         self.strand = None
 
-    def total_mapped_bases(self):
+    def total_mapped_bases(self) -> int:
         return sum([r.qry_end - r.qry_start for r in self.reads])
 
 
@@ -261,9 +261,13 @@ class ReadStore:
         self.amplicon_set: AmpliconSet = amplicon_set
         self.reads_all_paired: Optional[bool] = bam.infile_is_paired
         self.unmatched_reads: int = 0
-        #        self.multiple_amplicon_support: list[bool] = [False for _ in range]
+
+        # Index of positions (0-based, wrt Reference) where different amplicons
+        # have contributed base calls
+        self.multiple_amplicon_support: list[bool] = []
 
         self.target_depth: int = target_depth
+
         # TODO find a home for this magic number
         self.cylon_target_depth_factor = 200
 

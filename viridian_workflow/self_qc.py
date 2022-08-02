@@ -107,7 +107,7 @@ class Stats:
             total += bc.alts[0] + bc.alts[1] + bc.refs[0] + bc.refs[1]
         return total
 
-    def evaluate(self, filters: dict[Filter, FilterMsg]) -> EvaluatedStats:
+    def evaluate(self, filters: dict[str, tuple[Filter, FilterMsg]]) -> EvaluatedStats:
         """Evaluate the accumulated positon stats
         """
         total = 0
@@ -133,18 +133,15 @@ class Stats:
                 bc.alts[0] + bc.alts[1],
             )
 
-        position_failed = False
-        failures = {}
+        e = EvaluatedStats(total, total_reads, refs, alts, calls_by_amplicon, False, {})
 
-        for filter_name, (filter_func, msg_format) in self.filters.items():
+        for filter_name, (filter_func, msg_format) in filters.items():
             # if the filter fails
-            if filter_func(stats):
-                failures[filter_name] = msg_format(self)
-                position_failed = True
+            if filter_func(e):
+                e.failures[filter_name] = msg_format(e)
+                e.position_failed = True
 
-        return EvaluatedStats(
-            total, total_reads, refs, alts, calls_by_amplicon, position_failed, failures
-        )
+        return e
 
     def info(self) -> str:
         """Output position stats as VCF INFO field
@@ -182,7 +179,7 @@ class Stats:
                     #            alts,
                     #            self.refs_in_primer,
                     #            self.alts_in_primer,
-                    self.total(),
+                    self.total,
                     #           len(self.amplicon_totals),
                     #           amplicon_totals,
                 ],
@@ -254,7 +251,7 @@ class Pileup:
         self.config: Config = config
         self.consensus_seq: str = consensus_seq
         self.seq: list[Stats] = []
-        self.evaluated_sequence: Optional[list[EvaluatedStats]] = [
+        self.evaluated_sequence: list[Optional[EvaluatedStats]] = [
             None for _ in range(len(consensus_seq))
         ]
 
@@ -298,15 +295,15 @@ class Pileup:
 
         for i, r in enumerate(self.consensus_seq):
             p = Index1(i + 1)
-            self.seq.append(Stats(self.consensus_to_ref(p), r,))
+            self.seq.append(Stats(Index0(self.consensus_to_ref(p) - 1), r,))
 
         self.filters = {
             "low_depth": (
-                lambda s: s.total() < self.config.min_depth,
-                lambda s: f"Insufficient depth; {s.total()} < {self.config.min_depth}. {s.total_reads} including primer regions.",
+                lambda s: s.total < self.config.min_depth,
+                lambda s: f"Insufficient depth; {s.total} < {self.config.min_depth}. {s.total_reads} including primer regions.",
             ),
             "low_frs": (
-                lambda s: s.refs / s.total() < self.config.min_frs
+                lambda s: s.refs / s.total < self.config.min_frs
                 if s.total > 0
                 else False,
                 lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {self.config.min_frs}. {s.total_reads} including primer regions.",
@@ -325,10 +322,10 @@ class Pileup:
         for f in self.filters:
             self.summary[f] = 0
 
-    def ref_to_consensus(self, p: Index1) -> Optional[Index1]:
+    def ref_to_consensus(self, p: Index1) -> Index1:
         if p in self._ref_to_consensus:
             return self._ref_to_consensus[p]
-        return None
+        return Index1(0)
 
     def consensus_to_ref(self, p: Index1) -> Index1:
         if p in self._consensus_to_ref:
@@ -354,10 +351,10 @@ class Pileup:
         """Evaluate all positions and determine if they pass filters
         """
         sequence: list[str] = list(self.consensus_seq)
-        self.qc = {}
+        self.qc: dict[str, Any] = {}
 
-        log = []
-        failures = []
+        log: list[str] = []
+        failures: list[str] = []
 
         # filters: dict[str, tuple[Filter, FilterMsg]]
         for p, raw_stats in enumerate(self.seq):
@@ -375,7 +372,7 @@ class Pileup:
                 continue
 
             stats = raw_stats.evaluate(self.filters)
-            self.evaluated_sequence = stats
+            self.evaluated_sequence[position] = stats
 
             self.summary["consensus_length"] += 1
 
@@ -422,10 +419,15 @@ class Pileup:
             pos: Index1 = Index1(int(pos_token))
             cons_coord: Index1 = self.ref_to_consensus(pos)
 
-            stats: EvaluatedStats = self.evaluated_sequence[Index0(cons_coord - 1)]
-            if stats is None:
-                Exception("Should have evaluated stats for consensus first")
-                # TODO: lazy evaluate stats if missing
+            maybe_stats: Optional[EvaluatedStats] = self.evaluated_sequence[
+                Index0(cons_coord - 1)
+            ]
+
+            stats: EvaluatedStats = maybe_stats if maybe_stats is not None else self.seq[
+                Index0(cons_coord - 1)
+            ].evaluate(
+                self.filters
+            )
 
             # inf_field = stats.info()
             vcf_filters = original_filters
@@ -438,6 +440,7 @@ class Pileup:
                 else:
                     vcf_filters = ";".join([original_filters, *vcf_filters])
 
+            info_field = ""  # TODO
             records.append(
                 (chrom, pos, mut_id, ref, alt, qual, vcf_filters, info_field, fmt, *r)
             )
