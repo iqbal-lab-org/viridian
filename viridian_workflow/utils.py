@@ -6,6 +6,7 @@ import json
 import logging
 from operator import itemgetter
 import os
+from pathlib import Path
 import subprocess
 import time
 
@@ -34,12 +35,13 @@ def revcomp(seq: str) -> str:
     return seq.translate(TRANSLATE_TABLE)[::-1]
 
 
-def check_file(fn):
-    if not os.path.isfile(fn):
-        raise OutputFileError(os.path.abspath(fn))
+def check_file(fn: Path) -> bool:
+    if not fn.exists():
+        raise OutputFileError(fn)
+    return True
 
 
-def in_range(interval: tuple[int, int], position: int) -> bool:
+def in_range(interval: tuple[Index0, Index0], position: Index0) -> bool:
     start, end = interval
     return position < end and position > start
 
