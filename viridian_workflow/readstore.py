@@ -7,21 +7,12 @@ from pathlib import Path
 import os
 import random
 
-from viridian_workflow import utils, self_qc
+from viridian_workflow import utils
 from viridian_workflow.primers import Amplicon, AmpliconSet, Primer
+from viridian_workflow.reads import Read, Fragment, PairedReads, SingleRead
 
 import pysam  # type: ignore
 import mappy as mp  # type: ignore
-
-# "seq" is the read sequence in the direction of the reference genome, ie what
-# you get in a BAM file.
-# We will enforce that  ref_start < ref_end, and qry_start < qry_end. Then we
-# can use is_reverse to resolve the direction of the read.
-# qry_end and ref_end one past the position, so slicing and subtracting
-# coords follow the python string convention.
-Read = namedtuple(
-    "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse"],
-)
 
 
 def score(
@@ -78,11 +69,11 @@ class Bam:
         infile_is_paired: Optional[bool] = None,
         template_length_threshold: int = 150,
     ):
-        self.infile_is_paired = infile_is_paired
+        self.infile_is_paired: Optional[bool] = infile_is_paired
         if not Path(bam).is_file():
             raise Exception(f"bam file {bam} does not exist")
-        self.bam = bam
-        self.template_length_threshold = template_length_threshold
+        self.bam: Path = bam
+        self.template_length_threshold: int = template_length_threshold
         self.stats: dict[str, Any] = {}
 
     @staticmethod
@@ -146,7 +137,7 @@ class Bam:
 
             if not read.is_paired:
                 self.stats["unpaired_reads"] += 1
-                single_read = SingleRead(Bam.read_from_pysam(read))
+                single_read: Fragment = SingleRead(Bam.read_from_pysam(read))
                 tlen = single_read.ref_end - single_read.ref_start
                 self.stats["template_lengths"][tlen] += 1
                 if tlen < self.template_length_threshold:
@@ -165,7 +156,7 @@ class Bam:
                 if read.query_name not in reads_by_name:
                     raise Exception("Bam file is not sorted by name")
                 read1 = reads_by_name[read.query_name]
-                paired_reads = PairedReads(read1, Bam.read_from_pysam(read))
+                paired_reads: Fragment = PairedReads(read1, Bam.read_from_pysam(read))
                 tlen = paired_reads.ref_end - paired_reads.ref_start
                 self.stats["template_lengths"][tlen] += 1
                 if tlen < self.template_length_threshold:
@@ -218,45 +209,9 @@ class Bam:
         return chosen_scheme
 
 
-class Fragment:
-    def __init__(self, reads: list[Read]):
-        """fragment ref bounds ignore softclipping
-        """
-        self.ref_start = None
-        self.ref_end = None
-        self.reads = reads
-        self.strand = None
-
-    def total_mapped_bases(self) -> int:
-        return sum([r.qry_end - r.qry_start for r in self.reads])
-
-
-class PairedReads(Fragment):
-    def __init__(self, read1, read2):
-        super().__init__([read1, read2])
-        (self.ref_start, self.ref_end) = (
-            (read1.ref_start, read2.ref_end)
-            if read1.ref_start < read2.ref_start
-            else (read2.ref_start, read1.ref_end)
-        )
-        if read1.is_reverse and not read2.is_reverse:
-            self.strand = False
-        elif not read1.is_reverse and read2.is_reverse:
-            self.strand = True
-        else:
-            raise Exception(f"Read pair is in invalid orientation F1F2/R1R2")
-
-
-class SingleRead(Fragment):
-    def __init__(self, read):
-        super().__init__([read])
-        self.ref_start, self.ref_end = read.ref_start, read.ref_end
-        self.strand = not read.is_reverse
-
-
 class ReadStore:
     def __init__(self, amplicon_set: AmpliconSet, bam: Bam, target_depth: int = 1000):
-        self.amplicons: defaultdict[Amplicon, list[Read]] = defaultdict(list)
+        self.amplicons: defaultdict[Amplicon, list[Fragment]] = defaultdict(list)
         self.reads_per_amplicon: defaultdict[Amplicon, int] = defaultdict(int)
         self.amplicon_set: AmpliconSet = amplicon_set
         self.reads_all_paired: Optional[bool] = bam.infile_is_paired
@@ -276,7 +231,7 @@ class ReadStore:
         self.amplicon_stats: dict[Amplicon, dict[bool, int]] = {}
 
         self.summary = {}
-        self.cylon_json = {
+        self.cylon_json: dict[str, Any] = {
             "name": amplicon_set.name,
             "source": amplicon_set.fn,
             "amplicons": {},
@@ -311,9 +266,6 @@ class ReadStore:
             if amplicon.end > self.end_pos:
                 self.end_pos = amplicon.end
 
-            left_start, left_end = amplicon.left_primer_region
-            right_start, right_end = amplicon.right_primer_region
-
         for fragment in bam.syncronise_fragments():
             self.count_fragment(fragment)
 
@@ -333,6 +285,13 @@ class ReadStore:
                     end=self.end_pos,
                 )
             # default to the inner-most primer coords if an extrema isn't found
+            if (
+                amplicon.left_primer_region is None
+                or amplicon.right_primer_region is None
+            ):
+                raise Exception(
+                    "Attempted to test primer regions before initialising amplicon"
+                )
             p1_start = (
                 amplicon.left_primer_region[0] if p1_min is None else p1_min.ref_start
             )
@@ -383,22 +342,22 @@ class ReadStore:
         return p1, p2
 
     def __eq__(self, other):
-        pass
+        raise NotImplementedError
 
     def __str__(self):
-        pass
+        raise NotImplementedError
 
     def __iter__(self):
-        pass
+        raise NotImplementedError
 
-    def __getitem__(self, amplicon):
+    def __getitem__(self, amplicon: Amplicon) -> list[Fragment]:
         """Given an amplicon, returns list of Fragments"""
         return self.amplicons[amplicon]
 
     def fetch(self, start=0, end=None):
-        pass
+        raise NotImplementedError
 
-    def count_fragment(self, fragment):
+    def count_fragment(self, fragment: Fragment):
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             self.unmatched_reads += 1
@@ -411,9 +370,9 @@ class ReadStore:
         ] += fragment.total_mapped_bases()
         self.summary[amplicon.name]["total_depth"] += 1
 
-    def push_fragment(self, fragment):
-        amplicon = self.amplicon_set.match(fragment)
-        if not amplicon:
+    def push_fragment(self, fragment: Fragment):
+        amplicon: Optional[Amplicon] = self.amplicon_set.match(fragment)
+        if amplicon is None:
             return
 
         frags = self.reads_per_amplicon[amplicon]
@@ -440,92 +399,10 @@ class ReadStore:
             for fragment in self.amplicons[amplicon]:
                 self.amplicon_stats[amplicon][fragment.strand] += 1
 
-            # print(
-            #    f"amplicon strand bias:\t{amplicon.name}\t{self.amplicon_stats[amplicon][False]}/{self.amplicon_stats[amplicon][True]}",
-            #    file=sys.stderr,
-            # )
-
-    def pileup(self, fasta, msa=None, minimap_presets=None, min_frs=0.7, min_depth=50):
-        """remap reads to consensus
-        """
-
-        cons = mp.Aligner(str(fasta), preset=minimap_presets, n_threads=1)
-        if len(cons.seq_names) != 1:
-            Exception(f"Consensus fasta {fasta} has more than one sequence")
-        consensus_seq = cons.seq(cons.seq_names[0])
-
-        qc_config = self_qc.Config(min_frs=min_frs, min_depth=min_depth)
-        pileup = self_qc.Pileup(consensus_seq, msa=msa, config=qc_config)
-        conspos_oob = 0  # consensus positions out-of-bounds
-        for amplicon in self.amplicons:
-            fragments = (
-                self.amplicons[amplicon]
-                if len(self.amplicons[amplicon]) >= self.target_depth
-                else self.amplicons[amplicon]
-            )
-            for fragment in fragments:
-                for read in fragment.reads:
-                    a = cons.map(read.seq)  # remap to consensus
-                    alignment = None
-                    for x in a:
-                        # test that the re-alignment is still within the
-                        # original amplicon call
-                        if (
-                            pileup.consensus_to_ref(x.r_st) is None
-                            or pileup.consensus_to_ref(x.r_en) is None
-                        ):
-                            continue
-                        if (
-                            x.is_primary
-                            and pileup.consensus_to_ref(x.r_st) > (amplicon.start - 10)
-                            and pileup.consensus_to_ref(x.r_en) < (amplicon.end + 10)
-                        ):
-                            alignment = x
-
-                    if not alignment:
-                        continue
-
-                    assert alignment.q_en > alignment.q_st
-                    assert alignment.r_en > alignment.r_st
-
-                    aln = self_qc.parse_cigar(consensus_seq, read.seq, alignment)
-
-                    # testing for indel conditions:
-                    # ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
-                    # c = consensus_seq[alignment.r_st : alignment.r_en]
-
-                    # TODO: this is now made redundant. We could store the results
-                    # of match_primers from push_fragments
-                    primers = amplicon.match_primers(fragment)
-
-                    for consensus_pos, call in self_qc.parse_cigar(
-                        consensus_seq, read.seq, alignment
-                    ):
-                        if consensus_pos >= len(pileup):
-                            # print(f"consensus pos out of bounds: {consensus_pos}/{len(pileup)}", file=sys.stderr)
-                            conspos_oob += 1
-                            continue
-
-                        in_primer = False
-                        for primer in primers:
-                            # primers can be None
-                            if primer and utils.in_range(
-                                (primer.ref_start, primer.ref_end),
-                                # consensus_to_ref is 1-indexed!!
-                                pileup.consensus_to_ref(consensus_pos + 1),
-                            ):
-                                in_primer = True
-                                break
-
-                        profile = self_qc.BaseProfile(
-                            call, in_primer, read.is_reverse, amplicon,
-                        )
-                        pileup[consensus_pos].update(profile)
-        print(f"consensus positions out of bounds: {conspos_oob}", file=sys.stderr)
-        return pileup
-
-    def reads_to_fastas(self, amplicon, outfile, target_bases):
-        bases_out = 0
+    def reads_to_fastas(
+        self, amplicon: Amplicon, outfile: Path, target_bases: int
+    ) -> int:
+        bases_out: int = 0
         with open(outfile, "w") as f:
             for i, fragment in enumerate(self[amplicon]):
                 for j, read in enumerate(fragment.reads):
