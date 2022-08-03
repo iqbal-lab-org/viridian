@@ -20,6 +20,8 @@ export LANG=C.UTF-8
     /viridian_workflow/install_dependencies.sh /bioinf-tools
     pip3 install tox
     pip3 install mypy
+    pip3 install types-setuptools
+    pip3 install types-dataclasses
     cd /viridian_workflow
     mypy --python-version 3.10 viridian_workflow
     tox

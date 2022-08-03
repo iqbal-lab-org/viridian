@@ -145,15 +145,17 @@ def test_stat_evaluation():
 def test_pileup_msa_mapping():
     ref = "ACTGACTATCGATCGATCGATCAG"
     msa = Path(data_dir) / "ref_first.msa"
-    pileup = self_qc.Pileup(ref, msa)
+    pileup = self_qc.Pileup("/dev/null", rs, msa=msa, seq=ref)
+
+    # ensure parse_msa doesn't throw error
+    _, _ = self_qc.parse_msa(msa)
 
     # in this example the consensus sequence is in the first line
     bad_msa = Path(data_dir) / "cons_first.msa"
-    try:
-        bad_pileup = self_qc.Pileup(ref, bad_msa)
-    except AssertionError:
-        # an assertion should be thrown if ref != the first msa record
-        pass
+
+    with open(bad_msa) as fd:
+        line1 = fd.readline().strip()
+        assert line1 == ref
 
 
 def test_ref_cons_position_translation():
@@ -167,18 +169,18 @@ def test_ref_cons_position_translation():
                   0     6
     """
     msa = Path(data_dir) / "ref_first.msa"
-    pileup = self_qc.Pileup(ref, msa)
+    ref_to_consensus, consensus_to_ref = self_qc.parse_msa(msa)
 
-    assert pileup.ref_to_consensus(1) == 0  # None
-    assert pileup.ref_to_consensus(7) == 4
-    assert pileup.consensus_to_ref(4) == 7
-    assert pileup.ref_to_consensus(13) == 10
-    assert pileup.ref_to_consensus(8) == 7
-    assert pileup.consensus_to_ref(7) == 8
-    assert pileup.consensus_to_ref(10) == 13
-    assert pileup.ref_to_consensus(24) == 16
-    assert pileup.consensus_to_ref(16) == 19
-    assert pileup.ref_to_consensus(8) == 7
+    assert ref_to_consensus[1] == 0  # None
+    assert ref_to_consensus[7] == 4
+    assert consensus_to_ref[4] == 7
+    assert ref_to_consensus[13] == 10
+    assert ref_to_consensus[8] == 7
+    assert consensus_to_ref[7] == 8
+    assert consensus_to_ref[10] == 13
+    assert ref_to_consensus[24] == 16
+    assert consensus_to_ref[16] == 19
+    assert ref_to_consensus[8] == 7
 
 
 def test_position_table_cons_shorter():
@@ -192,18 +194,18 @@ def test_position_table_cons_shorter():
     """
     ref = "GACTGCAGCGCCCTTCGCACG"
     msa = Path(data_dir) / "cons_shorter.msa"
-    pileup = self_qc.Pileup(ref, msa)
+    ref_to_consensus, consensus_to_ref = self_qc.parse_msa(msa)
 
-    assert pileup.ref_to_consensus(1) == 0  # None
-    assert pileup.ref_to_consensus(3) == 0  # None
+    assert ref_to_consensus[1] == 0  # None
+    assert ref_to_consensus[3] == 0  # None
 
-    assert pileup.ref_to_consensus(5) == 1
-    assert pileup.consensus_to_ref(1) == 5
+    assert ref_to_consensus[5] == 1
+    assert consensus_to_ref[1] == 5
 
-    assert pileup.ref_to_consensus(10) == 4
-    assert pileup.consensus_to_ref(4) == 10
-    assert pileup.ref_to_consensus(15) == 11
-    assert pileup.consensus_to_ref(11) == 15
+    assert ref_to_consensus[10] == 4
+    assert consensus_to_ref[4] == 10
+    assert ref_to_consensus[15] == 11
+    assert consensus_to_ref[11] == 15
 
 
 def test_position_table_ref_shorter():
@@ -220,13 +222,12 @@ def test_position_table_ref_shorter():
     ref = "ACTATCGATCGATT"
     # ref_alignment = "----ACT--ATCGATCGATT---"
     msa = Path(data_dir) / "ref_shorter.msa"
+    ref_to_consensus, consensus_to_ref = self_qc.parse_msa(msa)
 
-    pileup = self_qc.Pileup(ref, msa)
-
-    assert pileup.consensus_to_ref(10) == 4
-    assert pileup.ref_to_consensus(4) == 10
-    assert pileup.consensus_to_ref(15) == 11
-    assert pileup.ref_to_consensus(11) == 15
+    assert consensus_to_ref[10] == 4
+    assert ref_to_consensus[4] == 10
+    assert consensus_to_ref[15] == 11
+    assert ref_to_consensus[11] == 15
 
 
 def test_pileup_masking():
@@ -238,9 +239,7 @@ def test_pileup_masking():
     # ref_alignment = "ACTGACT--ATCGATCGATCGATCAG"
     msa = Path(data_dir) / "ref_first.msa"
 
-    pileup = self_qc.Pileup(ref, msa)
-
-    masked_all_failed = pileup.mask()
+    masked_all_failed = self_qc.Pileup._mask()
     assert masked_all_failed == "".join(["N" for _ in ref])
 
     for p, base in enumerate(ref):
@@ -249,8 +248,7 @@ def test_pileup_masking():
         )
         for i in range(0, 50):
             pileup[p].update(profile)
-    masked = pileup.mask()
-    print(pileup.qc)
+    masked = self_qc.Pileup._mask()
     assert masked == ref
 
 

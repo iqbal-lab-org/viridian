@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 import shutil
 from pathlib import Path
@@ -5,7 +7,7 @@ from pathlib import Path
 # import tempfile
 import json
 
-from viridian_workflow import primers, readstore
+from viridian_workflow import primers, readstore, self_qc
 from viridian_workflow.subtasks import Cylon, Minimap, Varifier
 
 
@@ -94,9 +96,9 @@ def run_pipeline(
     vcf, msa, varifier_consensus = varifier.run()
     log["varifier"] = varifier.log
 
-    pileup = rs.pileup(
-        varifier_consensus, msa=msa, min_frs=frs_threshold, min_depth=self_qc_depth
-    )  # multiple_amplicon_support=rs.multiple_amplicon_support)
+    pileup = self_qc.Pileup(
+        varifier_consensus, rs, msa=msa, min_frs=frs_threshold, min_depth=self_qc_depth
+    )
 
     # mask output
     masked_fasta = pileup.mask()

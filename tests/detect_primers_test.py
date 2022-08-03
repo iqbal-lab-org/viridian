@@ -9,7 +9,8 @@ import pyfastaq
 
 from viridian_workflow import primers, readstore
 from viridian_workflow.subtasks import Minimap
-from viridian_workflow.readstore import PairedReads, SingleRead, Bam
+from viridian_workflow.readstore import Bam
+from viridian_workflow.reads import PairedReads, SingleRead
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "detect_primers")
