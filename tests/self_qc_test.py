@@ -145,7 +145,6 @@ def test_stat_evaluation():
 def test_pileup_msa_mapping():
     ref = "ACTGACTATCGATCGATCGATCAG"
     msa = Path(data_dir) / "ref_first.msa"
-    pileup = self_qc.Pileup("/dev/null", rs, msa=msa, seq=ref)
 
     # ensure parse_msa doesn't throw error
     _, _ = self_qc.parse_msa(msa)
@@ -153,9 +152,14 @@ def test_pileup_msa_mapping():
     # in this example the consensus sequence is in the first line
     bad_msa = Path(data_dir) / "cons_first.msa"
 
-    with open(bad_msa) as fd:
+    with open(msa) as fd:
         line1 = fd.readline().strip()
-        assert line1 == ref
+        assert line1.replace("-", "") == ref
+
+    with open(bad_msa) as fd:
+        _ = fd.readline().strip()
+        line2 = fd.readline().strip()
+        assert line2.replace("-", "") == ref
 
 
 def test_ref_cons_position_translation():
@@ -239,7 +243,9 @@ def test_pileup_masking():
     # ref_alignment = "ACTGACT--ATCGATCGATCGATCAG"
     msa = Path(data_dir) / "ref_first.msa"
 
-    masked_all_failed = self_qc.Pileup._mask()
+    stats_seq = [Stats() for _ in len(range(ref))]
+
+    masked_all_failed = self_qc.Pileup._mask(ref, stats_seq)
     assert masked_all_failed == "".join(["N" for _ in ref])
 
     for p, base in enumerate(ref):

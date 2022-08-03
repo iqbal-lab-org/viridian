@@ -97,7 +97,10 @@ def run_pipeline(
     log["varifier"] = varifier.log
 
     pileup = self_qc.Pileup(
-        varifier_consensus, rs, msa=msa, min_frs=frs_threshold, min_depth=self_qc_depth
+        varifier_consensus,
+        rs,
+        msa=msa,
+        config=self_qc.Config(frs_threshold, self_qc_depth),
     )
 
     # mask output

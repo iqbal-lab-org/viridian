@@ -174,41 +174,37 @@ class Stats:
             else:
                 self.basecounts[profile.amplicon].refs = (f_calls, r_calls + 1)
 
-    def total(self) -> int:
-        total = 0
-        for bc in self.basecounts.values():
-            total += bc.alts[0] + bc.alts[1] + bc.refs[0] + bc.refs[1]
-        return total
-
     def evaluate(self, filters: dict[str, tuple[Filter, FilterMsg]]) -> EvaluatedStats:
         """Evaluate the accumulated positon stats
         """
-        total = 0
-        refs = 0
-        alts = 0
-        calls_by_amplicon: dict[Amplicon, tuple[int, int]] = {}
-        refs_in_primer = 0
-        alts_in_primer = 0
-
-        primer_bases_considered = 0
+        self.total: int = 0
+        self.refs: int = 0
+        self.alts: int = 0
+        self.refs_in_primer: int = 0
+        self.alts_in_primer: int = 0
+        self.total_reads: int = 0
 
         # if more than one amplicon covers this position
         # we can decide to discount primer-base calls
-        consider_primers = len(self.basecounts.keys()) > 1
+        consider_primers: bool = len(self.basecounts.keys()) > 1
+        self.primer_bases_considered: int = 0
 
+        calls_by_amplicon: dict[Amplicon, tuple[int, int]] = {}
         for amplicon, bc in self.basecounts.items():
             if bc.in_primer:
-                refs_in_primer += bc.refs[0] + bc.refs[1]
-                alts_in_primer += bc.alts[0] + bc.alts[1]
+                self.refs_in_primer += bc.refs[0] + bc.refs[1]
+                self.alts_in_primer += bc.alts[0] + bc.alts[1]
 
                 if consider_primers:
-                    primer_bases_considered += refs_in_primer + alts_in_primer
+                    self.primer_bases_considered += (
+                        self.refs_in_primer + self.alts_in_primer
+                    )
                 else:
                     continue
 
-            refs += bc.refs[0] + bc.refs[1]
-            alts += bc.alts[0] + bc.alts[1]
-            total += refs + alts
+            self.refs += bc.refs[0] + bc.refs[1]
+            self.alts += bc.alts[0] + bc.alts[1]
+            self.total += self.refs + self.alts
             calls_by_amplicon[amplicon] = (
                 bc.refs[0] + bc.refs[1],
                 bc.alts[0] + bc.alts[1],
@@ -226,13 +222,13 @@ class Stats:
         return EvaluatedStats(
             self.base,
             self.aux_reference_pos,
-            (refs, alts),
-            self.total(),
+            (self.refs, self.alts),
+            self.total_reads,
             calls_by_amplicon,
             position_failed,
             failures,
-            (refs_in_primer, alts_in_primer),
-            primer_bases_considered,
+            (self.refs_in_primer, self.alts_in_primer),
+            self.primer_bases_considered,
             self.alt_bases,
         )
 
@@ -340,7 +336,7 @@ class Pileup:
 
         # remap readstore to consensus sequence
 
-        aligner = mp.Aligner(consensus_fasta, preset=minimap_presets, n_threads=1)
+        aligner = mp.Aligner(str(consensus_fasta), preset=minimap_presets, n_threads=1)
         if seq is None:
             if len(aligner.seq_names) != 1:
                 Exception(
@@ -370,7 +366,7 @@ class Pileup:
                 Stats(Index0(self.consensus_to_ref(p) - 1), base,)
             )
 
-        self.filters = {
+        self.filters: dict[str, tuple[Filter, FilterMsg]] = {
             "low_depth": (
                 lambda s: s.total < self.config.min_depth,
                 lambda s: f"Insufficient depth; {s.total} < {self.config.min_depth}. {s.total_reads} including primer regions.",
@@ -485,12 +481,12 @@ class Pileup:
     @staticmethod
     def _mask(
         consensus_seq: str, stats_seq: list[EvaluatedStats]
-    ) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    ) -> tuple[str, dict[str, Any], defaultdict[str, Any]]:
         """Evaluate all positions and determine if they pass filters
         """
         sequence: list[str] = list(consensus_seq)
         qc: dict[str, Any] = {}
-        summary: dict[str, Any] = {}
+        summary: defaultdict[str, int] = defaultdict(int)
 
         log: list[str] = []
         failures: list[str] = []
