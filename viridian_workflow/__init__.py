@@ -12,6 +12,7 @@ __all__ = [
     "readstore",
     "tasks",
     "utils",
+    "reads",
 ]
 
 from viridian_workflow import *

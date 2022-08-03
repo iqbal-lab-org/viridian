@@ -1,35 +1,36 @@
 from __future__ import annotations
 
+from typing import Optional
 import csv
+from pathlib import Path
+from dataclasses import dataclass
 from collections import namedtuple
 from intervaltree import IntervalTree  # type: ignore
 from viridian_workflow.utils import Index0, Index1, in_range
+from viridian_workflow.reads import Fragment
 
-Primer = namedtuple(
-    "Primer", ["name", "seq", "left", "forward", "ref_start", "ref_end"]
-)
 
-# @dataclass
-# class Primer:
-#    name: str
-#    seq: str
-#    left: bool
-#    forward: bool
-#    ref_start: Index0
-#    ref_end: Index0
+@dataclass(frozen=True)
+class Primer:
+    name: str
+    seq: str
+    left: bool
+    forward: bool
+    ref_start: Index0
+    ref_end: Index0
 
 
 class Amplicon:
-    def __init__(self, name, shortname=0):
-        self.shortname = shortname
-        self.name = name
-        self.start = None
-        self.end = None
-        self.left = []
-        self.right = []
-        self.left_primer_region = None
-        self.right_primer_region = None
-        self.max_length = 0
+    def __init__(self, name: str, shortname: int = 0):
+        self.shortname: int = shortname
+        self.name: str = name
+        self.start: Index0
+        self.end: Index0
+        self.left: list[Primer] = []
+        self.right: list[Primer] = []
+        self.left_primer_region: Optional[tuple[Index0, Index0]] = None
+        self.right_primer_region: Optional[tuple[Index0, Index0]] = None
+        self.max_length: int = 0
 
     def __eq__(self, other):
         return type(other) is type(self) and self.__dict__ == other.__dict__
@@ -48,16 +49,19 @@ class Amplicon:
         of rightmost primer)"""
         return self.end - self.start
 
-    def position_in_primers(self, position):
+    def position_in_primer(self, position: Index0) -> bool:
         """Test whether a reference position falls inside any of the primers
         associated with this amplicon
         """
 
-        return in_range(self.left_primer_region, position) or in_range(
-            self.right_primer_region, position
-        )
+        for primer in self.left + self.right:
+            if in_range((primer.ref_start, primer.ref_end), position):
+                return True
+        return False
 
-    def match_primers(self, fragment, primer_match_threshold=5):
+    def match_primers(
+        self, fragment: Fragment, primer_match_threshold: int = 5
+    ) -> tuple[Optional[Primer], Optional[Primer]]:
         """Attempt to match either end of a fragment against the amplicon's primers
         """
         p1, p2 = None, None
@@ -82,7 +86,7 @@ class Amplicon:
 
         return p1, p2
 
-    def add(self, primer):
+    def add(self, primer: Primer):
         if len(primer.seq) > self.max_length:
             self.max_length = len(primer.seq)
 
@@ -113,7 +117,14 @@ class Amplicon:
 
 
 class AmpliconSet:
-    def __init__(self, name, amplicons, tolerance=5, shortname=None, fn=None):
+    def __init__(
+        self,
+        name: str,
+        amplicons: dict[str, Amplicon],
+        tolerance: int = 5,
+        shortname: str = None,
+        fn: Path = None,
+    ):
         """AmpliconSet supports various membership operations"""
         if not shortname:
             # base-54 hash
@@ -161,12 +172,12 @@ class AmpliconSet:
             yield amplicon
 
     @classmethod
-    def from_json(cls, fn, tolerance=5):
+    def from_json(cls, fn: Path, tolerance=5):
         raise NotImplementedError
 
     @classmethod
-    def from_tsv(cls, fn, name=None, **kwargs):
-        amplicons = {}
+    def from_tsv(cls, fn: Path, name=None, **kwargs):
+        amplicons: dict[str, Amplicon] = {}
         required_cols = {
             "Amplicon_name",
             "Primer_name",
@@ -177,9 +188,10 @@ class AmpliconSet:
         n = 0
         with open(fn) as f:
             reader = csv.DictReader(f, delimiter="\t")
-            missing_cols = required_cols.difference(set(reader.fieldnames))
-            if len(missing_cols) > 0:
-                missing_cols = ",".join(sorted(list(missing_cols)))
+            assert reader.fieldnames is not None
+            missing_cols_set = required_cols.difference(set(reader.fieldnames))
+            if len(missing_cols_set) > 0:
+                missing_cols: str = ",".join(sorted(list(missing_cols_set)))
                 raise Exception(
                     f"Amplicon scheme TSV missing these columns: {missing_cols}. Got these columns: {reader.fieldnames}"
                 )
@@ -200,20 +212,16 @@ class AmpliconSet:
                     d["Sequence"],
                     left,
                     forward,
-                    pos,
+                    Index0(pos),
                     # off-by-one hazard: end position is index of last pos
-                    pos + len(d["Sequence"]) - 1,
+                    Index0(pos + len(d["Sequence"]) - 1),
                 )
                 amplicons[d["Amplicon_name"]].add(primer)
 
         name = fn if not name else name
         return cls(name, amplicons, fn=fn, **kwargs)
 
-    def score(self, readstore):
-        for fragment in readstore:
-            self.match(fragment)
-
-    def match(self, fragment):
+    def match(self, fragment: Fragment) -> Optional[Amplicon]:
         """Identify a template's mapped interval based on the start and end
         positions
 
