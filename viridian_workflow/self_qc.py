@@ -9,7 +9,7 @@ from pathlib import Path
 
 import mappy as mp  # type: ignore
 
-from viridian_workflow.utils import Index0, Index1
+from viridian_workflow.utils import Index0, Index1, in_range
 from viridian_workflow.primers import Amplicon
 from viridian_workflow.readstore import ReadStore
 
@@ -83,16 +83,20 @@ class EvaluatedStats:
         """
         amplicon_totals = ",".join(
             [
-                f"{amplicon.name}:{str(self.calls_by_amplicon[amplicon][0])}/{str(self.calls_by_amplicon[amplicon][1])}"
+                f"{str(self.calls_by_amplicon[amplicon][0])}/{str(self.calls_by_amplicon[amplicon][1])}"
                 for amplicon in self.calls_by_amplicon
             ]
+        )
+        amplicon_names = ",".join(
+            [amplicon.name for amplicon in self.calls_by_amplicon]
         )
         info_fields = [
             f"primer={self.primer_bases_considered[0]}/{self.primer_bases_considered[1]}",
             f"total_primer_bases={self.primer_bases_total}",
-            f"total{self.total}",
+            f"total={self.total}",
             f"amplicon_overlap={len(self.calls_by_amplicon)}",
             f"amplicon_totals={amplicon_totals}",
+            f"amplicon_names={amplicon_names}",
         ]
         return ";".join(info_fields)
 
@@ -118,6 +122,7 @@ class EvaluatedStats:
                     self.primer_bases_total,
                     len(self.calls_by_amplicon),
                     amplicon_totals,
+                    ":".join(map(str, self.calls_by_amplicon.keys())),
                 ],
             )
         )
@@ -386,17 +391,16 @@ class Pileup:
 
         for amplicon, fragments in readstore.amplicons.items():
             for fragment in fragments:
+                l_primer, r_primer = amplicon.match_primers(fragment)
+                primers = [
+                    primer for primer in [l_primer, r_primer] if primer is not None
+                ]
                 for read in fragment.reads:
                     alns = aligner.map(read.seq)  # remap to consensus
                     alignment = None
                     for x in alns:
                         # test that the re-alignment is still within the
                         # original amplicon call
-                        # if (
-                        #    self.consensus_to_ref(Index1(x.r_st + 1)) is None
-                        #    or self.consensus_to_ref(Index1(x.r_en + 1)) is None
-                        # ):
-                        #    continue
                         if (
                             x.is_primary  # this is always true with mappy
                             and Index0(self.consensus_to_ref(Index1(x.r_st + 1)) - 1)
@@ -420,10 +424,6 @@ class Pileup:
                     # ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
                     # c = consensus_seq[alignment.r_st : alignment.r_en]
 
-                    # TODO: this is now made redundant. We could store the results
-                    # of match_primers from push_fragments
-                    primers = amplicon.match_primers(fragment)
-
                     for consensus_pos, call in aln:
                         reference_pos = Index0(
                             self.consensus_to_ref(Index1(consensus_pos + 1)) - 1
@@ -434,11 +434,19 @@ class Pileup:
                                 file=sys.stderr,
                             )
                             continue
+
                         reference_pos = Index0(
                             self.consensus_to_ref(Index1(consensus_pos + 1)) - 1
                         )
 
-                        in_primer = amplicon.position_in_primer(reference_pos)
+                        in_primer = any(
+                            [
+                                in_range(
+                                    (primer.ref_start, primer.ref_end), reference_pos
+                                )
+                                for primer in primers
+                            ]
+                        )
 
                         profile = BaseProfile(
                             call, in_primer, read.is_reverse, amplicon,
@@ -520,8 +528,8 @@ class Pileup:
     def dump_tsv(self, tsv: Path) -> Path:
         fd = open(tsv, "w")
         for pos, stats in enumerate(self.seq):
-            cons_pos = self.consensus_to_ref(Index1(pos + 1))
-            print(f"{cons_pos}\t{stats.aux_reference_pos}\t{stats.tsv_row()}", file=fd)
+            ref_pos = self.consensus_to_ref(Index1(pos + 1))
+            print(f"{ref_pos}\t{stats.aux_reference_pos}\t{stats.tsv_row()}", file=fd)
         return tsv
 
     def annotate_vcf(self, vcf: Path) -> tuple[list[str], Any]:
