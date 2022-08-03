@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import pytest
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 from intervaltree import Interval
 from viridian_workflow import self_qc, primers
@@ -236,25 +236,26 @@ def test_position_table_ref_shorter():
 
 def test_pileup_masking():
 
-    fail = StatsTest(True)
-    succeed = StatsTest(False)
-
     ref = "ACTGACTATCGATCGATCGATCAG"
-    # ref_alignment = "ACTGACT--ATCGATCGATCGATCAG"
-    msa = Path(data_dir) / "ref_first.msa"
 
-    stats_seq = [Stats() for _ in len(range(ref))]
+    failed_stats = [
+        self_qc.EvaluatedStats(
+            base, i, (0, 0), 0, {}, True, {}, (0, 0), 0, defaultdict(int)
+        )
+        for (i, base) in enumerate(ref)
+    ]
 
-    masked_all_failed = self_qc.Pileup._mask(ref, stats_seq)
+    masked_all_failed, _, _ = self_qc.Pileup._mask(ref, failed_stats)
     assert masked_all_failed == "".join(["N" for _ in ref])
 
-    for p, base in enumerate(ref):
-        profile = self_qc.BaseProfile(
-            base=base, in_primer=False, forward_strand=True, amplicon=None
+    success_stats = [
+        self_qc.EvaluatedStats(
+            base, i, (0, 0), 0, {}, False, {}, (0, 0), 0, defaultdict(int)
         )
-        for i in range(0, 50):
-            pileup[p].update(profile)
-    masked = self_qc.Pileup._mask()
+        for (i, base) in enumerate(ref)
+    ]
+
+    masked, _, _ = self_qc.Pileup._mask(ref, success_stats)
     assert masked == ref
 
 
