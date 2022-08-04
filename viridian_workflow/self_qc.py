@@ -35,48 +35,65 @@ class BaseProfile:
     amplicon: Amplicon
 
 
-@dataclass
-class BaseCounts:
-    """Per-amplicon base counts, populated while the pileup is built
-    """
-
-    refs: tuple[int, int]  # matching base calls in forward/reverse reads
-    alts: tuple[int, int]
-    in_primer: bool
-
-
 class EvaluatedStats:
     """Per-position base counts, evaluated after the pileup is built
     """
 
-    def __init__(
-        self,
-        base: str,
-        aux_reference_pos: Index0,
-        ref_alt_total: tuple[int, int],  # refs, alts
-        total_reads: int,
-        # (ref, alt) calls by amplicon
-        calls_by_amplicon: dict[Amplicon, tuple[int, int]],
-        position_failed: bool,
-        failures: dict[str, str],
-        primer_bases_considered: tuple[int, int],
-        primer_bases_total: int,
-        alt_bases: defaultdict[str, int],
-    ):
-        self.base = base
-        self.total = (
-            ref_alt_total[0] + ref_alt_total[1]
-        )  # number of base calls considered
-        self.total_reads = total_reads  # total bases covering this position
-        self.refs: int = ref_alt_total[0]
-        self.alts: int = ref_alt_total[1]
-        self.calls_by_amplicon: dict[Amplicon, tuple[int, int]] = calls_by_amplicon
-        self.position_failed: bool = position_failed
-        self.failures: dict[str, str] = failures
-        self.primer_bases_considered: tuple[int, int] = primer_bases_considered
-        self.primer_bases_total: int = primer_bases_total
-        self.alt_bases: dict[str, int] = alt_bases
-        self.aux_reference_pos: Index0 = aux_reference_pos
+    def __init__(self, stats):
+        self.base: str = stats.base
+        self.aux_reference_pos: Index0 = stats.aux_reference_pos
+
+        self.depth: int = 0
+        self.total: tuple[int, int] = (0, 0)
+        self.primer_calls: tuple[int, int] = (0, 0)
+        self.primer_calls_ignored: tuple[int, int] = (0, 0)
+        self.calls_by_amplicon: dict[Amplicon, tuple[int, int]] = {}
+        self.multiple_amplicon_support = len(stats.baseprofiles) > 1
+
+        self.alt_bases: defaultdict[str, int] = defaultdict(int)
+
+        for amplicon, profiles in stats.baseprofiles.items():
+            for profile in profiles:
+                is_ref = profile.base == self.base
+                self.depth += 1
+                self.alt_bases[profile.base] += 1
+
+                if profile.in_primer:
+                    if is_ref:
+                        self.primer_calls[0] += 1
+                        if self.multiple_amplicon_support:
+                            self.primer_calls_ignored[0] += 1
+                        else:
+                            self.total[0] += 1
+                            self.calls_by_amplicon[amplicon][0] += 1
+
+                    else:
+                        self.primer_calls[1] += 1
+                        if self.multiple_amplicon_support:
+                            self.primer_calls_ignored[1] += 1
+                        else:
+                            self.total[1] += 1
+                            self.calls_by_amplicon[amplicon][1] += 1
+                else:
+                    if is_ref:
+                        self.total[0] += 1
+                        self.calls_by_amplicon[amplicon][0] += 1
+                    else:
+                        self.total[1] += 1
+                        self.calls_by_amplicon[amplicon][1] += 1
+
+    def evaluate(
+        self, filters: dict[str, tuple[Filter, FilterMsg]]
+    ) -> tuple[bool, dict[str, str]]:
+        """Returns True if any filter fails
+        """
+        failures: dict[str, str]
+        fail = False
+        for filter_name, (f, msg) in filters.items():
+            if f(self):
+                fail = True
+                failures[filter_name] = msg(self)
+        return fail, failures
 
     def info(self) -> str:
         """Output position stats as VCF INFO field
@@ -91,10 +108,11 @@ class EvaluatedStats:
             [amplicon.name for amplicon in self.calls_by_amplicon]
         )
         info_fields = [
-            f"primer={self.primer_bases_considered[0]}/{self.primer_bases_considered[1]}",
-            f"total_primer_bases={self.primer_bases_total}",
-            f"total={self.total}",
-            f"amplicon_overlap={len(self.calls_by_amplicon)}",
+            f"primer_calls_ignored={self.primer_calls_ignored[0]}/{self.primer_calls_ignored[1]}",
+            f"total_primer_bases={self.primer_calls[0]}/{self.primer_calls[1]}",
+            f"unfiltered_depth={self.depth}",
+            f"total={self.total[0]}/{self.total[1]}",
+            f"amplicon_overlap={len(self.calls_by_amplicon.keys())}",
             f"amplicon_totals={amplicon_totals}",
             f"amplicon_names={amplicon_names}",
         ]
@@ -114,15 +132,16 @@ class EvaluatedStats:
                 [
                     self.aux_reference_pos,
                     self.base,
-                    alts,
-                    self.refs,
-                    self.alts,
-                    self.primer_bases_considered[0],
-                    self.primer_bases_considered[1],
-                    self.primer_bases_total,
+                    self.total[0],
+                    self.total[1],
+                    self.depth,
+                    self.primer_calls_ignored[0],
+                    self.primer_calls_ignored[1],
+                    self.primer_calls[0],
+                    self.primer_calls[1],
                     len(self.calls_by_amplicon),
-                    amplicon_totals,
-                    ":".join(map(str, self.calls_by_amplicon.keys())),
+                    alts,
+                    self.info(),
                 ],
             )
         )
@@ -131,7 +150,7 @@ class EvaluatedStats:
 
     def __str__(self) -> str:
         alts = " ".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])
-        return f"{self.base}:{self.refs};{alts}"
+        return f"{self.base}:{self.total[0]};{alts}"
 
 
 class Stats:
@@ -142,146 +161,21 @@ class Stats:
         config: Config = default_config,
     ):
 
-        self.basecounts: dict[Amplicon, BaseCounts] = {}
-
-        self.log: list[str] = []
-        self.failures: list[str] = []
+        self.baseprofiles: dict[Amplicon, list[BaseProfile]] = {}
 
         self.aux_reference_pos: Index0 = aux_reference_pos
-        self.base: str = base
-        self.config = config
-
-        self.alt_bases: defaultdict[str, int] = defaultdict(int)
+        self.base: str = base  # reference base
 
     def update(self, profile: BaseProfile):
         """Accumulate per-position base calling stats
         """
-        if profile.amplicon not in self.basecounts:
-            self.basecounts[profile.amplicon] = BaseCounts(
-                (0, 0), (0, 0), profile.in_primer
-            )
-
-        if profile.base != self.base:
-            # alt calls
-            f_calls, r_calls = self.basecounts[profile.amplicon].alts
-            if profile.forward_strand:
-                self.basecounts[profile.amplicon].alts = (f_calls + 1, r_calls)
-            else:
-                self.basecounts[profile.amplicon].alts = (f_calls, r_calls + 1)
-
-            self.alt_bases[profile.base] += 1
-
-        else:
-            # ref calls
-            f_calls, r_calls = self.basecounts[profile.amplicon].refs
-            if profile.forward_strand:
-                self.basecounts[profile.amplicon].refs = (f_calls + 1, r_calls)
-            else:
-                self.basecounts[profile.amplicon].refs = (f_calls, r_calls + 1)
-
-    def evaluate(self, filters: dict[str, tuple[Filter, FilterMsg]]) -> EvaluatedStats:
-        """Evaluate the accumulated positon stats
-        """
-        self.total: int = 0
-        self.refs: int = 0
-        self.alts: int = 0
-        self.refs_in_primer: int = 0
-        self.alts_in_primer: int = 0
-        self.total_reads: int = 0
-
-        # if more than one amplicon covers this position
-        # we can decide to discount primer-base calls
-        consider_primers: bool = len(self.basecounts.keys()) > 1
-        self.primer_bases_considered: int = 0
-
-        calls_by_amplicon: dict[Amplicon, tuple[int, int]] = {}
-        for amplicon, bc in self.basecounts.items():
-            if bc.in_primer:
-                self.refs_in_primer += bc.refs[0] + bc.refs[1]
-                self.alts_in_primer += bc.alts[0] + bc.alts[1]
-
-                if consider_primers:
-                    self.primer_bases_considered += (
-                        self.refs_in_primer + self.alts_in_primer
-                    )
-                else:
-                    continue
-
-            self.refs += bc.refs[0] + bc.refs[1]
-            self.alts += bc.alts[0] + bc.alts[1]
-            self.total += self.refs + self.alts
-            calls_by_amplicon[amplicon] = (
-                bc.refs[0] + bc.refs[1],
-                bc.alts[0] + bc.alts[1],
-            )
-
-        failures: dict[str, str] = {}
-        position_failed: bool = False
-
-        for filter_name, (filter_func, msg_format) in filters.items():
-            # if the filter fails
-            if filter_func(self):
-                failures[filter_name] = msg_format(self)
-                position_failed = True
-
-        return EvaluatedStats(
-            self.base,
-            self.aux_reference_pos,
-            (self.refs, self.alts),
-            self.total_reads,
-            calls_by_amplicon,
-            position_failed,
-            failures,
-            (self.refs_in_primer, self.alts_in_primer),
-            self.primer_bases_considered,
-            self.alt_bases,
-        )
+        if profile.amplicon not in self.baseprofiles:
+            self.baseprofiles[profile.amplicon] = []
+        self.baseprofiles[profile.amplicon].append(profile)
 
 
-Filter = Callable[[Stats], bool]
-FilterMsg = Callable[[Stats], str]
-
-
-# filter closures take a Stats struct and return True on failure
-# def test_amplicon_bias(s: Stats) -> bool:
-#    passing = []
-#
-#    for amplicon, (ref, alt) in s.calls_by_amplicon.items():
-#        total = ref + alt
-#        if total < config.min_depth:
-#            continue
-#        if s.amplicon_totals[amplicon] == 0:
-#            continue
-#        if (
-#            s.calls_by_amplicon[amplicon][0] / total
-#            < self.config.min_frs
-#        ):
-#            passing.append(False)
-#        else:
-#            passing.append(True)
-#    if len(passing) > 1 and not all(passing[0] == e for e in passing):
-#        # this is a failure
-#        return True
-#    return False
-
-# def test_strand_bias(s: EvaluatedStats) -> bool:
-#    passing = []
-#    for amplicon, total in s.amplicon_totals.items():
-#        if total < self.config.min_depth:
-#            continue
-#        if s.amplicon_totals[amplicon] == 0:
-#            continue
-#        if (
-#            s.refs_in_forward_strands[amplicon] / s.amplicon_totals[amplicon]
-#            < self.config.min_frs
-#        ):
-#            passing.append(False)
-#        else:
-#            passing.append(True)
-#    if len(passing) > 1 and not all(passing[0] == e for e in passing):
-#        # True = failure
-#        return True
-#    return False
+Filter = Callable[[EvaluatedStats], bool]
+FilterMsg = Callable[[EvaluatedStats], str]
 
 
 def parse_msa(msa: Path) -> tuple[dict[Index1, Index1], dict[Index1, Index1]]:
@@ -363,24 +257,22 @@ class Pileup:
         self._ref_to_consensus: dict[Index1, Index1] = rtoc
         self._consensus_to_ref: dict[Index1, Index1] = ctor
 
-        intermediate_sequence: list[Stats] = []
+        _pileup: list[Stats] = []
 
         for i, base in enumerate(self.consensus_seq):
             p = Index1(i + 1)
-            intermediate_sequence.append(
-                Stats(Index0(self.consensus_to_ref(p) - 1), base,)
-            )
+            _pileup.append(Stats(Index0(self.consensus_to_ref(p) - 1), base,))
 
         self.filters: dict[str, tuple[Filter, FilterMsg]] = {
             "low_depth": (
-                lambda s: s.total < self.config.min_depth,
-                lambda s: f"Insufficient depth; {s.total} < {self.config.min_depth}. {s.total_reads} including primer regions.",
+                lambda s: (s.total[0] + s.total[1]) < self.config.min_depth,
+                lambda s: f"Insufficient depth; {s.total[0] + s.total[1]} < {self.config.min_depth}. {s.depth} including primer regions.",
             ),
             "low_frs": (
-                lambda s: s.refs / s.total < self.config.min_frs
-                if s.total > 0
+                lambda s: s.total[0] / (s.total[0] + s.total[1]) < self.config.min_frs
+                if (s.total[0] + s.total[1]) > 0
                 else False,
-                lambda s: f"Insufficient support of consensus base; {s.refs} / {s.total} < {self.config.min_frs}. {s.total_reads} including primer regions.",
+                lambda s: f"Insufficient support of consensus base; {s.total[0]} / {s.total[0] + s.total[1]} < {self.config.min_frs}. {s.depth} including primer regions.",
             ),
         }
 
@@ -401,12 +293,9 @@ class Pileup:
                     for x in alns:
                         # test that the re-alignment is still within the
                         # original amplicon call
-                        if (
-                            x.is_primary  # this is always true with mappy
-                            and Index0(self.consensus_to_ref(Index1(x.r_st + 1)) - 1)
-                            > (amplicon.start - 10)
-                            and Index0(self.consensus_to_ref(Index1(x.r_en + 1)) - 1)
-                            < (amplicon.end + 10)
+                        if x.is_primary and in_range(  # this is always true with mappy
+                            (Index0(amplicon.start - 10), Index0(amplicon.end + 10)),
+                            Index0(self.consensus_to_ref(Index1(x.r_st + 1)) - 1),
                         ):
                             alignment = x
 
@@ -430,14 +319,10 @@ class Pileup:
                         )
                         if consensus_pos >= len(self.consensus_seq):
                             print(
-                                f"consensus pos out of bounds: {consensus_pos}/{len(self.consensus_seq)}",
+                                f"consensus pos out of bounds: {consensus_pos} >= {len(self.consensus_seq)}",
                                 file=sys.stderr,
                             )
                             continue
-
-                        reference_pos = Index0(
-                            self.consensus_to_ref(Index1(consensus_pos + 1)) - 1
-                        )
 
                         in_primer = any(
                             [
@@ -448,15 +333,14 @@ class Pileup:
                             ]
                         )
 
-                        profile = BaseProfile(
-                            call, in_primer, read.is_reverse, amplicon,
+                        _pileup[consensus_pos].update(
+                            BaseProfile(call, in_primer, read.is_reverse, amplicon,)
                         )
-                        intermediate_sequence[consensus_pos].update(profile)
 
         # Finalise the pileup object by evaluating bases
 
-        for stat in intermediate_sequence:
-            self.seq.append(stat.evaluate(self.filters))
+        for stat in _pileup:
+            self.seq.append(EvaluatedStats(stat))
 
     def ref_to_consensus(self, p: Index1) -> Index1:
         if p in self._ref_to_consensus:
@@ -480,7 +364,7 @@ class Pileup:
         return len(self.seq)
 
     def mask(self) -> str:
-        sequence, qc, summary = self._mask(self.consensus_seq, self.seq)
+        sequence, qc, summary = self._mask(self.consensus_seq, self.seq, self.filters)
         self.qc = qc
         for key, value in summary.items():
             self.summary[key] = value
@@ -488,7 +372,7 @@ class Pileup:
 
     @staticmethod
     def _mask(
-        consensus_seq: str, stats_seq: list[EvaluatedStats]
+        consensus_seq: str, stats_seq: list[EvaluatedStats], filters
     ) -> tuple[str, dict[str, Any], defaultdict[str, Any]]:
         """Evaluate all positions and determine if they pass filters
         """
@@ -496,8 +380,7 @@ class Pileup:
         qc: dict[str, Any] = {}
         summary: defaultdict[str, int] = defaultdict(int)
 
-        log: list[str] = []
-        failures: list[str] = []
+        failures: dict[str, str] = {}
 
         # filters: dict[str, tuple[Filter, FilterMsg]]
         for p, stats in enumerate(stats_seq):
@@ -506,7 +389,6 @@ class Pileup:
                     f"Invalid condition: mapped position {p} greater than consensus length {len(sequence)}"
                 )
             position = Index0(p)
-            position_failed = False
 
             # if a position is already masked by an upstream process skip it
             if sequence[position] == "N":
@@ -514,14 +396,17 @@ class Pileup:
                 summary["total_masked"] += 1
                 continue
 
+            position_failed, failures = stats.evaluate(filters)
+            assert sequence[position] == stats.base
+
             summary["consensus_length"] += 1
 
-            if stats.position_failed:
-                for failure in stats.failures:
+            if position_failed:
+                for failure in failures:
                     summary[failure] += 1
                 summary["total_masked"] += 1
                 sequence[position] = "N"
-                qc[str(position)] = stats.failures
+                qc[str(position)] = failures
             qc["masking_summary"] = summary
         return "".join(sequence), qc, summary
 
@@ -529,7 +414,7 @@ class Pileup:
         fd = open(tsv, "w")
         for pos, stats in enumerate(self.seq):
             ref_pos = self.consensus_to_ref(Index1(pos + 1))
-            print(f"{ref_pos}\t{stats.aux_reference_pos}\t{stats.tsv_row()}", file=fd)
+            print(f"{ref_pos}\t{pos}\t{stats.tsv_row()}", file=fd)
         return tsv
 
     def annotate_vcf(self, vcf: Path) -> tuple[list[str], Any]:
@@ -564,9 +449,10 @@ class Pileup:
             info_field = stats.info()
             vcf_filters = original_filters
 
-            if stats.position_failed:
+            position_failed, failures = stats.evaluate(self.filters)
+            if position_failed:
                 if original_filters == "PASS":
-                    vcf_filters = ";".join(stats.failures.keys())
+                    vcf_filters = ";".join(failures.keys())
                 else:
                     vcf_filters = ";".join([original_filters, *vcf_filters])
 
