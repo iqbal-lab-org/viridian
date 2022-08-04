@@ -238,24 +238,18 @@ def test_pileup_masking():
 
     ref = "ACTGACTATCGATCGATCGATCAG"
 
-    failed_stats = [
-        self_qc.EvaluatedStats(
-            base, i, (0, 0), 0, {}, True, {}, (0, 0), 0, defaultdict(int)
-        )
-        for (i, base) in enumerate(ref)
+    stats = [
+        self_qc.EvaluatedStats(self_qc.Stats(i, base)) for (i, base) in enumerate(ref)
     ]
 
-    masked_all_failed, _, _ = self_qc.Pileup._mask(ref, failed_stats)
+    failing_filters = {"easy_fail": (lambda x: x.total.refs >= 0, lambda _: "")}
+
+    masked_all_failed, _, _ = self_qc.Pileup._mask(ref, stats, failing_filters)
     assert masked_all_failed == "".join(["N" for _ in ref])
 
-    success_stats = [
-        self_qc.EvaluatedStats(
-            base, i, (0, 0), 0, {}, False, {}, (0, 0), 0, defaultdict(int)
-        )
-        for (i, base) in enumerate(ref)
-    ]
+    passing_filters = {"easy_pass": (lambda x: x.total.refs < 0, lambda _: "")}
 
-    masked, _, _ = self_qc.Pileup._mask(ref, success_stats)
+    masked, _, _ = self_qc.Pileup._mask(ref, stats, passing_filters)
     assert masked == ref
 
 

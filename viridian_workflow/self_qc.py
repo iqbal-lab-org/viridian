@@ -35,6 +35,12 @@ class BaseProfile:
     amplicon: Amplicon
 
 
+@dataclass
+class Calls:
+    refs: int
+    alts: int
+
+
 class EvaluatedStats:
     """Per-position base counts, evaluated after the pileup is built
     """
@@ -44,15 +50,17 @@ class EvaluatedStats:
         self.aux_reference_pos: Index0 = stats.aux_reference_pos
 
         self.depth: int = 0
-        self.total: tuple[int, int] = (0, 0)
-        self.primer_calls: tuple[int, int] = (0, 0)
-        self.primer_calls_ignored: tuple[int, int] = (0, 0)
-        self.calls_by_amplicon: dict[Amplicon, tuple[int, int]] = {}
+        self.total: Calls = Calls(0, 0)
+        self.primer_calls: Calls = Calls(0, 0)
+        self.primer_calls_ignored: Calls = Calls(0, 0)
+        self.calls_by_amplicon: dict[Amplicon, Calls] = {}
         self.multiple_amplicon_support = len(stats.baseprofiles) > 1
 
         self.alt_bases: defaultdict[str, int] = defaultdict(int)
 
         for amplicon, profiles in stats.baseprofiles.items():
+            if amplicon not in self.calls_by_amplicon:
+                self.calls_by_amplicon[amplicon] = Calls(0, 0)
             for profile in profiles:
                 is_ref = profile.base == self.base
                 self.depth += 1
@@ -60,34 +68,34 @@ class EvaluatedStats:
 
                 if profile.in_primer:
                     if is_ref:
-                        self.primer_calls[0] += 1
+                        self.primer_calls.refs += 1
                         if self.multiple_amplicon_support:
-                            self.primer_calls_ignored[0] += 1
+                            self.primer_calls_ignored.refs += 1
                         else:
-                            self.total[0] += 1
-                            self.calls_by_amplicon[amplicon][0] += 1
+                            self.total.refs += 1
+                            self.calls_by_amplicon[amplicon].refs += 1
 
                     else:
-                        self.primer_calls[1] += 1
+                        self.primer_calls.alts += 1
                         if self.multiple_amplicon_support:
-                            self.primer_calls_ignored[1] += 1
+                            self.primer_calls_ignored.alts += 1
                         else:
-                            self.total[1] += 1
-                            self.calls_by_amplicon[amplicon][1] += 1
+                            self.total.alts += 1
+                            self.calls_by_amplicon[amplicon].alts += 1
                 else:
                     if is_ref:
-                        self.total[0] += 1
-                        self.calls_by_amplicon[amplicon][0] += 1
+                        self.total.refs += 1
+                        self.calls_by_amplicon[amplicon].refs += 1
                     else:
-                        self.total[1] += 1
-                        self.calls_by_amplicon[amplicon][1] += 1
+                        self.total.alts += 1
+                        self.calls_by_amplicon[amplicon].alts += 1
 
     def evaluate(
         self, filters: dict[str, tuple[Filter, FilterMsg]]
     ) -> tuple[bool, dict[str, str]]:
         """Returns True if any filter fails
         """
-        failures: dict[str, str]
+        failures: dict[str, str] = {}
         fail = False
         for filter_name, (f, msg) in filters.items():
             if f(self):
@@ -100,7 +108,7 @@ class EvaluatedStats:
         """
         amplicon_totals = ",".join(
             [
-                f"{str(self.calls_by_amplicon[amplicon][0])}/{str(self.calls_by_amplicon[amplicon][1])}"
+                f"{str(self.calls_by_amplicon[amplicon].refs)}/{str(self.calls_by_amplicon[amplicon].alts)}"
                 for amplicon in self.calls_by_amplicon
             ]
         )
@@ -108,10 +116,10 @@ class EvaluatedStats:
             [amplicon.name for amplicon in self.calls_by_amplicon]
         )
         info_fields = [
-            f"primer_calls_ignored={self.primer_calls_ignored[0]}/{self.primer_calls_ignored[1]}",
-            f"total_primer_bases={self.primer_calls[0]}/{self.primer_calls[1]}",
+            f"primer_calls_ignored={self.primer_calls_ignored.refs}/{self.primer_calls_ignored.alts}",
+            f"total_primer_bases={self.primer_calls.refs}/{self.primer_calls.alts}",
             f"unfiltered_depth={self.depth}",
-            f"total={self.total[0]}/{self.total[1]}",
+            f"total={self.total.refs}/{self.total.alts}",
             f"amplicon_overlap={len(self.calls_by_amplicon.keys())}",
             f"amplicon_totals={amplicon_totals}",
             f"amplicon_names={amplicon_names}",
@@ -121,7 +129,7 @@ class EvaluatedStats:
     def tsv_row(self) -> str:
         amplicon_totals = ",".join(
             [
-                f"{amplicon.name}:{str(self.calls_by_amplicon[amplicon][0])}/{str(self.calls_by_amplicon[amplicon][1])}"
+                f"{amplicon.name}:{str(self.calls_by_amplicon[amplicon].refs)}/{str(self.calls_by_amplicon[amplicon].alts)}"
                 for amplicon in self.calls_by_amplicon
             ]
         )
@@ -132,13 +140,13 @@ class EvaluatedStats:
                 [
                     self.aux_reference_pos,
                     self.base,
-                    self.total[0],
-                    self.total[1],
+                    self.total.refs,
+                    self.total.alts,
                     self.depth,
-                    self.primer_calls_ignored[0],
-                    self.primer_calls_ignored[1],
-                    self.primer_calls[0],
-                    self.primer_calls[1],
+                    self.primer_calls_ignored.refs,
+                    self.primer_calls_ignored.alts,
+                    self.primer_calls.refs,
+                    self.primer_calls.alts,
                     len(self.calls_by_amplicon),
                     alts,
                     self.info(),
@@ -149,8 +157,8 @@ class EvaluatedStats:
         return row
 
     def __str__(self) -> str:
-        alts = " ".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])
-        return f"{self.base}:{self.total[0]};{alts}"
+        alts = ",".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])
+        return f"{self.base}:{self.total.refs};{alts}"
 
 
 class Stats:
@@ -265,14 +273,15 @@ class Pileup:
 
         self.filters: dict[str, tuple[Filter, FilterMsg]] = {
             "low_depth": (
-                lambda s: (s.total[0] + s.total[1]) < self.config.min_depth,
-                lambda s: f"Insufficient depth; {s.total[0] + s.total[1]} < {self.config.min_depth}. {s.depth} including primer regions.",
+                lambda s: (s.total.refs + s.total.alts) < self.config.min_depth,
+                lambda s: f"Insufficient depth; {s.total.refs + s.total.alts} < {self.config.min_depth}. {s.depth} including primer regions.",
             ),
             "low_frs": (
-                lambda s: s.total[0] / (s.total[0] + s.total[1]) < self.config.min_frs
-                if (s.total[0] + s.total[1]) > 0
+                lambda s: s.total.refs / (s.total.refs + s.total.alts)
+                < self.config.min_frs
+                if (s.total.refs + s.total.alts) > 0
                 else False,
-                lambda s: f"Insufficient support of consensus base; {s.total[0]} / {s.total[0] + s.total[1]} < {self.config.min_frs}. {s.depth} including primer regions.",
+                lambda s: f"Insufficient support of consensus base; {s.total.refs} / {s.total.refs + s.total.alts} < {self.config.min_frs}. {s.depth} including primer regions.",
             ),
         }
 
