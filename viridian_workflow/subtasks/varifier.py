@@ -17,7 +17,7 @@ class Varifier(Task):
         min_coord: Index0 = Index0(0),
         max_coord: Optional[Index0] = None,
         sanitise_gaps: bool = True,
-        hp_min_fix_length: Optional[int] = None,
+        hp_min_fix_length: Optional[int] = 6,
     ):
         vcf = outdir / "04.truth.vcf"
         msa = outdir / "04.msa"

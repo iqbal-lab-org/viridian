@@ -18,7 +18,7 @@ import mappy as mp  # type: ignore
 def score(
     matches: defaultdict[AmpliconSet, int],
     mismatches: defaultdict[AmpliconSet, int],
-    disqualification_threshold: float = 0.45,
+    disqualification_threshold: float = 0.5,
 ) -> Optional[AmpliconSet]:
     """Assign winning amplicon set id based on match stats"""
     amplicon_sets = set([*matches.keys(), *mismatches.keys()])
@@ -167,7 +167,7 @@ class Bam:
         print(f"{improper_pairs} improper pairs", file=sys.stderr)
 
     def detect_amplicon_set(
-        self, amplicon_sets: list[AmpliconSet], disqualification_threshold: float = 0.35
+        self, amplicon_sets: list[AmpliconSet], disqualification_threshold: float = 0.5
     ) -> AmpliconSet:
         """return inferred amplicon set from list of amplicon sets
         """
