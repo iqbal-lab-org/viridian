@@ -18,7 +18,7 @@ import mappy as mp  # type: ignore
 def score(
     matches: defaultdict[AmpliconSet, int],
     mismatches: defaultdict[AmpliconSet, int],
-    disqualification_threshold: float = 0.35,
+    disqualification_threshold: float = 0.45,
 ) -> Optional[AmpliconSet]:
     """Assign winning amplicon set id based on match stats"""
     amplicon_sets = set([*matches.keys(), *mismatches.keys()])
@@ -29,7 +29,7 @@ def score(
         total = matches[amplicon_set] + mismatches[amplicon_set]
         mismatch_proportion = mismatches[amplicon_set] / total
         if mismatch_proportion > disqualification_threshold:
-            # if more than 3% of reads break the amplicon boundaries
+            # if more than x% of reads break the amplicon boundaries
             # disqualify this amplicon set
             print(
                 amplicon_set.name,
