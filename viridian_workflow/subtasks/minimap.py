@@ -1,44 +1,49 @@
 """minimap2 and samtools utilities
 """
+from __future__ import annotations
+
 import sys
 import subprocess
+from typing import Optional
+from pathlib import Path
 from .task import Task
 
 
 class Minimap(Task):
     def __init__(
         self,
-        bam,
-        ref_genome,
-        fq1,
-        fq2=None,
-        threads=1,
-        sample_name="sample",
-        minimap_x_opt=None,
-        sort=True,
+        bam: Path,
+        ref_genome: Path,
+        fq1: Path,
+        fq2: Path = None,
+        threads: int = 1,
+        sample_name: str = "sample",
+        minimap_x_opt: Optional[str] = None,
+        sort: bool = True,
     ):
 
-        self.output = bam
-        self.sort = sort
-        self.cmd = [
+        self.output: Path = Path(bam)
+        self.sort: bool = sort
+        self.cmd: list[str] = [
             "minimap2",
             "-R",
-            fr"@RG\tID:1\tSM:{sample_name}",
+            rf"@RG\tID:1\tSM:{sample_name}",
             "-t",
             str(threads),
             "-a",
         ]
+        reads_list: list[str] = []
         if fq2 is None:
             if minimap_x_opt is None:
                 minimap_x_opt = "-x map-ont"
             self.cmd.extend(minimap_x_opt.split())
-            reads_list = [fq1]
+            reads_list = [str(fq1)]
         else:
             if minimap_x_opt is None:
                 minimap_x_opt = "-x sr"
             self.cmd.extend(minimap_x_opt.split())
-            reads_list = [fq1, fq2]
-        self.cmd.append(ref_genome)
+            reads_list = [str(fq1), str(fq2)]
+        self.cmd.append(str(ref_genome))
         self.cmd.extend(reads_list)
 
     def run(self):
@@ -52,7 +57,6 @@ class Minimap(Task):
             if sort_proc.returncode:
                 raise Exception("minimap2 subprocess failed")
             subprocess.Popen(["samtools", "index", self.output]).wait()
-            Task._check_file(self.output + ".bai")
 
         else:
             with open(self.output, "w") as out_fd:
@@ -62,5 +66,5 @@ class Minimap(Task):
                 if map_proc.returncode:
                     raise Exception("minimap2 subprocess failed")
 
-        Task._check_file(self.output)
+        self.check_output()
         return self.output

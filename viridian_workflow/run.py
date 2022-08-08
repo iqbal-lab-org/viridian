@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import sys
-import shutil
 from pathlib import Path
 
 # import tempfile
 import json
 
-from viridian_workflow import primers, readstore, self_qc
+from viridian_workflow import readstore, self_qc
 from viridian_workflow.subtasks import Cylon, Minimap, Varifier
 
 
@@ -18,15 +17,15 @@ def run_pipeline(
     amplicon_sets,
     ref="../covid/MN908947.fasta",
     force_amp_scheme=None,
-    keep_intermediate=False,
-    keep_bam=False,
+    # keep_intermediate=False,
+    # keep_bam=False,
     sample_name="sample",
     frs_threshold=0.1,
     self_qc_depth=20,
-    consensus_max_n_percent=50,
-    max_percent_amps_fail=50,
+    # consensus_max_n_percent=50,
+    # max_percent_amps_fail=50,
     dump_tsv=False,
-    command_line_args={},
+    # command_line_args={},
     force_consensus=None,
 ):
 

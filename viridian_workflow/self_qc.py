@@ -4,7 +4,7 @@ import sys
 
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import NewType, Callable, Optional, Any
+from typing import Callable, Optional, Any
 from pathlib import Path
 
 import mappy as mp  # type: ignore
@@ -26,8 +26,7 @@ default_config = Config(0.7, 10)
 
 @dataclass(frozen=True)
 class BaseProfile:
-    """Per-base info extracted while reads are traversed
-    """
+    """Per-base info extracted while reads are traversed"""
 
     base: str
     in_primer: bool
@@ -42,8 +41,7 @@ class Calls:
 
 
 class EvaluatedStats:
-    """Per-position base counts, evaluated after the pileup is built
-    """
+    """Per-position base counts, evaluated after the pileup is built"""
 
     def __init__(self, stats):
         self.base: str = stats.base
@@ -93,8 +91,7 @@ class EvaluatedStats:
     def evaluate(
         self, filters: dict[str, tuple[Filter, FilterMsg]]
     ) -> tuple[bool, dict[str, str]]:
-        """Returns True if any filter fails
-        """
+        """Returns True if any filter fails"""
         failures: dict[str, str] = {}
         fail = False
         for filter_name, (f, msg) in filters.items():
@@ -104,8 +101,7 @@ class EvaluatedStats:
         return fail, failures
 
     def info(self) -> str:
-        """Output position stats as VCF INFO field
-        """
+        """Output position stats as VCF INFO field"""
         amplicon_totals = ",".join(
             [
                 f"{str(self.calls_by_amplicon[amplicon].refs)}/{str(self.calls_by_amplicon[amplicon].alts)}"
@@ -127,12 +123,6 @@ class EvaluatedStats:
         return ";".join(info_fields)
 
     def tsv_row(self) -> str:
-        amplicon_totals = ",".join(
-            [
-                f"{amplicon.name}:{str(self.calls_by_amplicon[amplicon].refs)}/{str(self.calls_by_amplicon[amplicon].alts)}"
-                for amplicon in self.calls_by_amplicon
-            ]
-        )
         alts = ";".join([f"{k}:{v}" for k, v in self.alt_bases.items()])
         row = "\t".join(
             map(
@@ -166,7 +156,6 @@ class Stats:
         self,
         aux_reference_pos: Index0,  # may be non-consensus sequence index
         base: str,
-        config: Config = default_config,
     ):
 
         self.baseprofiles: dict[Amplicon, list[BaseProfile]] = {}
@@ -175,8 +164,7 @@ class Stats:
         self.base: str = base  # reference base
 
     def update(self, profile: BaseProfile):
-        """Accumulate per-position base calling stats
-        """
+        """Accumulate per-position base calling stats"""
         if profile.amplicon not in self.baseprofiles:
             self.baseprofiles[profile.amplicon] = []
         self.baseprofiles[profile.amplicon].append(profile)
@@ -226,8 +214,7 @@ def parse_msa(msa: Path) -> tuple[dict[Index1, Index1], dict[Index1, Index1]]:
 
 
 class Pileup:
-    """A pileup is an array of Stats objects indexed by position in a sequence
-    """
+    """A pileup is an array of Stats objects indexed by position in a sequence"""
 
     def __init__(
         self,
@@ -269,7 +256,12 @@ class Pileup:
 
         for i, base in enumerate(self.consensus_seq):
             p = Index1(i + 1)
-            _pileup.append(Stats(Index0(self.consensus_to_ref(p) - 1), base,))
+            _pileup.append(
+                Stats(
+                    Index0(self.consensus_to_ref(p) - 1),
+                    base,
+                )
+            )
 
         self.filters: dict[str, tuple[Filter, FilterMsg]] = {
             "low_depth": (
@@ -314,9 +306,7 @@ class Pileup:
                     assert alignment.q_en > alignment.q_st
                     assert alignment.r_en > alignment.r_st
 
-                    aln: list[tuple[Index0, str]] = parse_cigar(
-                        self.consensus_seq, read.seq, alignment
-                    )
+                    aln: list[tuple[Index0, str]] = parse_cigar(read.seq, alignment)
 
                     # testing for indel conditions:
                     # ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
@@ -343,7 +333,12 @@ class Pileup:
                         )
 
                         _pileup[consensus_pos].update(
-                            BaseProfile(call, in_primer, read.is_reverse, amplicon,)
+                            BaseProfile(
+                                call,
+                                in_primer,
+                                read.is_reverse,
+                                amplicon,
+                            )
                         )
 
         # Finalise the pileup object by evaluating bases
@@ -383,8 +378,7 @@ class Pileup:
     def _mask(
         consensus_seq: str, stats_seq: list[EvaluatedStats], filters
     ) -> tuple[str, dict[str, Any], defaultdict[str, Any]]:
-        """Evaluate all positions and determine if they pass filters
-        """
+        """Evaluate all positions and determine if they pass filters"""
         sequence: list[str] = list(consensus_seq)
         qc: dict[str, Any] = {}
         summary: defaultdict[str, int] = defaultdict(int)
@@ -445,7 +439,7 @@ class Pileup:
                 alt,
                 qual,
                 original_filters,
-                info,
+                _,
                 fmt,
                 *r,
             ) = line.split("\t")
@@ -472,7 +466,7 @@ class Pileup:
         return header, records
 
 
-def parse_cigar(ref, query: str, alignment: Any) -> list[tuple[Index0, str]]:
+def parse_cigar(query: str, alignment: Any) -> list[tuple[Index0, str]]:
     """Interpret cigar string and query sequence in reference
     coords from mappy (count, op)
 

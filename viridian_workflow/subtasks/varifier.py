@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from typing import Optional
 from pathlib import Path
+
+from viridian_workflow.utils import Index0
 from .task import Task
-from viridian_workflow.utils import Index0, Index1
 
 
 class Varifier(Task):
+    """Varifier task definition"""
+
     def __init__(
         self,
         outdir: Path,
@@ -19,10 +22,11 @@ class Varifier(Task):
         sanitise_gaps: bool = True,
         hp_min_fix_length: Optional[int] = 6,
     ):
+        """Initialise varifier task"""
         vcf = outdir / "04.truth.vcf"
         msa = outdir / "04.msa"
         consensus_out = outdir / "04.qry_sanitised_gaps.fa"
-        self.output: tuple[Path, Path, Path] = (vcf, msa, consensus_out)
+        self.output: list[Path] = [vcf, msa, consensus_out]
 
         self.options: list[str] = ["--global_align"]
 

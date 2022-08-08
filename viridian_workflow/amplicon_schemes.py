@@ -1,66 +1,79 @@
+"""
+Collect the built-in amplicon scheme files
+"""
+from __future__ import annotations
+
 import csv
-import json
-import os
+from typing import Optional
+from pathlib import Path
 
 from viridian_workflow import primers
 
-this_dir = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(this_dir, "amplicon_scheme_data")
+this_dir = Path(__file__).resolve()
+DATA_DIR = this_dir / "amplicon_scheme_data"
 
 
-def get_built_in_schemes():
-    tsv_index_file = os.path.join(DATA_DIR, "schemes.tsv")
-    if not os.path.exists(tsv_index_file):
+def get_built_in_schemes() -> dict[str, Path]:
+    """Read list of built-in schemes from schemes.tsv"""
+    tsv_index_file = DATA_DIR / "schemes.tsv"
+    if not tsv_index_file.exists():
         raise Exception(
-            f"Amplicons scheme index file not found. Something wrong with installation? Looked for: {json_index_file}"
+            f"Amplicons scheme index file not found. Looked for: {tsv_index_file}"
         )
 
-    schemes = {}
-    with open(tsv_index_file) as f:
-        for line in f:
+    schemes: dict[str, Path] = {}
+    with open(tsv_index_file, encoding="utf-8") as tsv_fd:
+        for line in tsv_fd:
             name, tsv = line.strip().split()
-            schemes[name] = tsv
+            schemes[name] = Path(tsv)
 
-    for name in schemes:
-        scheme_json = os.path.join(DATA_DIR, schemes[name])
-        if not os.path.exists(scheme_json):
+    for name, scheme in schemes.items():
+        scheme_path = DATA_DIR / scheme
+        if not scheme_path.exists():
             raise Exception(
-                f"Amplicons scheme file not found. Something wrong with installation? Looked for: {scheme_json}"
+                f"Amplicons scheme file not found. Looked for: {scheme_path}"
             )
-        schemes[name] = scheme_json
+        schemes[name] = scheme_path
 
     return schemes
 
 
-def load_amplicon_index(index_tsv, scheme_dir, subset=None):
+def load_amplicon_index(
+    index_tsv: Path, scheme_dir: Path, subset: dict[str, Path] = None
+) -> dict[str, Path]:
+    """Load either all or a subset of the built-in amplicon schemes"""
     index = {}
-    for record in open(os.path.join(scheme_dir, index_tsv)):
-        name, tsv = record.strip().split()
-        if name == "Name" and tsv == "File":
-            continue
+    with open(scheme_dir / index_tsv, encoding="utf-8") as index_fd:
+        for record in index_fd:
+            name, tsv = record.strip().split()
+            if name == "Name" and tsv == "File":
+                continue
 
-        tsv_path = os.path.join(scheme_dir, tsv)
-        if not os.path.exists(tsv_path):
-            raise Exception(f"Amplicon scheme {tsv_path} does not exist")
-        else:
+            tsv_path = scheme_dir / tsv
+            if not tsv_path.exists():
+                raise Exception(f"Amplicon scheme {tsv_path} does not exist")
             index[name] = tsv_path
 
     if subset:
         for key in subset:
             if key not in index:
                 raise Exception(
-                    f"Selected subset of amplicon schemes ({','.join(subset)}) are not in the builtin set: {','.join(index.keys())}"
+                    f"Selected subset of amplicon schemes ({','.join(subset)})\
+                      are not in the builtin set: {','.join(index.keys())}"
                 )
-            else:
-                del index[key]
+            del index[key]
     return index
 
 
-def load_list_of_amplicon_sets(built_in_names_to_use=None, tsv_others_to_use=None):
+def load_list_of_amplicon_sets(
+    built_in_names_to_use: Optional[list[str]] = None,
+    tsv_others_to_use: Optional[Path] = None,
+) -> tuple[dict[str, Path], list[primers.AmpliconSet]]:
+    """Load list of amplicon schemes from preferred source"""
     assert built_in_names_to_use is not None or tsv_others_to_use is not None
     if isinstance(built_in_names_to_use, str):
         built_in_names_to_use = built_in_names_to_use.split(",")
-    schemes = {}
+    schemes: dict[str, Path] = {}
     if built_in_names_to_use is not None:
         all_built_in_schemes = get_built_in_schemes()
         for name in built_in_names_to_use:
@@ -72,16 +85,16 @@ def load_list_of_amplicon_sets(built_in_names_to_use=None, tsv_others_to_use=Non
             schemes[name] = all_built_in_schemes[name]
 
     if tsv_others_to_use is not None:
-        with open(tsv_others_to_use) as f:
-            reader = csv.DictReader(f, delimiter="\t")
-            for d in reader:
-                if d["Name"] in schemes:
+        with open(tsv_others_to_use, encoding="utf-8") as tsv_fd:
+            reader = csv.DictReader(tsv_fd, delimiter="\t")
+            for row in reader:
+                if row["Name"] in schemes:
                     raise Exception(
-                        f"Duplicate name '{d['Name']}' used. Cannot continue"
+                        f"Duplicate name '{row['Name']}' used. Cannot continue"
                     )
-                if not os.path.exists(d["File"]):
-                    raise FileNotFoundError(f"File not found: {d['File']}")
-                schemes[d["Name"]] = d["File"]
+                if not Path(row["File"]).exists():
+                    raise FileNotFoundError(f"File not found: {row['File']}")
+                schemes[row["Name"]] = Path(row["File"])
 
     assert len(schemes) > 0
     return (

@@ -1,18 +1,28 @@
+"""
+Read objects
+
+A fragment with either a pair of reads or a single read. 0-based indexing
+is always assumed unless otherwise indicated
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
-from viridian_workflow.utils import Index0, Index1
-
-# "seq" is the read sequence in the direction of the reference genome, ie what
-# you get in a BAM file.
-# We will enforce that  ref_start < ref_end, and qry_start < qry_end. Then we
-# can use is_reverse to resolve the direction of the read.
-# qry_end and ref_end one past the position, so slicing and subtracting
-# coords follow the python string convention.
+from viridian_workflow.utils import Index0
 
 
 @dataclass(frozen=True)
 class Read:
+    """Reads are sequences of dna that have been mapped to a reference
+    coordinates (ref_start, ref_end)
+
+    "seq" is the read sequence in the direction of the reference genome, ie what
+    you get in a BAM file.
+    We will enforce that  ref_start < ref_end, and qry_start < qry_end. Then we
+    can use is_reverse to resolve the direction of the read.
+    qry_end and ref_end one past the position, so slicing and subtracting
+    coords follow the python string convention.
+    """
+
     seq: str
     ref_start: Index0
     ref_end: Index0
@@ -22,19 +32,28 @@ class Read:
 
 
 class Fragment:
+    """A fragment can be either two reads or a single read depending
+    on the sequencing platform
+    """
+
     def __init__(self, reads: list[Read]):
-        """fragment ref bounds ignore softclipping
-        """
+        """fragment ref bounds ignore softclipping"""
         self.reads: list[Read] = reads
 
         self.ref_start: Index0
         self.ref_end: Index0
-        
+
     def total_mapped_bases(self) -> int:
-        return sum([r.qry_end - r.qry_start for r in self.reads])
+        """The total number of bases that were sequenced for this fragment.
+        This counts positions that were sequenced twice in overlapping
+        fragments.
+        """
+        return sum(r.qry_end - r.qry_start for r in self.reads)
 
 
 class PairedReads(Fragment):
+    """A pair of reads are sequenced from the same template"""
+
     def __init__(self, read1: Read, read2: Read):
         super().__init__([read1, read2])
         (ref_start, ref_end) = (
@@ -50,11 +69,15 @@ class PairedReads(Fragment):
         elif not read1.is_reverse and read2.is_reverse:
             strand = True
         else:
-            raise Exception(f"Read pair is in invalid orientation F1F2/R1R2")
+            raise Exception("Read pair is in invalid orientation F1F2/R1R2")
         self.strand: bool = strand
 
 
 class SingleRead(Fragment):
+    """Nanopore sequences a single read per template. The direction may still
+    be either forward or reverse wrt the reference.
+    """
+
     def __init__(self, read: Read):
         super().__init__([read])
         self.ref_start: Index0 = Index0(read.ref_start)

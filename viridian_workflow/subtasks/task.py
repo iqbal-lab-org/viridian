@@ -1,25 +1,45 @@
+"""
+External pipeline process wrapper
+"""
+from __future__ import annotations
+
 import subprocess
 import time
-import os
+from typing import Union
+from pathlib import Path
 
 
 class Task:
-    def __init__(self):
-        pass
+    """A prototype Task
 
-    @staticmethod
-    def _check_file(fn):
-        if not os.path.isfile(fn):
-            raise Exception(f"Failed to generate output file:\t{fn}")
+    Tasks are associated with external process invocations and return
+    a list of output files
+    """
+
+    def __init__(self):
+        self.cmd: list[str]
+        self.log: dict[str, str]
+        self.output: Union[Path, list[Path]]
+
+    def check_output(self):
+        """Test if outfile files exist"""
+        if isinstance(self.output, Path):
+            if not self.output.exists():
+                raise Exception(f"Failed to generate output file:\t{self.output}")
+        else:
+            for fn in self.output:
+                if not fn.exists():
+                    raise Exception(f"Failed to generate output file:\t{fn}")
 
     def run(self, ignore_error=False, stdout=None):
+        """Launch a pipeline task"""
         self.log = {}
         cmd = [str(c) for c in self.cmd]
         self.log["subprocess"] = " ".join(cmd)
 
         stdout_fd = subprocess.PIPE
         if stdout:
-            stdout_fd = open(stdout, "w")
+            stdout_fd = open(stdout, "w", encoding="utf-8")
         start_time = time.time()
         result = subprocess.run(
             cmd,
@@ -40,9 +60,5 @@ class Task:
         if not stdout:
             print(result.stdout)
 
-        if isinstance(self.output, tuple):
-            for i in self.output:
-                Task._check_file(i)
-        else:
-            Task._check_file(self.output)
+        self.check_output()
         return self.output

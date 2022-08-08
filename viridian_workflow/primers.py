@@ -1,17 +1,23 @@
+"""
+AmpliconSets are collections of Amplicons.
+
+Amplicons may have multiple associated primers.
+"""
 from __future__ import annotations
 
 from typing import Optional
 import csv
 from pathlib import Path
 from dataclasses import dataclass
-from collections import namedtuple
 from intervaltree import IntervalTree  # type: ignore
-from viridian_workflow.utils import Index0, Index1, in_range
+from viridian_workflow.utils import Index0, in_range
 from viridian_workflow.reads import Fragment
 
 
 @dataclass(frozen=True)
 class Primer:
+    """A short sequence corresponding to part of the reference. Immutable."""
+
     name: str
     seq: str
     left: bool
@@ -21,6 +27,8 @@ class Primer:
 
 
 class Amplicon:
+    """A target region of the reference to be amplified by PCR"""
+
     def __init__(self, name: str, shortname: int = 0):
         self.shortname: int = shortname
         self.name: str = name
@@ -62,8 +70,7 @@ class Amplicon:
     def match_primers(
         self, fragment: Fragment, primer_match_threshold: int = 5
     ) -> tuple[Optional[Primer], Optional[Primer]]:
-        """Attempt to match either end of a fragment against the amplicon's primers
-        """
+        """Attempt to match either end of a fragment against the amplicon's primers"""
         p1, p2 = None, None
 
         min_dist = primer_match_threshold
@@ -87,6 +94,7 @@ class Amplicon:
         return p1, p2
 
     def add(self, primer: Primer):
+        """Push a primer into the collection of primers"""
         if len(primer.seq) > self.max_length:
             self.max_length = len(primer.seq)
 
@@ -117,6 +125,8 @@ class Amplicon:
 
 
 class AmpliconSet:
+    """A set of amplicons which are amplified at the same time"""
+
     def __init__(
         self,
         name: str,

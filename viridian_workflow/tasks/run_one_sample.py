@@ -5,7 +5,11 @@ from viridian_workflow import utils, primers, amplicon_schemes
 from viridian_workflow.run import run_pipeline
 
 
-def run(options):
+def cuckoo(options):
+    run(options, force_consensus=options.force_consensus)
+
+
+def run(options, force_consensus=None):
     fq1, fq2 = utils.check_tech_and_reads_opts_and_get_reads(options)
 
     if options.force:
@@ -60,7 +64,6 @@ def run(options):
         for name, tsv in amplicon_index.items()
     ]
 
-    # TODO: this needs to run and handle the keyword args
     run_pipeline(
         options.outdir,
         options.tech,
@@ -77,4 +80,5 @@ def run(options):
         consensus_max_n_percent=options.max_cons_n_percent,
         max_percent_amps_fail=options.max_percent_amps_fail,
         command_line_args=options,
+        force_consensus=force_consensus,
     )

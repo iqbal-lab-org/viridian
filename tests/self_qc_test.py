@@ -28,12 +28,12 @@ def test_cigar_tuple_construction():
     cigar = [(3, 0)]
 
     alignment = Alignment(0, cigar, 0)
-    assert self_qc.parse_cigar(ref, query, alignment) == [(0, "A"), (1, "A"), (2, "A")]
+    assert self_qc.parse_cigar(query, alignment) == [(0, "A"), (1, "A"), (2, "A")]
 
     ref = "AAA"
     query = "ATTAA"
     alignment = Alignment(0, [(1, 0), (2, 1), (2, 0)], 0)
-    assert self_qc.parse_cigar(ref, query, alignment) == [
+    assert self_qc.parse_cigar(query, alignment) == [
         (0, "A"),
         #        (1, "TT"),
         (1, "A"),
@@ -43,7 +43,7 @@ def test_cigar_tuple_construction():
     ref = "ATTAA"
     query = "AAA"
     alignment = Alignment(0, [(1, 0), (2, 2), (2, 0)], 0)
-    assert self_qc.parse_cigar(ref, query, alignment) == [
+    assert self_qc.parse_cigar(query, alignment) == [
         (0, "A"),
         (1, "-"),
         (2, "-"),
@@ -54,7 +54,7 @@ def test_cigar_tuple_construction():
     ref = "AAAA"
     query = "GGGAAAA"
     alignment = Alignment(0, [(3, 4), (4, 0)], 3)
-    assert self_qc.parse_cigar(ref, query, alignment) == [
+    assert self_qc.parse_cigar(query, alignment) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
@@ -110,7 +110,7 @@ def test_mappy_cigar_liftover():
     for op, count in pysam_cigar:
         cigar.append((count, op))
     alignment = Alignment(0, cigar, 0)
-    a = self_qc.parse_cigar(None, seq, alignment)
+    a = self_qc.parse_cigar(seq, alignment)
 
     assert len(ref) - 1 == a[-1][0]
     assert ref[-54:] == seq[-54:]

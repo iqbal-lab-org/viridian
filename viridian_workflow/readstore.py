@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 from typing import Optional, Any
-from collections import namedtuple, defaultdict
+from collections import defaultdict
 import sys
 from pathlib import Path
 import os
 import random
 
+import pysam  # type: ignore
+
 from viridian_workflow import utils
 from viridian_workflow.primers import Amplicon, AmpliconSet, Primer
 from viridian_workflow.reads import Read, Fragment, PairedReads, SingleRead
-
-import pysam  # type: ignore
-import mappy as mp  # type: ignore
 
 
 def score(
@@ -38,8 +37,9 @@ def score(
                 f" disqualified: {mismatch_proportion * 100}% ({disqualification_threshold * 100}% threshold)",
             )
             continue
-        else:
-            print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
+
+        print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
+
         if matches[amplicon_set] >= m:
             winner = amplicon_set
             m = matches[amplicon_set]
@@ -169,8 +169,7 @@ class Bam:
     def detect_amplicon_set(
         self, amplicon_sets: list[AmpliconSet], disqualification_threshold: float = 0.5
     ) -> AmpliconSet:
-        """return inferred amplicon set from list of amplicon sets
-        """
+        """return inferred amplicon set from list of amplicon sets"""
 
         mismatches: defaultdict[AmpliconSet, int] = defaultdict(int)
         matches: defaultdict[AmpliconSet, int] = defaultdict(int)
@@ -216,6 +215,7 @@ class ReadStore:
         self.amplicon_set: AmpliconSet = amplicon_set
         self.reads_all_paired: Optional[bool] = bam.infile_is_paired
         self.unmatched_reads: int = 0
+        self.failed_amplicons: set[Amplicon] = set()
 
         # Index of positions (0-based, wrt Reference) where different amplicons
         # have contributed base calls
@@ -423,7 +423,6 @@ class ReadStore:
         names that should be failed because they had no reads"""
         os.mkdir(outdir)
         manifest_data = {}
-        self.failed_amplicons = set()
 
         fasta_number = 0  # let's find another way
         for amplicon in self.amplicon_set:
@@ -436,7 +435,8 @@ class ReadStore:
             target_bases = self.cylon_target_depth_factor * len(amplicon)
             bases_out = self.reads_to_fastas(amplicon, outfile, target_bases)
             print(
-                f"writing out {amplicon.name} reads {len(self[amplicon])}, {len(manifest_data)}.fa",
+                f"writing out {amplicon.name} reads {len(self[amplicon])}\
+                  ({bases_out} bases), {len(manifest_data)}.fa",
                 file=sys.stderr,
             )
             fasta_number += 1
