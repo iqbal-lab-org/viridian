@@ -9,7 +9,7 @@ from pathlib import Path
 
 from viridian_workflow import primers
 
-this_dir = Path(__file__).resolve()
+this_dir = Path(__file__).resolve().parent
 DATA_DIR = this_dir / "amplicon_scheme_data"
 
 

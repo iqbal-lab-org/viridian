@@ -233,7 +233,7 @@ class ReadStore:
         self.summary = {}
         self.cylon_json: dict[str, Any] = {
             "name": amplicon_set.name,
-            "source": amplicon_set.fn,
+            "source": str(amplicon_set.fn),
             "amplicons": {},
         }
 

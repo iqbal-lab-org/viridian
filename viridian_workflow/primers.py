@@ -137,15 +137,16 @@ class AmpliconSet:
     ):
         """AmpliconSet supports various membership operations"""
         if not shortname:
-            # base-54 hash
+            # base-54 hash for packing annotations into bam file fields
+            # (not used)
             self.shortname = chr(((sum(map(ord, name)) - ord("A")) % 54) + 65)
         self.tree = IntervalTree()
-        self.name = name
+        self.name: str = name
         self.seqs = {}
         self.amplicons = amplicons
         self.amplicon_ids = {}
         if fn:
-            self.fn = fn
+            self.fn: Path = Path(fn)
 
         primer_lengths = set()
         sequences = {}
@@ -186,7 +187,7 @@ class AmpliconSet:
         raise NotImplementedError
 
     @classmethod
-    def from_tsv(cls, fn: Path, name=None, **kwargs):
+    def from_tsv(cls, fn: Path, name: Optional[str] = None, **kwargs):
         amplicons: dict[str, Amplicon] = {}
         required_cols = {
             "Amplicon_name",
@@ -196,7 +197,7 @@ class AmpliconSet:
             "Position",
         }
         n = 0
-        with open(fn) as f:
+        with open(fn, encoding="utf-8") as f:
             reader = csv.DictReader(f, delimiter="\t")
             assert reader.fieldnames is not None
             missing_cols_set = required_cols.difference(set(reader.fieldnames))
@@ -228,7 +229,7 @@ class AmpliconSet:
                 )
                 amplicons[d["Amplicon_name"]].add(primer)
 
-        name = fn if not name else name
+        name = str(fn) if name is None else name
         return cls(name, amplicons, fn=fn, **kwargs)
 
     def match(self, fragment: Fragment) -> Optional[Amplicon]:
