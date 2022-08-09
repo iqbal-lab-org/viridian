@@ -67,34 +67,34 @@ class EvaluatedStats:
         for amplicon, profiles in stats.baseprofiles.items():
             if amplicon not in self.calls_by_amplicon:
                 self.calls_by_amplicon[amplicon] = Calls(0, 0)
-            for profile in profiles:
+            for profile, count in profiles.items():
                 is_ref = profile.base == self.base
-                self.depth += 1
-                self.alt_bases[profile.base] += 1
+                self.depth += count
+                self.alt_bases[profile.base] += count
 
                 if profile.in_primer:
                     if is_ref:
-                        self.primer_calls.refs += 1
+                        self.primer_calls.refs += count
                         if self.multiple_amplicon_support:
-                            self.primer_calls_ignored.refs += 1
+                            self.primer_calls_ignored.refs += count
                         else:
-                            self.total.refs += 1
-                            self.calls_by_amplicon[amplicon].refs += 1
+                            self.total.refs += count
+                            self.calls_by_amplicon[amplicon].refs += count
 
                     else:
-                        self.primer_calls.alts += 1
+                        self.primer_calls.alts += count
                         if self.multiple_amplicon_support:
-                            self.primer_calls_ignored.alts += 1
+                            self.primer_calls_ignored.alts += count
                         else:
-                            self.total.alts += 1
-                            self.calls_by_amplicon[amplicon].alts += 1
+                            self.total.alts += count
+                            self.calls_by_amplicon[amplicon].alts += count
                 else:
                     if is_ref:
-                        self.total.refs += 1
-                        self.calls_by_amplicon[amplicon].refs += 1
+                        self.total.refs += count
+                        self.calls_by_amplicon[amplicon].refs += count
                     else:
-                        self.total.alts += 1
-                        self.calls_by_amplicon[amplicon].alts += 1
+                        self.total.alts += count
+                        self.calls_by_amplicon[amplicon].alts += count
 
     def evaluate(
         self, filters: dict[str, tuple[Filter, FilterMsg]]
@@ -168,7 +168,7 @@ class Stats:
         base: str,
     ):
 
-        self.baseprofiles: dict[Amplicon, list[BaseProfile]] = {}
+        self.baseprofiles: dict[Amplicon, dict[BaseProfile, int]] = {}
 
         self.aux_reference_pos: Index0 = aux_reference_pos
         self.base: str = base  # reference base
@@ -176,8 +176,10 @@ class Stats:
     def update(self, profile: BaseProfile):
         """Accumulate per-position base calling stats"""
         if profile.amplicon not in self.baseprofiles:
-            self.baseprofiles[profile.amplicon] = []
-        self.baseprofiles[profile.amplicon].append(profile)
+            self.baseprofiles[profile.amplicon] = {}
+        if profile not in self.baseprofiles[profile.amplicon]:
+            self.baseprofiles[profile.amplicon][profile] = 0
+        self.baseprofiles[profile.amplicon][profile] += 1
 
 
 Filter = Callable[[EvaluatedStats], bool]
