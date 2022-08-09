@@ -1,6 +1,6 @@
-import os
 import logging
 import subprocess
+from pathlib import Path
 from viridian_workflow import utils, primers, amplicon_schemes
 from viridian_workflow.run import run_pipeline
 
@@ -24,12 +24,9 @@ def run(options, force_consensus=None):
         fqs = [fq1, fq2]
 
     # Build the index of built-in schemes, possibly subsetted
-    data_dir = os.path.join(
-        os.path.dirname(os.path.abspath(amplicon_schemes.__file__)),
-        "amplicon_scheme_data",
-    )
+    data_dir = Path(amplicon_schemes.__file__).resolve().parent / "amplicon_scheme_data"
     amplicon_index = amplicon_schemes.load_amplicon_index(
-        "schemes.tsv", data_dir, subset=options.built_in_amp_schemes
+        Path("schemes.tsv"), data_dir, subset=options.built_in_amp_schemes
     )
 
     # If a set is forced, select it from the possibly subsetted built-ins

@@ -47,6 +47,7 @@ class Task:
             stderr=subprocess.PIPE,
             stdout=stdout_fd,
             universal_newlines=True,
+            check=True,
         )
         if stdout:
             stdout_fd.close()
