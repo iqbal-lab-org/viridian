@@ -1,3 +1,9 @@
+"""Remapping reads to a consensus sequence to evaluate its internal
+consistency
+
+In this module the 'reference' refers to the target organism. Reads
+are mapped to the 'consensus', which is compared to the reference.
+"""
 from __future__ import annotations
 
 import sys
@@ -16,6 +22,8 @@ from viridian_workflow.readstore import ReadStore
 
 @dataclass
 class Config:
+    """Struct for propagating config params through pipeline"""
+
     # TODO move this somewhere cleaner
     min_frs: float
     min_depth: int
@@ -152,6 +160,8 @@ class EvaluatedStats:
 
 
 class Stats:
+    """Per-position pileup data"""
+
     def __init__(
         self,
         aux_reference_pos: Index0,  # may be non-consensus sequence index
@@ -175,8 +185,9 @@ FilterMsg = Callable[[EvaluatedStats], str]
 
 
 def parse_msa(msa: Path) -> tuple[dict[Index1, Index1], dict[Index1, Index1]]:
-
-    # 1-based index translation tables
+    """Construct translation tables for mapping 1-based genomic coordinates
+    between two complete sequences
+    """
     ref_to_consensus: dict[Index1, Index1] = {}
     consensus_to_ref: dict[Index1, Index1] = {}
 

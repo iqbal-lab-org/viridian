@@ -1,3 +1,5 @@
+"""Nextgen mapped read datastructures
+"""
 from __future__ import annotations
 
 from typing import Optional, Any
@@ -9,7 +11,7 @@ import random
 
 import pysam  # type: ignore
 
-from viridian_workflow import utils
+from viridian_workflow.utils import Index0, revcomp
 from viridian_workflow.primers import Amplicon, AmpliconSet, Primer
 from viridian_workflow.reads import Read, Fragment, PairedReads, SingleRead
 
@@ -47,6 +49,7 @@ def score(
 
 
 def amplicon_set_counts_to_naive_total_counts(scheme_counts):
+    """Amplicon count summary"""
     counts = defaultdict(int)
     for scheme_tuple, count in scheme_counts.items():
         for scheme in scheme_tuple:
@@ -55,6 +58,7 @@ def amplicon_set_counts_to_naive_total_counts(scheme_counts):
 
 
 def amplicon_set_counts_to_json_friendly(scheme_counts):
+    """Output count summary to JSON"""
     dict_out = {}
     for k, v in scheme_counts.items():
         new_key = ";".join(sorted([str(x) for x in k]))
@@ -63,6 +67,8 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
 
 
 class Bam:
+    """Wrapper around bam objects produced by samtools"""
+
     def __init__(
         self,
         bam: Path,
@@ -78,6 +84,7 @@ class Bam:
 
     @staticmethod
     def read_from_pysam(read):
+        """Pack pysam reads into a virdian Read object"""
         return Read(
             read.query_sequence,
             read.reference_start,
@@ -89,13 +96,21 @@ class Bam:
 
     @classmethod
     def from_pe_fastqs(cls, fq1, fq2):
+        """Bam from paired end fastq files"""
         pass
 
     @classmethod
     def from_se_fastq(cls, fq):
+        """Bam object from single ended fastq"""
         pass
 
     def syncronise_fragments(self):
+        """Yield a fragment object constructed from either a single
+        read or a pair of mated reads
+
+        Mapping based quality thresholds (template length etc.) can
+        be applied here
+        """
         reads_by_name = {}
         improper_pairs = 0
 
@@ -209,7 +224,15 @@ class Bam:
 
 
 class ReadStore:
-    def __init__(self, amplicon_set: AmpliconSet, bam: Bam, target_depth: int = 1000):
+    """The internal datastructure for storing reads by amplicon"""
+
+    def __init__(
+        self,
+        amplicon_set: AmpliconSet,
+        bam: Bam,
+        target_depth: int = 1000,
+        cylon_target_depth_factor: int = 200,
+    ):
         self.amplicons: defaultdict[Amplicon, list[Fragment]] = defaultdict(list)
         self.reads_per_amplicon: defaultdict[Amplicon, int] = defaultdict(int)
         self.amplicon_set: AmpliconSet = amplicon_set
@@ -222,9 +245,7 @@ class ReadStore:
         self.multiple_amplicon_support: list[bool] = []
 
         self.target_depth: int = target_depth
-
-        # TODO find a home for this magic number
-        self.cylon_target_depth_factor = 200
+        self.cylon_target_depth_factor = cylon_target_depth_factor
 
         self.start_pos = None
         self.end_pos = None
@@ -278,11 +299,13 @@ class ReadStore:
 
             # decide if threshold for primers is met
             p1_min, p2_max = None, None
-            if amplicon in self.primer_histogram:
+            if amplicon in self.primer_histogram.items():
+                assert self.start_pos is not None
+                assert self.end_pos is not None
                 p1_min, p2_max = self.filter_primer_counts(
                     self.primer_histogram[amplicon],
-                    start=self.start_pos,
-                    end=self.end_pos,
+                    self.start_pos,
+                    self.end_pos,
                 )
             # default to the inner-most primer coords if an extrema isn't found
             if (
@@ -321,25 +344,35 @@ class ReadStore:
         self.summarise_amplicons()
 
     @staticmethod
-    def filter_primer_counts(primer_counts, threshold=100, start=0, end=sys.maxsize):
-        p1 = None
-        p2 = None
-        p1_min = end
-        p2_max = start
+    def filter_primer_counts(
+        primer_counts: dict[str, defaultdict[Primer, int]],
+        start: Index0,
+        end: Index0,
+        threshold: int = 100,
+    ) -> tuple[Optional[Primer], Optional[Primer]]:
+        """Ensure a minimum number of observed primers are counted
+
+        The calling method should default to the max primer range if this
+        fails
+        """
+        left_primer = None
+        right_primer = None
+        primer_min = end
+        primer_max = start
         for primer, count in primer_counts["left"].items():
             if count < threshold:  # primer occurence threshold
                 # exclude this primer
                 continue
-            if primer.ref_start <= p1_min:
-                p1_min = primer.ref_start
-                p1 = primer
+            if primer.ref_start <= primer_min:
+                primer_min = primer.ref_start
+                left_primer = primer
         for primer, count in primer_counts["right"].items():
             if count < threshold:
                 continue
-            if primer.ref_end >= p2_max:
-                p2_max = primer.ref_end
-                p2 = primer
-        return p1, p2
+            if primer.ref_end >= primer_max:
+                primer_max = primer.ref_end
+                right_primer = primer
+        return left_primer, right_primer
 
     def __eq__(self, other):
         raise NotImplementedError
@@ -354,10 +387,12 @@ class ReadStore:
         """Given an amplicon, returns list of Fragments"""
         return self.amplicons[amplicon]
 
-    def fetch(self, start=0, end=None):
+    def fetch(self, start: Index0, end: Index0):
+        """Fetch reads from a specific range of positions"""
         raise NotImplementedError
 
     def count_fragment(self, fragment: Fragment):
+        """Update internal amplicon stats summary"""
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             self.unmatched_reads += 1
@@ -371,6 +406,10 @@ class ReadStore:
         self.summary[amplicon.name]["total_depth"] += 1
 
     def push_fragment(self, fragment: Fragment):
+        """Insert fragment into the readstore
+
+        This matches the fragment to the amplicon
+        """
         amplicon: Optional[Amplicon] = self.amplicon_set.match(fragment)
         if amplicon is None:
             return
@@ -391,7 +430,7 @@ class ReadStore:
             self.summary[amplicon.name]["sampled_depth"] += 1
 
     def summarise_amplicons(self):
-        # normalise the bases per amplicons and such
+        """normalise the bases per amplicons and such"""
         for amplicon in self.amplicons:
             self.amplicon_stats[amplicon] = {}
             self.amplicon_stats[amplicon][False] = 0
@@ -402,13 +441,14 @@ class ReadStore:
     def reads_to_fastas(
         self, amplicon: Amplicon, outfile: Path, target_bases: int
     ) -> int:
+        """Write out reads as fasta files"""
         bases_out: int = 0
         with open(outfile, "w") as f:
             for i, fragment in enumerate(self[amplicon]):
                 for j, read in enumerate(fragment.reads):
                     print(
                         f">{i}.{j}",
-                        utils.revcomp(read.seq) if read.is_reverse else read.seq,
+                        revcomp(read.seq) if read.is_reverse else read.seq,
                         sep="\n",
                         file=f,
                     )
