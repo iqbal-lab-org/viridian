@@ -147,7 +147,7 @@ def test_pileup_msa_mapping():
     msa = Path(data_dir) / "ref_first.msa"
 
     # ensure parse_msa doesn't throw error
-    _, _ = self_qc.parse_msa(msa)
+    _, _, _ = self_qc.parse_msa(msa)
 
     # in this example the consensus sequence is in the first line
     bad_msa = Path(data_dir) / "cons_first.msa"
@@ -173,7 +173,7 @@ def test_ref_cons_position_translation():
                   0     6
     """
     msa = Path(data_dir) / "ref_first.msa"
-    ref_to_consensus, consensus_to_ref = self_qc.parse_msa(msa)
+    ref_to_consensus, consensus_to_ref, _ = self_qc.parse_msa(msa)
 
     assert ref_to_consensus[1] == 0  # None
     assert ref_to_consensus[7] == 4
@@ -198,7 +198,7 @@ def test_position_table_cons_shorter():
     """
     ref = "GACTGCAGCGCCCTTCGCACG"
     msa = Path(data_dir) / "cons_shorter.msa"
-    ref_to_consensus, consensus_to_ref = self_qc.parse_msa(msa)
+    ref_to_consensus, consensus_to_ref, _ = self_qc.parse_msa(msa)
 
     assert ref_to_consensus[1] == 0  # None
     assert ref_to_consensus[3] == 0  # None
@@ -226,7 +226,7 @@ def test_position_table_ref_shorter():
     ref = "ACTATCGATCGATT"
     # ref_alignment = "----ACT--ATCGATCGATT---"
     msa = Path(data_dir) / "ref_shorter.msa"
-    ref_to_consensus, consensus_to_ref = self_qc.parse_msa(msa)
+    ref_to_consensus, consensus_to_ref, _ = self_qc.parse_msa(msa)
 
     assert consensus_to_ref[10] == 4
     assert ref_to_consensus[4] == 10
@@ -239,7 +239,8 @@ def test_pileup_masking():
     ref = "ACTGACTATCGATCGATCGATCAG"
 
     stats = [
-        self_qc.EvaluatedStats(self_qc.Stats(i, base)) for (i, base) in enumerate(ref)
+        self_qc.EvaluatedStats(self_qc.Stats(i, base, base))
+        for (i, base) in enumerate(ref)
     ]
 
     failing_filters = {"easy_fail": (lambda x: x.total.refs >= 0, lambda _: "")}

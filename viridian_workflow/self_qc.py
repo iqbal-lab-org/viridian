@@ -63,6 +63,7 @@ class EvaluatedStats:
         self.multiple_amplicon_support = len(stats.baseprofiles) > 1
 
         self.alt_bases: defaultdict[str, int] = defaultdict(int)
+        self.reference_base: str = stats.reference_base
 
         for amplicon, profiles in stats.baseprofiles.items():
             if amplicon not in self.calls_by_amplicon:
@@ -137,6 +138,7 @@ class EvaluatedStats:
                 str,
                 [
                     self.aux_reference_pos,
+                    # self.reference_base,
                     self.base,
                     self.total.refs,
                     self.total.alts,
@@ -166,11 +168,13 @@ class Stats:
         self,
         aux_reference_pos: Index0,  # may be non-consensus sequence index
         base: str,
+        reference_base: str,
     ):
 
         self.baseprofiles: dict[Amplicon, dict[BaseProfile, int]] = {}
 
         self.aux_reference_pos: Index0 = aux_reference_pos
+        self.reference_base: str = reference_base
         self.base: str = base  # reference base
 
     def update(self, profile: BaseProfile):
@@ -186,12 +190,15 @@ Filter = Callable[[EvaluatedStats], bool]
 FilterMsg = Callable[[EvaluatedStats], str]
 
 
-def parse_msa(msa: Path) -> tuple[dict[Index1, Index1], dict[Index1, Index1]]:
+def parse_msa(
+    msa: Path,
+) -> tuple[dict[Index1, Index1], dict[Index1, Index1], list[tuple[str, str]]]:
     """Construct translation tables for mapping 1-based genomic coordinates
     between two complete sequences
     """
     ref_to_consensus: dict[Index1, Index1] = {}
     consensus_to_ref: dict[Index1, Index1] = {}
+    ref_cons_bases: list[tuple[str, str]] = []
 
     with open(msa) as msa_fd:
         ref_seq = msa_fd.readline().strip()  # reference
@@ -211,6 +218,7 @@ def parse_msa(msa: Path) -> tuple[dict[Index1, Index1], dict[Index1, Index1]]:
         con_pos = 0
 
         for con_base, ref_base in zip(con_seq, ref_seq):
+            ref_cons_bases.append((ref_base, con_base))
             if con_base != "-" and ref_base != "-":
                 ref_pos += 1
                 con_pos += 1
@@ -223,7 +231,7 @@ def parse_msa(msa: Path) -> tuple[dict[Index1, Index1], dict[Index1, Index1]]:
                 con_pos += 1
                 consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
 
-    return ref_to_consensus, consensus_to_ref
+    return ref_to_consensus, consensus_to_ref, ref_cons_bases
 
 
 class Pileup:
@@ -259,7 +267,7 @@ class Pileup:
 
         if msa is None:
             raise Exception("Building pileup without MSA is not supported")
-        rtoc, ctor = parse_msa(msa)
+        rtoc, ctor, ref_con_bases = parse_msa(msa)
 
         # cannot destructure with type annotations?
         self._ref_to_consensus: dict[Index1, Index1] = rtoc
@@ -268,11 +276,16 @@ class Pileup:
         _pileup: list[Stats] = []
 
         for i, base in enumerate(self.consensus_seq):
+            ref_base: str
+            cons_base: str
+            ref_base, cons_base = ref_con_bases[i]
+            # assert cons_base == base  # sanity check. ok to remove
             p = Index1(i + 1)
             _pileup.append(
                 Stats(
                     Index0(self.consensus_to_ref(p) - 1),
                     base,
+                    ref_base,
                 )
             )
 
@@ -428,9 +441,12 @@ class Pileup:
 
     def dump_tsv(self, tsv: Path) -> Path:
         fd = open(tsv, "w")
+        header: str = "HEADER GOES HERE"
+        print(header, file=fd)
         for pos, stats in enumerate(self.seq):
             ref_pos = self.consensus_to_ref(Index1(pos + 1))
-            print(f"{ref_pos}\t{pos}\t{stats.tsv_row()}", file=fd)
+            ref_base = stats.reference_base
+            print(f"{ref_pos}\t{ref_base}\t{pos}\t{stats.tsv_row()}", file=fd)
         return tsv
 
     def annotate_vcf(self, vcf: Path) -> tuple[list[str], Any]:
