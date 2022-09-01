@@ -119,7 +119,7 @@ def run_pipeline(
 
     print(json.dumps(log), file=open(work_dir / "log.json", "w"))
 
-    with open(work_dir / "masked.fasta", "w", encoding="utf-8") as fasta_out:
+    with open(work_dir / "consensus.fa", "w", encoding="utf-8") as fasta_out:
         print(f">{sample_name}", file=fasta_out)
         print(masked_fasta, file=fasta_out)
 
