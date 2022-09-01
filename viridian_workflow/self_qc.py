@@ -218,18 +218,19 @@ def parse_msa(
         con_pos = 0
 
         for con_base, ref_base in zip(con_seq, ref_seq):
-            ref_cons_bases.append((ref_base, con_base))
             if con_base != "-" and ref_base != "-":
                 ref_pos += 1
                 con_pos += 1
                 ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
                 consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+                ref_cons_bases.append((ref_base, con_base))
             elif con_base == "-" and ref_base != "-":
                 ref_pos += 1
                 ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
             elif ref_base == "-" and con_base != "-":
                 con_pos += 1
                 consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+                ref_cons_bases.append((ref_base, con_base))
 
     return ref_to_consensus, consensus_to_ref, ref_cons_bases
 
@@ -267,7 +268,7 @@ class Pileup:
 
         if msa is None:
             raise Exception("Building pileup without MSA is not supported")
-        rtoc, ctor, ref_con_bases = parse_msa(msa)
+        rtoc, ctor, ref_cons_bases = parse_msa(msa)
 
         # cannot destructure with type annotations?
         self._ref_to_consensus: dict[Index1, Index1] = rtoc
@@ -278,8 +279,8 @@ class Pileup:
         for i, base in enumerate(self.consensus_seq):
             ref_base: str
             cons_base: str
-            ref_base, cons_base = ref_con_bases[i]
-            # assert cons_base == base  # sanity check. ok to remove
+            ref_base, cons_base = ref_cons_bases[i]
+            assert cons_base == base  # sanity check. ok to remove
             p = Index1(i + 1)
             _pileup.append(
                 Stats(
@@ -441,7 +442,7 @@ class Pileup:
 
     def dump_tsv(self, tsv: Path) -> Path:
         fd = open(tsv, "w")
-        header: str = "HEADER GOES HERE"
+        header: list[str] = ["ref_pos", "cons_pos"]
         print(header, file=fd)
         for pos, stats in enumerate(self.seq):
             ref_pos = self.consensus_to_ref(Index1(pos + 1))
