@@ -131,7 +131,7 @@ class EvaluatedStats:
         ]
         return ";".join(info_fields)
 
-    def tsv_row(self) -> str:
+    def info_field(self) -> str:
         alts = ";".join([f"{k}:{v}" for k, v in self.alt_bases.items()])
         row = "\t".join(
             map(
@@ -153,8 +153,28 @@ class EvaluatedStats:
                 ],
             )
         )
-
         return row
+
+    def tsv_row(self) -> dict[str, Any]:
+        return {
+            "Pos.ref": self.aux_reference_pos,
+            "Base.ref": self.reference_base,
+            "Base.cons": self.base,
+            "A": self.alt_bases["A"],
+            "C": self.alt_bases["C"],
+            "G": self.alt_bases["G"],
+            "T": self.alt_bases["T"],
+            "-": self.alt_bases["-"],
+            "RawDepth": self.depth,
+            "Clean.Tot.cons": self.total.refs,
+            "Clean.Tot.noncons": self.total.alts,
+            "InPrimer": self.primer_calls.refs + self.primer_calls.alts,
+            "P.ignored.cons": self.primer_calls_ignored.refs,
+            "P.ignored.noncons": self.primer_calls_ignored.alts,
+            "P.cons": self.primer_calls.refs,
+            "P.noncons": self.primer_calls.alts,
+            "AmpOv": len(self.calls_by_amplicon),
+        }
 
     def __str__(self) -> str:
         alts = ",".join([f"{alt}:{count}" for alt, count in self.alt_bases.items()])
@@ -192,13 +212,17 @@ FilterMsg = Callable[[EvaluatedStats], str]
 
 def parse_msa(
     msa: Path,
-) -> tuple[dict[Index1, Index1], dict[Index1, Index1], list[tuple[str, str]]]:
+) -> tuple[
+    dict[Index1, Index1],
+    dict[Index1, Index1],
+    list[tuple[tuple[Index1, str], tuple[Index1, str]]],
+]:
     """Construct translation tables for mapping 1-based genomic coordinates
     between two complete sequences
     """
     ref_to_consensus: dict[Index1, Index1] = {}
     consensus_to_ref: dict[Index1, Index1] = {}
-    ref_cons_bases: list[tuple[str, str]] = []
+    ref_cons_bases: list[tuple[tuple[Index1, str], tuple[Index1, str]]] = []
 
     with open(msa) as msa_fd:
         ref_seq = msa_fd.readline().strip()  # reference
@@ -218,19 +242,26 @@ def parse_msa(
         con_pos = 0
 
         for con_base, ref_base in zip(con_seq, ref_seq):
-            if con_base != "-" and ref_base != "-":
-                ref_pos += 1
-                con_pos += 1
-                ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
-                consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
-                ref_cons_bases.append((ref_base, con_base))
-            elif con_base == "-" and ref_base != "-":
+            if con_base == "-" and ref_base != "-":
                 ref_pos += 1
                 ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
+                ref_cons_bases.append(
+                    ((Index1(ref_pos), ref_base), (Index1(con_pos), con_base))
+                )
             elif ref_base == "-" and con_base != "-":
                 con_pos += 1
                 consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
-                ref_cons_bases.append((ref_base, con_base))
+                ref_cons_bases.append(
+                    ((Index1(ref_pos), ref_base), (Index1(con_pos), con_base))
+                )
+            elif con_base != "-" and ref_base != "-":
+                ref_pos += 1
+                con_pos += 1
+                ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
+                consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+                ref_cons_bases.append(
+                    ((Index1(ref_pos), ref_base), (Index1(con_pos), con_base))
+                )
 
     return ref_to_consensus, consensus_to_ref, ref_cons_bases
 
@@ -277,9 +308,11 @@ class Pileup:
         _pileup: list[Stats] = []
 
         for i, base in enumerate(self.consensus_seq):
+            ref_pos: Index1
             ref_base: str
+            cons_pos: Index1
             cons_base: str
-            ref_base, cons_base = ref_cons_bases[i]
+            (ref_pos, ref_base), (cons_pos, cons_base) = ref_cons_bases[i]
             assert cons_base == base  # sanity check. ok to remove
             p = Index1(i + 1)
             _pileup.append(
@@ -442,12 +475,33 @@ class Pileup:
 
     def dump_tsv(self, tsv: Path) -> Path:
         fd = open(tsv, "w")
-        header: list[str] = ["ref_pos", "cons_pos"]
-        print(header, file=fd)
+        header: list[str] = [
+            "Pos.ref",
+            "Base.ref",
+            "Pos.cons",
+            "Base.cons",
+            "A",
+            "C",
+            "G",
+            "T",
+            "-",
+            "RawDepth",
+            "Clean.Tot.cons",
+            "Clean.Tot.noncons",
+            "InPrimer",
+            "SchemeAmpCount",
+            "P.ignored.cons",
+            "P.ignored.noncons",
+            "P.cons",
+            "P.noncons",
+            "AmpOv",
+        ]
+        print("\t".join(header), file=fd)
         for pos, stats in enumerate(self.seq):
-            ref_pos = self.consensus_to_ref(Index1(pos + 1))
-            ref_base = stats.reference_base
-            print(f"{ref_pos}\t{ref_base}\t{pos}\t{stats.tsv_row()}", file=fd)
+            row = stats.tsv_row()
+            row["Pos.cons"] = Index1(pos + 1)
+            row["SchemeAmpCount"] = 0
+            print("\t".join([str(row[column]) for column in header]), file=fd)
         return tsv
 
     def annotate_vcf(self, vcf: Path) -> tuple[list[str], Any]:
