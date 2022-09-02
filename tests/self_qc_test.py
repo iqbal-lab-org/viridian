@@ -147,7 +147,7 @@ def test_pileup_msa_mapping():
     msa = Path(data_dir) / "ref_first.msa"
 
     # ensure parse_msa doesn't throw error
-    _, _, _ = self_qc.parse_msa(msa)
+    self_qc.Msa(msa)
 
     # in this example the consensus sequence is in the first line
     bad_msa = Path(data_dir) / "cons_first.msa"
@@ -172,19 +172,18 @@ def test_ref_cons_position_translation():
        1  4  7    1     1
                   0     6
     """
-    msa = Path(data_dir) / "ref_first.msa"
-    ref_to_consensus, consensus_to_ref, _ = self_qc.parse_msa(msa)
+    msa = self_qc.Msa(Path(data_dir) / "ref_first.msa")
 
-    assert ref_to_consensus[1] == 0  # None
-    assert ref_to_consensus[7] == 4
-    assert consensus_to_ref[4] == 7
-    assert ref_to_consensus[13] == 10
-    assert ref_to_consensus[8] == 7
-    assert consensus_to_ref[7] == 8
-    assert consensus_to_ref[10] == 13
-    assert ref_to_consensus[24] == 16
-    assert consensus_to_ref[16] == 19
-    assert ref_to_consensus[8] == 7
+    assert msa._ref_to_consensus[1] == 0  # None
+    assert msa._ref_to_consensus[7] == 4
+    assert msa._consensus_to_ref[4] == 7
+    assert msa._ref_to_consensus[13] == 10
+    assert msa._ref_to_consensus[8] == 7
+    assert msa._consensus_to_ref[7] == 8
+    assert msa._consensus_to_ref[10] == 13
+    assert msa._ref_to_consensus[24] == 16
+    assert msa._consensus_to_ref[16] == 19
+    assert msa._ref_to_consensus[8] == 7
 
 
 def test_position_table_cons_shorter():
@@ -197,19 +196,18 @@ def test_position_table_cons_shorter():
                     1  4
     """
     ref = "GACTGCAGCGCCCTTCGCACG"
-    msa = Path(data_dir) / "cons_shorter.msa"
-    ref_to_consensus, consensus_to_ref, _ = self_qc.parse_msa(msa)
+    msa = self_qc.Msa(Path(data_dir) / "cons_shorter.msa")
 
-    assert ref_to_consensus[1] == 0  # None
-    assert ref_to_consensus[3] == 0  # None
+    assert msa._ref_to_consensus[1] == 0  # None
+    assert msa._ref_to_consensus[3] == 0  # None
 
-    assert ref_to_consensus[5] == 1
-    assert consensus_to_ref[1] == 5
+    assert msa._ref_to_consensus[5] == 1
+    assert msa._consensus_to_ref[1] == 5
 
-    assert ref_to_consensus[10] == 4
-    assert consensus_to_ref[4] == 10
-    assert ref_to_consensus[15] == 11
-    assert consensus_to_ref[11] == 15
+    assert msa._ref_to_consensus[10] == 4
+    assert msa._consensus_to_ref[4] == 10
+    assert msa._ref_to_consensus[15] == 11
+    assert msa._consensus_to_ref[11] == 15
 
 
 def test_position_table_ref_shorter():
@@ -225,13 +223,12 @@ def test_position_table_ref_shorter():
 
     ref = "ACTATCGATCGATT"
     # ref_alignment = "----ACT--ATCGATCGATT---"
-    msa = Path(data_dir) / "ref_shorter.msa"
-    ref_to_consensus, consensus_to_ref, _ = self_qc.parse_msa(msa)
+    msa = self_qc.Msa(Path(data_dir) / "ref_shorter.msa")
 
-    assert consensus_to_ref[10] == 4
-    assert ref_to_consensus[4] == 10
-    assert consensus_to_ref[15] == 11
-    assert ref_to_consensus[11] == 15
+    assert msa._consensus_to_ref[10] == 4
+    assert msa._ref_to_consensus[4] == 10
+    assert msa._consensus_to_ref[15] == 11
+    assert msa._ref_to_consensus[11] == 15
 
 
 def test_pileup_masking():

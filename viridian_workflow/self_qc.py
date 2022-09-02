@@ -210,60 +210,66 @@ Filter = Callable[[EvaluatedStats], bool]
 FilterMsg = Callable[[EvaluatedStats], str]
 
 
-def parse_msa(
-    msa: Path,
-) -> tuple[
-    dict[Index1, Index1],
-    dict[Index1, Index1],
-    list[tuple[tuple[Index1, str], tuple[Index1, str]]],
-]:
-    """Construct translation tables for mapping 1-based genomic coordinates
-    between two complete sequences
-    """
-    ref_to_consensus: dict[Index1, Index1] = {}
-    consensus_to_ref: dict[Index1, Index1] = {}
-    ref_cons_bases: list[tuple[tuple[Index1, str], tuple[Index1, str]]] = []
+class Msa:
+    def __init__(self, msa: Path):
+        """Construct translation tables for mapping 1-based genomic coordinates
+        between two complete sequences
+        """
+        self._ref_to_consensus: dict[Index1, Index1] = {}
+        self._consensus_to_ref: dict[Index1, Index1] = {}
+        self.msa: list[tuple[tuple[Index1, str], tuple[Index1, str]]] = []
+        self.ref: list[str] = []
+        self.cons: list[str] = []
 
-    with open(msa) as msa_fd:
-        ref_seq = msa_fd.readline().strip()  # reference
-        con_seq = msa_fd.readline().strip()  # consensus
+        with open(msa) as msa_fd:
+            ref_seq = msa_fd.readline().strip()  # reference
+            con_seq = msa_fd.readline().strip()  # consensus
 
-        if len(msa_fd.readline()) > 0:
-            raise Exception("Invalid multiple sequence alignment file")
+            if len(msa_fd.readline()) > 0:
+                raise Exception("Invalid multiple sequence alignment file")
 
-        if len(con_seq) != len(ref_seq):
-            raise Exception("Both sequences in MSA must be same length")
+            if len(con_seq) != len(ref_seq):
+                raise Exception("Both sequences in MSA must be same length")
 
-        # this is valid for testing when the consensus is complete
-        # but some of the unittests break this assumption
-        # assert con_seq.replace("-", "") == self.consensus_seq
+            # this is valid for testing when the consensus is complete
+            # but some of the unittests break this assumption
+            # assert con_seq.replace("-", "") == self.consensus_seq
 
-        ref_pos = 0
-        con_pos = 0
+            ref_pos = 0
+            con_pos = 0
 
-        for con_base, ref_base in zip(con_seq, ref_seq):
-            if con_base == "-" and ref_base != "-":
-                ref_pos += 1
-                ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
-                ref_cons_bases.append(
+            for con_base, ref_base in zip(con_seq, ref_seq):
+                if con_base == "-" and ref_base != "-":
+                    ref_pos += 1
+                    self._ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
+                    self.ref.append(ref_base)
+
+                elif ref_base == "-" and con_base != "-":
+                    con_pos += 1
+                    self._consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+                    self.cons.append(con_base)
+
+                elif con_base != "-" and ref_base != "-":
+                    ref_pos += 1
+                    con_pos += 1
+                    self._ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
+                    self._consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
+                    self.ref.append(ref_base)
+                    self.cons.append(con_base)
+
+                self.msa.append(
                     ((Index1(ref_pos), ref_base), (Index1(con_pos), con_base))
                 )
-            elif ref_base == "-" and con_base != "-":
-                con_pos += 1
-                consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
-                ref_cons_bases.append(
-                    ((Index1(ref_pos), ref_base), (Index1(con_pos), con_base))
-                )
-            elif con_base != "-" and ref_base != "-":
-                ref_pos += 1
-                con_pos += 1
-                ref_to_consensus[Index1(ref_pos)] = Index1(con_pos)
-                consensus_to_ref[Index1(con_pos)] = Index1(ref_pos)
-                ref_cons_bases.append(
-                    ((Index1(ref_pos), ref_base), (Index1(con_pos), con_base))
-                )
 
-    return ref_to_consensus, consensus_to_ref, ref_cons_bases
+    def ref_to_consensus(self, p: Index1) -> Index1:
+        if p in self._ref_to_consensus:
+            return self._ref_to_consensus[p]
+        return Index1(0)
+
+    def consensus_to_ref(self, p: Index1) -> Index1:
+        if p in self._consensus_to_ref:
+            return self._consensus_to_ref[p]
+        return Index1(0)
 
 
 class Pileup:
@@ -299,27 +305,19 @@ class Pileup:
 
         if msa is None:
             raise Exception("Building pileup without MSA is not supported")
-        rtoc, ctor, ref_cons_bases = parse_msa(msa)
 
-        # cannot destructure with type annotations?
-        self._ref_to_consensus: dict[Index1, Index1] = rtoc
-        self._consensus_to_ref: dict[Index1, Index1] = ctor
+        self.msa: Msa = Msa(msa)
 
         _pileup: list[Stats] = []
 
         for i, base in enumerate(self.consensus_seq):
-            ref_pos: Index1
-            ref_base: str
-            cons_pos: Index1
-            cons_base: str
-            (ref_pos, ref_base), (cons_pos, cons_base) = ref_cons_bases[i]
-            assert cons_base == base  # sanity check. ok to remove
-            p = Index1(i + 1)
+            p: Index1 = Index1(i + 1)
+            ref_pos: Index0 = Index0(self.msa.consensus_to_ref(p) - 1)
             _pileup.append(
                 Stats(
-                    Index0(self.consensus_to_ref(p) - 1),
+                    ref_pos,
                     base,
-                    ref_base,
+                    self.msa.ref[ref_pos],
                 )
             )
 
@@ -356,7 +354,7 @@ class Pileup:
                         # original amplicon call
                         if x.is_primary and in_range(  # this is always true with mappy
                             (Index0(amplicon.start - 10), Index0(amplicon.end + 10)),
-                            Index0(self.consensus_to_ref(Index1(x.r_st + 1)) - 1),
+                            Index0(self.msa.consensus_to_ref(Index1(x.r_st + 1)) - 1),
                         ):
                             alignment = x
 
@@ -374,7 +372,7 @@ class Pileup:
 
                     for consensus_pos, call in aln:
                         reference_pos = Index0(
-                            self.consensus_to_ref(Index1(consensus_pos + 1)) - 1
+                            self.msa.consensus_to_ref(Index1(consensus_pos + 1)) - 1
                         )
                         if consensus_pos >= len(self.consensus_seq):
                             print(
@@ -405,16 +403,6 @@ class Pileup:
 
         for stat in _pileup:
             self.seq.append(EvaluatedStats(stat))
-
-    def ref_to_consensus(self, p: Index1) -> Index1:
-        if p in self._ref_to_consensus:
-            return self._ref_to_consensus[p]
-        return Index1(0)
-
-    def consensus_to_ref(self, p: Index1) -> Index1:
-        if p in self._consensus_to_ref:
-            return self._consensus_to_ref[p]
-        return Index1(0)
 
     def __getitem__(self, pos: Index0) -> EvaluatedStats:
         if pos > len(self.seq):
@@ -497,9 +485,27 @@ class Pileup:
             "AmpOv",
         ]
         print("\t".join(header), file=fd)
-        for pos, stats in enumerate(self.seq):
-            row = stats.tsv_row()
-            row["Pos.cons"] = Index1(pos + 1)
+        for tsv_coords in self.msa.msa:
+            ref_pos: Index1
+            ref_base: str
+            con_pos: Index1
+            con_base: str
+
+            (ref_pos, ref_base), (con_pos, con_base) = tsv_coords
+            row: defaultdict[str, Any] = defaultdict(str)
+
+            if con_base != "-":
+                for k, v in self.seq[con_pos - 1].tsv_row().items():
+                    row[k] = v
+            else:
+                for k in header:
+                    row[k] = "."
+
+            row["Pos.ref"] = ref_pos
+            row["Pos.cons"] = con_pos
+            row["Base.ref"] = ref_base
+            row["Base.cons"] = con_base
+
             row["SchemeAmpCount"] = 0
             print("\t".join([str(row[column]) for column in header]), file=fd)
         return tsv
@@ -529,7 +535,7 @@ class Pileup:
             ) = line.split("\t")
 
             pos: Index1 = Index1(int(pos_token))
-            cons_coord: Index1 = self.ref_to_consensus(pos)
+            cons_coord: Index1 = self.msa.ref_to_consensus(pos)
 
             stats = self.seq[Index0(cons_coord - 1)]
 
