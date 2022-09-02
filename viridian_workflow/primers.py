@@ -10,7 +10,7 @@ import csv
 from pathlib import Path
 from dataclasses import dataclass
 from intervaltree import IntervalTree  # type: ignore
-from viridian_workflow.utils import Index0, in_range
+from viridian_workflow.utils import Index0, Index1, in_range
 from viridian_workflow.reads import Fragment
 
 
@@ -255,3 +255,7 @@ class AmpliconSet:
             return list(hits)[0].data
 
         return None
+
+    def get_pos(self, pos: Index1) -> list[Amplicon]:
+        """Get amplicons overlapping at a position"""
+        return self.tree[pos - 1]

@@ -128,7 +128,7 @@ def run_pipeline(
 
     # dump tsv
     if dump_tsv:
-        _ = pileup.dump_tsv(work_dir / "all_stats.tsv")
+        _ = pileup.dump_tsv(work_dir / "all_stats.tsv", amplicon_set)
 
     with open(work_dir / "final.vcf", "w", encoding="utf-8") as vcf_out:
         header, records = annotated_vcf

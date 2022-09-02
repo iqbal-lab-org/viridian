@@ -16,7 +16,7 @@ from pathlib import Path
 import mappy as mp  # type: ignore
 
 from viridian_workflow.utils import Index0, Index1, in_range
-from viridian_workflow.primers import Amplicon
+from viridian_workflow.primers import Amplicon, AmpliconSet
 from viridian_workflow.readstore import ReadStore
 
 
@@ -461,7 +461,7 @@ class Pileup:
             qc["masking_summary"] = summary
         return "".join(sequence), qc, summary
 
-    def dump_tsv(self, tsv: Path) -> Path:
+    def dump_tsv(self, tsv: Path, amplicon_set: AmpliconSet) -> Path:
         fd = open(tsv, "w")
         header: list[str] = [
             "Pos.ref",
@@ -492,21 +492,22 @@ class Pileup:
             con_base: str
 
             (ref_pos, ref_base), (con_pos, con_base) = tsv_coords
-            row: defaultdict[str, Any] = defaultdict(str)
+            row: dict[str, Any] = {
+                "Pos.ref": ref_pos,
+                "Pos.cons": con_pos,
+                "Base.ref": ref_base,
+                "Base.cons": con_base,
+                "SchemeAmpCount": len(amplicon_set.get_pos(ref_pos)),
+            }
 
             if con_base != "-":
                 for k, v in self.seq[con_pos - 1].tsv_row().items():
                     row[k] = v
-            else:
-                for k in header:
+
+            for k in header:
+                if k not in row:
                     row[k] = "."
 
-            row["Pos.ref"] = ref_pos
-            row["Pos.cons"] = con_pos
-            row["Base.ref"] = ref_base
-            row["Base.cons"] = con_base
-
-            row["SchemeAmpCount"] = 0
             print("\t".join([str(row[column]) for column in header]), file=fd)
         return tsv
 
