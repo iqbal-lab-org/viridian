@@ -117,7 +117,7 @@ def run_pipeline(
     # log["self_qc"] = pileup.log
     log["qc"] = pileup.summary
 
-    print(json.dumps(log), file=open(work_dir / "log.json", "w"))
+    print(json.dumps(log, indent=2), file=open(work_dir / "log.json", "w"))
 
     with open(work_dir / "consensus.fa", "w", encoding="utf-8") as fasta_out:
         print(f">{sample_name}", file=fasta_out)
