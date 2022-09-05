@@ -157,9 +157,9 @@ class EvaluatedStats:
 
     def tsv_row(self) -> dict[str, Any]:
         return {
-            "Pos.ref": self.aux_reference_pos,
-            "Base.ref": self.reference_base,
-            "Base.cons": self.base,
+            # "Pos.ref": self.aux_reference_pos,
+            # "Base.ref": self.reference_base,
+            # "Base.cons": self.base,
             "A": self.alt_bases["A"],
             "C": self.alt_bases["C"],
             "G": self.alt_bases["G"],
