@@ -52,3 +52,5 @@ class Varifier(Task):
             str(ref),
             str(outdir),
         ]
+
+        super(Varifier, self).__init__(name="varifier")

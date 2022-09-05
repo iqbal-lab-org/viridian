@@ -31,9 +31,11 @@ def run_pipeline(
     dump_tsv: bool = False,
     command_line_args: Optional[dict[str, Any]] = None,
     force_consensus: Optional[Path] = None,
+    global_log: dict[str, Any] = {},  # global pipeline log dictionary (bad)
 ):
 
-    log: dict[str, Any] = {}
+    results: dict[str, Any] = {}
+    results["Progress"] = []
     work_dir = Path(work_dir)
     if work_dir.exists():
         raise Exception(f"Output directory {work_dir} already exists")
@@ -53,15 +55,30 @@ def run_pipeline(
         exit(1)
 
     unsorted_bam: Path = minimap.run()
+    results["Progress"].append(minimap.log)
+
     # add minimap task log to result log
     # log["minimap"] = minimap.log
 
     # pre-process input bam
     bam: readstore.Bam = readstore.Bam(unsorted_bam)
+    results["Coverage"] = {
+        "total_reads": 0,  # TODO
+        "Total_fragments": 0,  # TODO
+        "Reference_coverage": 0,  # TODO
+        "Reference_length": 0,  # TODO
+        "Average_amplicon_depth": 0,  # TODO
+    }
 
     # detect amplicon set
     amplicon_set: AmpliconSet = bam.detect_amplicon_set(amplicon_sets)
-    # log["amplicons"] = bam.stats
+    results["Amplicons"] = {
+        "scheme": amplicon_set.name,
+        "total_amplicons": len(amplicon_set.amplicons),
+        "Successful_amplicons": 0,  # TODO
+        "fragment_matches": 0,  # TODO
+        "fragment_mismatches": 0,  # TODO
+    }
 
     # construct readstore
     # this subsamples the reads
@@ -71,12 +88,12 @@ def run_pipeline(
         else readstore.ReadStore(force_amp_scheme, bam)
     )
 
-    log["amplicons"] = reads.summary
+    # log["amplicons"] = reads.summary
 
     # branch on whether to run cylon or use external assembly ("cuckoo mode")
     consensus: Optional[Path] = None
     if force_consensus is not None:
-        log["forced_consensus"] = str(force_consensus)
+        # global_log["forced_consensus"] = str(force_consensus)
         consensus = Path(force_consensus)
 
     else:
@@ -87,7 +104,7 @@ def run_pipeline(
         # run cylon
         cylon = Cylon(work_dir, platform, ref, amp_dir, manifest_data, reads.cylon_json)
         consensus = cylon.run()
-        log["initial_assembly"] = cylon.log
+        results["Progress"].append(cylon.log)
 
     # satify type bounds and ensure the readstore was properly constructed
     assert consensus is not None
@@ -103,7 +120,7 @@ def run_pipeline(
         max_coord=reads.end_pos,
     )
     vcf, msa, varifier_consensus = varifier.run()
-    log["varifier"] = varifier.log
+    results["Progress"].append(varifier.log)
 
     pileup = self_qc.Pileup(
         varifier_consensus,
@@ -115,9 +132,17 @@ def run_pipeline(
     # masked fasta output
     masked_fasta: str = pileup.mask()
     # log["self_qc"] = pileup.log
-    log["qc"] = pileup.summary
+    # log["qc"] = pileup.summary
 
-    print(json.dumps(log, indent=2), file=open(work_dir / "log.json", "w"))
+    results["Self_qc"] = {
+        "Masked_by_assembler": 0,  # TODO
+        "Total_masked_incl_self_qc": 0,  # TODO
+        "Filters": {},  # TODO
+    }
+
+    results["Consensus"] = ("",)  # TODO
+    results["reference_start"] = (0,)  # TODO
+    results["reference_end"] = (0,)  # TODO
 
     with open(work_dir / "consensus.fa", "w", encoding="utf-8") as fasta_out:
         print(f">{sample_name}", file=fasta_out)
@@ -137,4 +162,4 @@ def run_pipeline(
         for rec in records:
             print("\t".join(map(str, rec)), file=vcf_out)
 
-    return log
+    return results

@@ -1,4 +1,8 @@
 import logging
+import sys
+import os
+import socket
+import time
 import subprocess
 from pathlib import Path
 from viridian_workflow import utils, primers, amplicon_schemes
@@ -11,6 +15,22 @@ def cuckoo(options):
 
 def run(options, force_consensus=None):
     fq1, fq2 = utils.check_tech_and_reads_opts_and_get_reads(options)
+
+    log: dict[str, Any] = {}
+
+    log["Summary"]["command"] = " ".join(sys.argv)
+    log["Summary"]["Version"] = ""
+    log["Summary"]["Finished_running"] = False
+    log["Summary"]["Success"] = False
+    log["Summary"]["Progress"] = []
+    log["Summary"]["cwd"] = os.getcwd()
+    log["Summary"]["hostname"] = socket.gethostname()
+    start_time = time.time()
+    log["Summary"]["start_time"] = start_time
+
+    log["Summary"]["options"] = {}
+    for option, setting in options.__dict__.items():
+        log["Summary"]["options"][str(option)] = setting
 
     if options.force:
         logging.info(f"--force option used, so deleting {options.outdir} if it exists")
@@ -61,21 +81,35 @@ def run(options, force_consensus=None):
         for name, tsv in amplicon_index.items()
     ]
 
-    run_pipeline(
-        options.outdir,
-        options.tech,
-        fqs,
-        amplicon_sets,
-        ref=options.ref_fasta,
-        force_amp_scheme=chosen_amplicon_set,
-        keep_intermediate=options.debug,
-        keep_bam=options.keep_bam,
-        dump_tsv=options.dump_tsv,
-        sample_name=options.sample_name,
-        frs_threshold=options.frs_threshold,
-        self_qc_depth=options.self_qc_depth,
-        consensus_max_n_percent=options.max_cons_n_percent,
-        max_percent_amps_fail=options.max_percent_amps_fail,
-        command_line_args=options,
-        force_consensus=force_consensus,
-    )
+    try:
+        pipeline_results = run_pipeline(
+            options.outdir,
+            options.tech,
+            fqs,
+            amplicon_sets,
+            ref=options.ref_fasta,
+            force_amp_scheme=chosen_amplicon_set,
+            keep_intermediate=options.debug,
+            keep_bam=options.keep_bam,
+            dump_tsv=options.dump_tsv,
+            sample_name=options.sample_name,
+            frs_threshold=options.frs_threshold,
+            self_qc_depth=options.self_qc_depth,
+            consensus_max_n_percent=options.max_cons_n_percent,
+            max_percent_amps_fail=options.max_percent_amps_fail,
+            command_line_args=options,
+            force_consensus=force_consensus,
+            log=log,
+        )
+        log["Results"] = pipeline_log
+        log["Summary"]["Success"] = True
+    except Exception as e:
+        log["Summary"]["Success"] = False
+        # log["Summary"]["status"] = {"Failure": str(e)}
+        print(f"Pipeline failed with exception: {e}", file=sys.stderr)
+
+    with open(work_dir / "log.json", "w") as json_out:
+        end_time = time.time()
+        log["Summary"]["end_time"] = end_time
+        log["Summary"]["run_time"] = end_time - start_time
+        json.dump(log, json_out, indent=2)

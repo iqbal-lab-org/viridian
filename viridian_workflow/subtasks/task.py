@@ -16,10 +16,22 @@ class Task:
     a list of output files
     """
 
-    def __init__(self):
+    def __init__(self, name=None):
         self.cmd: list[str]
-        self.log: dict[str, str]
         self.output: Union[Path, list[Path]]
+
+        if name is None:
+            self.name = self.cmd[0]
+        else:
+            self.name = name
+
+        self.start_time = time.time()
+        self.log: dict[str, str] = {
+            "Task": self.name,
+            "Success": False,
+            "start": self.start_time,
+            "error": None,
+        }
 
     def check_output(self):
         """Test if outfile files exist"""
@@ -33,9 +45,7 @@ class Task:
 
     def run(self, ignore_error=False, stdout=None):
         """Launch a pipeline task"""
-        self.log = {}
         cmd = [str(c) for c in self.cmd]
-        self.log["subprocess"] = " ".join(cmd)
 
         stdout_fd = subprocess.PIPE
         if stdout:
@@ -51,10 +61,11 @@ class Task:
         )
         if stdout:
             stdout_fd.close()
-        time_elapsed = time.time() - start_time
-        self.log["duration"] = str(time_elapsed)
+
+        self.log["end"] = time.time()
 
         if not ignore_error and result.returncode != 0:
+            self.log["error"] = result.stderr
             raise Exception(f"Process returned {result.returncode}: {result.stderr}")
 
         # this is awkward and probably not useful
@@ -62,4 +73,5 @@ class Task:
             print(result.stdout)
 
         self.check_output()
+        self.log["Success"] = True
         return self.output

@@ -43,3 +43,4 @@ class Cylon(Task):
             str(work_dir / "amplicons.json"),
             str(work_dir / "initial_assembly"),
         ]
+        super(Cylon, self).__init__(name="cylon")

@@ -45,6 +45,7 @@ class Minimap(Task):
             reads_list = [str(fq1), str(fq2)]
         self.cmd.append(str(ref_genome))
         self.cmd.extend(reads_list)
+        super(Minimap, self).__init__(name="minimap")
 
     def run(self):
         if self.sort:
