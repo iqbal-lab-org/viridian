@@ -31,15 +31,16 @@ def run_pipeline(
     dump_tsv: bool = False,
     command_line_args: Optional[dict[str, Any]] = None,
     force_consensus: Optional[Path] = None,
-    global_log: dict[str, Any] = {},  # global pipeline log dictionary (bad)
+    global_log: Optional[dict[str, Any]] = {},  # global pipeline log dictionary (bad)
 ):
+    work_dir = Path(work_dir)
+    if not work_dir.exists():
+        work_dir.mkdir()
+
+    if not global_log:
+        global_log = {"Summary": {"Progress": []}}
 
     results: dict[str, Any] = {}
-    results["Progress"] = []
-    work_dir = Path(work_dir)
-    if work_dir.exists():
-        raise Exception(f"Output directory {work_dir} already exists")
-    work_dir.mkdir()
 
     # generate name-sorted bam from fastqs
     if platform == "illumina":
@@ -55,7 +56,7 @@ def run_pipeline(
         exit(1)
 
     unsorted_bam: Path = minimap.run()
-    results["Progress"].append(minimap.log)
+    global_log["Summary"]["Progress"].append(minimap.log)
 
     # add minimap task log to result log
     # log["minimap"] = minimap.log
@@ -104,7 +105,7 @@ def run_pipeline(
         # run cylon
         cylon = Cylon(work_dir, platform, ref, amp_dir, manifest_data, reads.cylon_json)
         consensus = cylon.run()
-        results["Progress"].append(cylon.log)
+        global_log["Summary"]["Progress"].append(cylon.log)
 
     # satify type bounds and ensure the readstore was properly constructed
     assert consensus is not None
@@ -120,7 +121,7 @@ def run_pipeline(
         max_coord=reads.end_pos,
     )
     vcf, msa, varifier_consensus = varifier.run()
-    results["Progress"].append(varifier.log)
+    global_log["Summary"]["Progress"].append(varifier.log)
 
     pileup = self_qc.Pileup(
         varifier_consensus,
@@ -135,14 +136,17 @@ def run_pipeline(
     # log["qc"] = pileup.summary
 
     results["Self_qc"] = {
-        "Masked_by_assembler": 0,  # TODO
-        "Total_masked_incl_self_qc": 0,  # TODO
-        "Filters": {},  # TODO
+        "Masked_by_assembler": pileup.summary["already_masked"],
+        "Total_masked_incl_self_qc": pileup.summary["total_masked"]
+        - pileup.summary["already_masked"],
+        "Filters": pileup.summary["Filters"],
     }
 
-    results["Consensus"] = ("",)  # TODO
-    results["reference_start"] = (0,)  # TODO
-    results["reference_end"] = (0,)  # TODO
+    results["Consensus"] = pileup.consensus_seq  # TODO
+    results["reference_start"] = reads.start_pos  # TODO
+    results["reference_end"] = reads.end_pos  # TODO
+
+    results["Details"] = {}
 
     with open(work_dir / "consensus.fa", "w", encoding="utf-8") as fasta_out:
         print(f">{sample_name}", file=fasta_out)

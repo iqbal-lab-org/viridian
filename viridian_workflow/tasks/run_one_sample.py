@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import json
 import socket
 import time
 import subprocess
@@ -17,7 +18,7 @@ def run(options, force_consensus=None):
     fq1, fq2 = utils.check_tech_and_reads_opts_and_get_reads(options)
 
     log: dict[str, Any] = {}
-
+    log["Summary"] = {}
     log["Summary"]["command"] = " ".join(sys.argv)
     log["Summary"]["Version"] = ""
     log["Summary"]["Finished_running"] = False
@@ -30,11 +31,18 @@ def run(options, force_consensus=None):
 
     log["Summary"]["options"] = {}
     for option, setting in options.__dict__.items():
+        if option == "func":
+            continue
         log["Summary"]["options"][str(option)] = setting
 
     if options.force:
         logging.info(f"--force option used, so deleting {options.outdir} if it exists")
         subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
+
+    work_dir = Path(options.outdir)
+    if work_dir.exists():
+        raise Exception(f"Output directory {work_dir} already exists")
+    work_dir.mkdir()
 
     # New function run.run_pipeline wants a list of fastq files
     fqs = [
@@ -83,7 +91,7 @@ def run(options, force_consensus=None):
 
     try:
         pipeline_results = run_pipeline(
-            options.outdir,
+            work_dir,
             options.tech,
             fqs,
             amplicon_sets,
@@ -99,9 +107,9 @@ def run(options, force_consensus=None):
             max_percent_amps_fail=options.max_percent_amps_fail,
             command_line_args=options,
             force_consensus=force_consensus,
-            log=log,
+            global_log=log,
         )
-        log["Results"] = pipeline_log
+        log["Results"] = pipeline_results
         log["Summary"]["Success"] = True
     except Exception as e:
         log["Summary"]["Success"] = False
@@ -109,6 +117,7 @@ def run(options, force_consensus=None):
         print(f"Pipeline failed with exception: {e}", file=sys.stderr)
 
     with open(work_dir / "log.json", "w") as json_out:
+        print(log)
         end_time = time.time()
         log["Summary"]["end_time"] = end_time
         log["Summary"]["run_time"] = end_time - start_time

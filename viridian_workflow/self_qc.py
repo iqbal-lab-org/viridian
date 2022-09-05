@@ -336,9 +336,10 @@ class Pileup:
         }
 
         # initialise summary for each filter
-        self.summary = defaultdict(int)
+        self.summary = {}
+        self.summary["Filters"] = defaultdict(int)
         for f in self.filters:
-            self.summary[f] = 0
+            self.summary["Filters"][f] = 0
 
         for amplicon, fragments in readstore.amplicons.items():
             for fragment in fragments:
@@ -429,9 +430,12 @@ class Pileup:
         """Evaluate all positions and determine if they pass filters"""
         sequence: list[str] = list(consensus_seq)
         qc: dict[str, Any] = {}
-        summary: defaultdict[str, int] = defaultdict(int)
-
-        failures: dict[str, str] = {}
+        summary: dict[str, Any] = {
+            "already_masked": 0,
+            "total_masked": 0,
+            "consensus_length": 0,
+        }
+        failure_counts: defaultdict[str, int] = defaultdict(int)
 
         # filters: dict[str, tuple[Filter, FilterMsg]]
         for p, stats in enumerate(stats_seq):
@@ -447,6 +451,8 @@ class Pileup:
                 summary["total_masked"] += 1
                 continue
 
+            failures: dict[str, str]
+            position_failed: bool
             position_failed, failures = stats.evaluate(filters)
             assert sequence[position] == stats.base
 
@@ -454,11 +460,13 @@ class Pileup:
 
             if position_failed:
                 for failure in failures:
-                    summary[failure] += 1
+                    failure_counts[failure] += 1
                 summary["total_masked"] += 1
                 sequence[position] = "N"
                 qc[str(position)] = failures
             qc["masking_summary"] = summary
+
+        summary["Filters"] = failure_counts
         return "".join(sequence), qc, summary
 
     def dump_tsv(self, tsv: Path, amplicon_set: AmpliconSet) -> Path:
