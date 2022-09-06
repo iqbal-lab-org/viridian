@@ -11,7 +11,7 @@ from viridian_workflow.run import run_pipeline
 
 
 def cuckoo(options):
-    run(options, force_consensus=options.force_consensus)
+    run(options, force_consensus=options.consensus)
 
 
 def run(options, force_consensus=None):
@@ -27,7 +27,9 @@ def run(options, force_consensus=None):
     log["Summary"]["cwd"] = os.getcwd()
     log["Summary"]["hostname"] = socket.gethostname()
     start_time = time.time()
-    log["Summary"]["start_time"] = start_time
+    log["Summary"]["start_time"] = time.strftime(
+        "%Y-%m-%dT%H:%M:%S", time.gmtime(start_time)
+    )
 
     log["Summary"]["options"] = {}
     for option, setting in options.__dict__.items():
@@ -119,6 +121,8 @@ def run(options, force_consensus=None):
     with open(work_dir / "log.json", "w") as json_out:
         print(log)
         end_time = time.time()
-        log["Summary"]["end_time"] = end_time
+        log["Summary"]["end_time"] = time.strftime(
+            "%Y-%m-%dT%H:%M:%S", time.gmtime(end_time)
+        )
         log["Summary"]["run_time"] = end_time - start_time
         json.dump(log, json_out, indent=2)
