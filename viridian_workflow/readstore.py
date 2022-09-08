@@ -206,18 +206,18 @@ class Bam:
         for match in matches:
             self.stats["amplicon_scheme_set_matches"][match.name] = matches[match]
 
-        #        self.stats[
-        #            "amplicon_scheme_simple_counts"
-        #        ] = amplicon_set_counts_to_naive_total_counts(
-        #            self.stats["amplicon_scheme_set_matches"]
-        #        )
+            # self.stats[
+            #    "amplicon_scheme_simple_counts"
+            # ] = amplicon_set_counts_to_naive_total_counts(
+            #    self.stats["amplicon_scheme_set_matches"]
+            # )
         chosen_scheme = score(
             matches, mismatches, disqualification_threshold=disqualification_threshold
         )
         if chosen_scheme:
             self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
-            self.stats["chosen_scheme_matches"] = matches
-            self.stats["chosen_scheme_mismatches"] = mismatches
+            self.stats["chosen_scheme_matches"] = matches[chosen_scheme]
+            self.stats["chosen_scheme_mismatches"] = mismatches[chosen_scheme]
         else:
             # TODO: decide on behaviour when no appropriate scheme is chosen
             # current policy: abort

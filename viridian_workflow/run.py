@@ -63,14 +63,6 @@ def run_pipeline(
 
     # pre-process input bam
     bam: readstore.Bam = readstore.Bam(unsorted_bam)
-    results["Coverage"] = {
-        "total_reads": bam.stats["total_reads"],
-        #        "Total_fragments": 0,  # TODO
-        "Reference_coverage": bam.stats["mapped"],
-        #        "Reference_length": 0,  # TODO
-        #        "Average_amplicon_depth": 0,  # TODO
-    }
-
     # detect amplicon set
     amplicon_set: AmpliconSet = bam.detect_amplicon_set(amplicon_sets)
     results["Amplicons"] = {
@@ -89,11 +81,18 @@ def run_pipeline(
     )
 
     # log["amplicons"] = reads.summary
+    results["Coverage"] = {
+        "total_reads": bam.stats["total_reads"],
+        #        "Total_fragments": 0,  # TODO
+        "Reference_coverage": bam.stats["mapped"],
+        #        "Reference_length": 0,  # TODO
+        #        "Average_amplicon_depth": 0,  # TODO
+    }
 
     # branch on whether to run cylon or use external assembly ("cuckoo mode")
     consensus: Optional[Path] = None
     if force_consensus is not None:
-        # global_log["forced_consensus"] = str(force_consensus)
+        global_log["forced_consensus"] = str(force_consensus)
         consensus = Path(force_consensus)
 
     else:
