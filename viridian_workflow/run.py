@@ -89,7 +89,13 @@ def run_pipeline(
         #        "Average_amplicon_depth": 0,  # TODO
     }
 
-    results["Primers"] = reads.primer_histogram
+    results["Primers"] = {}
+    for amplicon in reads.primer_histogram:
+        results["Primers"][amplicon.name] = {}
+        for d in ["left", "right"]:
+            results["Primers"][amplicon.name][d] = {}
+            for primer, count in reads.primer_histogram[amplicon][d].items():
+                results["Primers"][amplicon.name][d][primer.name] = count
 
     # branch on whether to run cylon or use external assembly ("cuckoo mode")
     consensus: Optional[Path] = None
