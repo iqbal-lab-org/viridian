@@ -89,8 +89,12 @@ def run_pipeline(
         #        "Average_amplicon_depth": 0,  # TODO
     }
 
+    results["Primers"] = reads.primer_histogram
+
     # branch on whether to run cylon or use external assembly ("cuckoo mode")
     consensus: Optional[Path] = None
+
+    # Cuckoo mode
     if force_consensus is not None:
         global_log["forced_consensus"] = str(force_consensus)
         consensus = Path(force_consensus)

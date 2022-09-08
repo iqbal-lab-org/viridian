@@ -68,4 +68,5 @@ class Minimap(Task):
                     raise Exception("minimap2 subprocess failed")
 
         self.check_output()
+        self.log["Success"] = True
         return self.output
