@@ -216,6 +216,8 @@ class Bam:
         )
         if chosen_scheme:
             self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
+            self.stats["chosen_scheme_matches"] = matches
+            self.stats["chosen_scheme_mismatches"] = mismatches
         else:
             # TODO: decide on behaviour when no appropriate scheme is chosen
             # current policy: abort
@@ -431,10 +433,9 @@ class ReadStore:
 
     def summarise_amplicons(self):
         """normalise the bases per amplicons and such"""
+        depth_sum = 0
         for amplicon in self.amplicons:
-            self.amplicon_stats[amplicon] = {}
-            self.amplicon_stats[amplicon][False] = 0
-            self.amplicon_stats[amplicon][True] = 0
+            self.amplicon_stats[amplicon] = {False: 0, True: 0}
             for fragment in self.amplicons[amplicon]:
                 self.amplicon_stats[amplicon][fragment.strand] += 1
 

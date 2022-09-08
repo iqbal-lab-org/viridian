@@ -25,11 +25,9 @@ class Task:
         else:
             self.name = name
 
-        self.start_time = time.time()
         self.log: dict[str, str] = {
             "Task": self.name,
             "Success": False,
-            "start": self.start_time,
             "error": None,
         }
 
@@ -47,10 +45,12 @@ class Task:
         """Launch a pipeline task"""
         cmd = [str(c) for c in self.cmd]
 
+        self.start_time = time.time()
+        self.log["start"] = time.strftime("%H:%M:%S", time.gmtime(self.start_time))
+
         stdout_fd = subprocess.PIPE
         if stdout:
             stdout_fd = open(stdout, "w", encoding="utf-8")
-        start_time = time.time()
         result = subprocess.run(
             cmd,
             shell=False,
@@ -62,7 +62,7 @@ class Task:
         if stdout:
             stdout_fd.close()
 
-        self.log["end"] = time.time()
+        self.log["end"] = time.strftime("%H:%M:%S", time.gmtime(time.time()))
 
         if not ignore_error and result.returncode != 0:
             self.log["error"] = result.stderr

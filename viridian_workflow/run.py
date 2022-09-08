@@ -64,11 +64,11 @@ def run_pipeline(
     # pre-process input bam
     bam: readstore.Bam = readstore.Bam(unsorted_bam)
     results["Coverage"] = {
-        "total_reads": 0,  # TODO
-        "Total_fragments": 0,  # TODO
-        "Reference_coverage": 0,  # TODO
-        "Reference_length": 0,  # TODO
-        "Average_amplicon_depth": 0,  # TODO
+        "total_reads": bam.stats["total_reads"],
+        #        "Total_fragments": 0,  # TODO
+        "Reference_coverage": bam.stats["mapped"],
+        #        "Reference_length": 0,  # TODO
+        #        "Average_amplicon_depth": 0,  # TODO
     }
 
     # detect amplicon set
@@ -76,9 +76,8 @@ def run_pipeline(
     results["Amplicons"] = {
         "scheme": amplicon_set.name,
         "total_amplicons": len(amplicon_set.amplicons),
-        "Successful_amplicons": 0,  # TODO
-        "fragment_matches": 0,  # TODO
-        "fragment_mismatches": 0,  # TODO
+        "fragment_matches": bam.stats["chosen_scheme_matches"],
+        "fragment_mismatches": bam.stats["chosen_scheme_mismatches"],
     }
 
     # construct readstore
@@ -101,6 +100,7 @@ def run_pipeline(
         # save reads for cylon assembly
         amp_dir = work_dir / "amplicons"
         manifest_data = reads.make_reads_dir_for_cylon(amp_dir)
+        results["Amplicons"]["Successful_amplicons"] = len(manifest_data)
 
         # run cylon
         cylon = Cylon(work_dir, platform, ref, amp_dir, manifest_data, reads.cylon_json)
@@ -142,9 +142,9 @@ def run_pipeline(
         "Filters": pileup.summary["Filters"],
     }
 
-    results["Consensus"] = pileup.consensus_seq  # TODO
-    results["reference_start"] = reads.start_pos  # TODO
-    results["reference_end"] = reads.end_pos  # TODO
+    results["Consensus"] = pileup.consensus_seq
+    results["reference_start"] = reads.start_pos
+    results["reference_end"] = reads.end_pos
 
     results["Details"] = {}
 

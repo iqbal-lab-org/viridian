@@ -336,6 +336,7 @@ class Pileup:
         }
 
         # initialise summary for each filter
+        self.summary: dict[str, Any]
         self.summary = {}
         self.summary["Filters"] = defaultdict(int)
         for f in self.filters:
@@ -426,7 +427,7 @@ class Pileup:
     @staticmethod
     def _mask(
         consensus_seq: str, stats_seq: list[EvaluatedStats], filters
-    ) -> tuple[str, dict[str, Any], defaultdict[str, Any]]:
+    ) -> tuple[str, dict[str, Any], dict[str, Any]]:
         """Evaluate all positions and determine if they pass filters"""
         sequence: list[str] = list(consensus_seq)
         qc: dict[str, Any] = {}
