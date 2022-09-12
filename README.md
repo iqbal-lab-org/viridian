@@ -88,3 +88,4 @@ If the option `--keep_bam` is used, then a sorted BAM file of the reads mapped
 to the reference will also be present, called
 `reference_mapped.bam` (and its index file `reference_mapped.bam.bai`).
 
+If the option `--dump_tsv` is used, a per-position table of statistics will be saved as `all_stats.tsv`.

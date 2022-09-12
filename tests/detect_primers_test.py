@@ -9,7 +9,8 @@ import pyfastaq
 
 from viridian_workflow import primers, readstore
 from viridian_workflow.subtasks import Minimap
-from viridian_workflow.readstore import PairedReads, SingleRead, Bam
+from viridian_workflow.readstore import Bam
+from viridian_workflow.reads import PairedReads, SingleRead
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "detect_primers")
@@ -134,8 +135,8 @@ def test_gather_stats_from_bam():
     unpaired_bam = "tmp.gather_stats_from_bam.unpaired.bam"
     Minimap(unpaired_bam, ref_fasta, unpaired_reads_fa, sort=False).run()
 
-    reads1_coords = [(100, 200), (110, 210), (310, 410)]
-    reads2_coords = [(200, 300), (200, 300), (900, 1000)]
+    reads1_coords = [(100, 200), (110, 210), (310, 410), (590, 730)]
+    reads2_coords = [(200, 300), (200, 300), (900, 1000), (600, 740)]
     reads1_fa = "tmp.gather_stats_from_bam.reads_1.fa"
     reads2_fa = "tmp.gather_stats_from_bam.reads_2.fa"
     _write_sim_reads(ref_seq, reads1_coords, reads1_fa, suffix="/1")
@@ -147,15 +148,15 @@ def test_gather_stats_from_bam():
         primers.AmpliconSet.from_tsv(v, name=k) for k, v in tsv_files.items()
     ]
 
-    rs = Bam(unpaired_bam)
-    try:
-        rs.detect_amplicon_set(amplicon_sets)
-    except Exception as error:
-        # this test case should fail to match any of the sets
-        if str(error) != "failed to choose amplicon scheme":
-            raise Error
+    rs = Bam(unpaired_bam, template_length_threshold=20)
+    rs.detect_amplicon_set(amplicon_sets)
+    # this test case should fail to match any of the sets
+    # if str(error) != "failed to choose amplicon scheme":
+    #    raise Exception
     got = rs.stats
     # got = detect_primers.gather_stats_from_bam(unpaired_bam, tmp_bam_out, amplicon_sets)
+    for k, v in got.items():
+        print(k, v)
     assert got == {
         "total_reads": 4,
         "reads1": 0,
@@ -165,35 +166,37 @@ def test_gather_stats_from_bam():
         # "match_any_amplicon": 3,
         "match_no_amplicon_sets": 1,
         "read_lengths": {190: 1, 180: 1, 500: 1, 150: 1},
-        "template_lengths": {190: 1, 180: 1, 500: 1, 150: 1},  # TODO: check this
+        "template_lengths": {190: 1, 180: 1, 500: 1, 150: 1},
+        "templates_that_were_too_short": {},
         # "amplicon_scheme_set_matches": {("scheme1",): 1, ("scheme1", "scheme2"): 2},
         "amplicon_scheme_set_matches": {"scheme1": 3, "scheme2": 2},
         # "amplicon_scheme_simple_counts": {"scheme1": 3, "scheme2": 2},
-        # "chosen_amplicon_scheme": "scheme1",
+        "chosen_amplicon_scheme": "scheme1",
+        "chosen_scheme_matches": 3,
+        "chosen_scheme_mismatches": 1,
     }
 
-    rs = Bam(paired_bam)
-    try:
-        rs.detect_amplicon_set(amplicon_sets)
-    except Exception as error:
-        if str(error) != "failed to choose amplicon scheme":
-            raise Error
+    rs = Bam(paired_bam, template_length_threshold=20)
+    rs.detect_amplicon_set(amplicon_sets, disqualification_threshold=0.5)
     got = rs.stats
     # got = detect_primers.gather_stats_from_bam(paired_bam, tmp_bam_out, amplicon_sets)
     assert got == {
-        "total_reads": 6,
-        "reads1": 3,
-        "reads2": 3,
+        "total_reads": 8,
+        "reads1": 4,
+        "reads2": 4,
         "unpaired_reads": 0,
-        "mapped": 6,
+        "mapped": 8,
         # "match_any_amplicon": 2,
-        "match_no_amplicon_sets": 1,  # confirm
-        "read_lengths": {100: 6},
-        "template_lengths": {200: 1, 190: 1, 690: 1},  # TODO: check this
+        "match_no_amplicon_sets": 1,
+        "read_lengths": {100: 6, 140: 2},
+        "template_lengths": {200: 1, 190: 1, 690: 1, 150: 1},
+        "templates_that_were_too_short": {},
         # "amplicon_scheme_set_matches": {("scheme1", "scheme2"): 2},
-        "amplicon_scheme_set_matches": {"scheme1": 2, "scheme2": 2}
+        "amplicon_scheme_set_matches": {"scheme1": 3, "scheme2": 2},
         # "amplicon_scheme_simple_counts": {"scheme1": 2, "scheme2": 2},
-        # "chosen_amplicon_scheme": "scheme2",
+        "chosen_amplicon_scheme": "scheme1",
+        "chosen_scheme_matches": 3,
+        "chosen_scheme_mismatches": 1,
     }
 
     os.unlink(ref_fasta)

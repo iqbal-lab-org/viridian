@@ -1,31 +1,26 @@
-from collections import namedtuple, defaultdict
+"""Nextgen mapped read datastructures
+"""
+from __future__ import annotations
+
+from typing import Optional, Any
+from collections import defaultdict
 import sys
 from pathlib import Path
 import os
 import random
 
-from viridian_workflow import utils, self_qc
+import pysam  # type: ignore
 
-import pysam
-import mappy as mp
-
-# "seq" is the read sequence in the direction of the reference genome, ie what
-# you get in a BAM file.
-# We will enforce that  ref_start < ref_end, and qry_start < qry_end. Then we
-# can use is_reverse to resolve the direcrtion of the read.
-# qry_end and ref_end one past the position, so slicing/subtracting
-# coords follows the python string convention.
-Read = namedtuple(
-    "Read", ["seq", "ref_start", "ref_end", "qry_start", "qry_end", "is_reverse"],
-)
+from viridian_workflow.utils import Index0, revcomp
+from viridian_workflow.primers import Amplicon, AmpliconSet, Primer
+from viridian_workflow.reads import Read, Fragment, PairedReads, SingleRead
 
 
-def in_range(interval, position):
-    start, end = interval
-    return position < end and position > start
-
-
-def score(matches, mismatches):
+def score(
+    matches: defaultdict[AmpliconSet, int],
+    mismatches: defaultdict[AmpliconSet, int],
+    disqualification_threshold: float = 0.5,
+) -> Optional[AmpliconSet]:
     """Assign winning amplicon set id based on match stats"""
     amplicon_sets = set([*matches.keys(), *mismatches.keys()])
 
@@ -33,18 +28,20 @@ def score(matches, mismatches):
     winner = None
     for amplicon_set in amplicon_sets:
         total = matches[amplicon_set] + mismatches[amplicon_set]
-        if mismatches[amplicon_set] / total >= 0.2:
-            # if more than 10% of reads break the amplicon boundaries
+        mismatch_proportion = mismatches[amplicon_set] / total
+        if mismatch_proportion > disqualification_threshold:
+            # if more than x% of reads break the amplicon boundaries
             # disqualify this amplicon set
             print(
                 amplicon_set.name,
                 mismatches[amplicon_set],
                 matches[amplicon_set],
-                "[disqualified]",
+                f" disqualified: {mismatch_proportion * 100}% ({disqualification_threshold * 100}% threshold)",
             )
             continue
-        else:
-            print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
+
+        print(amplicon_set.name, mismatches[amplicon_set], matches[amplicon_set])
+
         if matches[amplicon_set] >= m:
             winner = amplicon_set
             m = matches[amplicon_set]
@@ -52,6 +49,7 @@ def score(matches, mismatches):
 
 
 def amplicon_set_counts_to_naive_total_counts(scheme_counts):
+    """Amplicon count summary"""
     counts = defaultdict(int)
     for scheme_tuple, count in scheme_counts.items():
         for scheme in scheme_tuple:
@@ -60,6 +58,7 @@ def amplicon_set_counts_to_naive_total_counts(scheme_counts):
 
 
 def amplicon_set_counts_to_json_friendly(scheme_counts):
+    """Output count summary to JSON"""
     dict_out = {}
     for k, v in scheme_counts.items():
         new_key = ";".join(sorted([str(x) for x in k]))
@@ -68,15 +67,24 @@ def amplicon_set_counts_to_json_friendly(scheme_counts):
 
 
 class Bam:
-    def __init__(self, bam, infile_is_paired=None):
-        self.stats = None
-        self.infile_is_paired = infile_is_paired
+    """Wrapper around bam objects produced by samtools"""
+
+    def __init__(
+        self,
+        bam: Path,
+        infile_is_paired: Optional[bool] = None,
+        template_length_threshold: int = 150,
+    ):
+        self.infile_is_paired: Optional[bool] = infile_is_paired
         if not Path(bam).is_file():
             raise Exception(f"bam file {bam} does not exist")
-        self.bam = bam
+        self.bam: Path = bam
+        self.template_length_threshold: int = template_length_threshold
+        self.stats: dict[str, Any] = {}
 
     @staticmethod
     def read_from_pysam(read):
+        """Pack pysam reads into a virdian Read object"""
         return Read(
             read.query_sequence,
             read.reference_start,
@@ -88,13 +96,21 @@ class Bam:
 
     @classmethod
     def from_pe_fastqs(cls, fq1, fq2):
+        """Bam from paired end fastq files"""
         pass
 
     @classmethod
     def from_se_fastq(cls, fq):
+        """Bam object from single ended fastq"""
         pass
 
     def syncronise_fragments(self):
+        """Yield a fragment object constructed from either a single
+        read or a pair of mated reads
+
+        Mapping based quality thresholds (template length etc.) can
+        be applied here
+        """
         reads_by_name = {}
         improper_pairs = 0
 
@@ -106,6 +122,7 @@ class Bam:
             "mapped": 0,
             "read_lengths": defaultdict(int),
             "template_lengths": defaultdict(int),
+            "templates_that_were_too_short": defaultdict(int),
             "match_no_amplicon_sets": 0,
         }
 
@@ -135,33 +152,42 @@ class Bam:
 
             if not read.is_paired:
                 self.stats["unpaired_reads"] += 1
-                self.stats["template_lengths"][
-                    abs(read.query_length)
-                ] += 1  # TODO: check this
-                yield SingleRead(Bam.read_from_pysam(read))
+                single_read: Fragment = SingleRead(Bam.read_from_pysam(read))
+                tlen = single_read.ref_end - single_read.ref_start
+                self.stats["template_lengths"][tlen] += 1
+                if tlen < self.template_length_threshold:
+                    self.stats["templates_that_were_too_short"][tlen] += 1
+                    continue
+                yield single_read
 
             if not read.is_proper_pair:
                 improper_pairs += 1
                 continue
 
             if read.is_read1:
-                self.stats["template_lengths"][abs(read.template_length)] += 1
                 reads_by_name[read.query_name] = Bam.read_from_pysam(read)
 
             elif read.is_read2:
                 if read.query_name not in reads_by_name:
                     raise Exception("Bam file is not sorted by name")
                 read1 = reads_by_name[read.query_name]
-                yield PairedReads(read1, Bam.read_from_pysam(read))
+                paired_reads: Fragment = PairedReads(read1, Bam.read_from_pysam(read))
+                tlen = paired_reads.ref_end - paired_reads.ref_start
+                self.stats["template_lengths"][tlen] += 1
+                if tlen < self.template_length_threshold:
+                    self.stats["templates_that_were_too_short"][tlen] += 1
+                    continue
+                yield paired_reads
                 del reads_by_name[read.query_name]
         print(f"{improper_pairs} improper pairs", file=sys.stderr)
 
-    def detect_amplicon_set(self, amplicon_sets):
-        """return inferred amplicon set from list
-        """
+    def detect_amplicon_set(
+        self, amplicon_sets: list[AmpliconSet], disqualification_threshold: float = 0.5
+    ) -> AmpliconSet:
+        """return inferred amplicon set from list of amplicon sets"""
 
-        mismatches = defaultdict(int)
-        matches = defaultdict(int)
+        mismatches: defaultdict[AmpliconSet, int] = defaultdict(int)
+        matches: defaultdict[AmpliconSet, int] = defaultdict(int)
 
         for fragment in self.syncronise_fragments():
             match_any = False
@@ -180,86 +206,61 @@ class Bam:
         for match in matches:
             self.stats["amplicon_scheme_set_matches"][match.name] = matches[match]
 
-        #        self.stats[
-        #            "amplicon_scheme_simple_counts"
-        #        ] = amplicon_set_counts_to_naive_total_counts(
-        #            self.stats["amplicon_scheme_set_matches"]
-        #        )
-        chosen_scheme = score(matches, mismatches)
+            # self.stats[
+            #    "amplicon_scheme_simple_counts"
+            # ] = amplicon_set_counts_to_naive_total_counts(
+            #    self.stats["amplicon_scheme_set_matches"]
+            # )
+        chosen_scheme = score(
+            matches, mismatches, disqualification_threshold=disqualification_threshold
+        )
         if chosen_scheme:
             self.stats["chosen_amplicon_scheme"] = chosen_scheme.name
+            self.stats["chosen_scheme_matches"] = matches[chosen_scheme]
+            self.stats["chosen_scheme_mismatches"] = mismatches[chosen_scheme]
         else:
             # TODO: decide on behaviour when no appropriate scheme is chosen
             # current policy: abort
             raise Exception("failed to choose amplicon scheme")
         return chosen_scheme
 
-    def stats(self):
-        """return pre-computed stats (or compute)
-        """
-        pass
-
-
-class Fragment:
-    def __init__(self, reads):
-        """fragment ref bounds ignore softclipping
-        """
-        self.ref_start = None
-        self.ref_end = None
-        self.reads = reads
-        self.strand = None
-
-    def total_mapped_bases(self):
-        return sum([r.qry_end - r.qry_start for r in self.reads])
-
-
-class PairedReads(Fragment):
-    def __init__(self, read1, read2):
-        super().__init__([read1, read2])
-        (self.ref_start, self.ref_end) = (
-            (read1.ref_start, read2.ref_end)
-            if read1.ref_start < read2.ref_start
-            else (read2.ref_start, read1.ref_end)
-        )
-        if read1.is_reverse and not read2.is_reverse:
-            self.strand = False
-        elif not read1.is_reverse and read2.is_reverse:
-            self.strand = True
-        else:
-            raise Exception(f"Read pair is in invalid orientation F1F2/R1R2")
-
-
-class SingleRead(Fragment):
-    def __init__(self, read):
-        super().__init__([read])
-        self.ref_start, self.ref_end = read.ref_start, read.ref_end
-        self.strand = not read.is_reverse
-
 
 class ReadStore:
-    def __init__(self, amplicon_set, bam, target_depth=1000):
-        self.amplicons = defaultdict(list)
-        self.reads_per_amplicon = defaultdict(int)
-        self.amplicon_set = amplicon_set
-        self.reads_all_paired = bam.infile_is_paired
-        self.unmatched_reads = 0
+    """The internal datastructure for storing reads by amplicon"""
 
-        self.target_depth = target_depth
-        # TODO find a home for this magic number
-        self.cylon_target_depth_factor = 200
+    def __init__(
+        self,
+        amplicon_set: AmpliconSet,
+        bam: Bam,
+        target_depth: int = 1000,
+        cylon_target_depth_factor: int = 200,
+    ):
+        self.amplicons: defaultdict[Amplicon, list[Fragment]] = defaultdict(list)
+        self.reads_per_amplicon: defaultdict[Amplicon, int] = defaultdict(int)
+        self.amplicon_set: AmpliconSet = amplicon_set
+        self.reads_all_paired: Optional[bool] = bam.infile_is_paired
+        self.unmatched_reads: int = 0
+        self.failed_amplicons: set[Amplicon] = set()
+
+        # Index of positions (0-based, wrt Reference) where different amplicons
+        # have contributed base calls
+        self.multiple_amplicon_support: list[bool] = []
+
+        self.target_depth: int = target_depth
+        self.cylon_target_depth_factor = cylon_target_depth_factor
 
         self.start_pos = None
         self.end_pos = None
-        self.amplicon_stats = {}
+        self.amplicon_stats: dict[Amplicon, dict[bool, int]] = {}
 
         self.summary = {}
-        self.cylon_json = {
+        self.cylon_json: dict[str, Any] = {
             "name": amplicon_set.name,
-            "source": amplicon_set.fn,
+            "source": str(amplicon_set.fn),
             "amplicons": {},
         }
 
-        self.primer_histogram = {}
+        self.primer_histogram: dict[Amplicon, dict[str, defaultdict[Primer, int]]] = {}
         for _, amplicon in amplicon_set.amplicons.items():
             self.summary[amplicon.name] = {
                 "start": amplicon.start,
@@ -288,9 +289,6 @@ class ReadStore:
             if amplicon.end > self.end_pos:
                 self.end_pos = amplicon.end
 
-            left_start, left_end = amplicon.left_primer_region
-            right_start, right_end = amplicon.right_primer_region
-
         for fragment in bam.syncronise_fragments():
             self.count_fragment(fragment)
 
@@ -303,13 +301,22 @@ class ReadStore:
 
             # decide if threshold for primers is met
             p1_min, p2_max = None, None
-            if amplicon in self.primer_histogram:
+            if amplicon in self.primer_histogram.items():
+                assert self.start_pos is not None
+                assert self.end_pos is not None
                 p1_min, p2_max = self.filter_primer_counts(
                     self.primer_histogram[amplicon],
-                    start=self.start_pos,
-                    end=self.end_pos,
+                    self.start_pos,
+                    self.end_pos,
                 )
             # default to the inner-most primer coords if an extrema isn't found
+            if (
+                amplicon.left_primer_region is None
+                or amplicon.right_primer_region is None
+            ):
+                raise Exception(
+                    "Attempted to test primer regions before initialising amplicon"
+                )
             p1_start = (
                 amplicon.left_primer_region[0] if p1_min is None else p1_min.ref_start
             )
@@ -339,43 +346,55 @@ class ReadStore:
         self.summarise_amplicons()
 
     @staticmethod
-    def filter_primer_counts(primer_counts, threshold=100, start=0, end=sys.maxsize):
-        p1 = None
-        p2 = None
-        p1_min = end
-        p2_max = start
+    def filter_primer_counts(
+        primer_counts: dict[str, defaultdict[Primer, int]],
+        start: Index0,
+        end: Index0,
+        threshold: int = 100,
+    ) -> tuple[Optional[Primer], Optional[Primer]]:
+        """Ensure a minimum number of observed primers are counted
+
+        The calling method should default to the max primer range if this
+        fails
+        """
+        left_primer = None
+        right_primer = None
+        primer_min = end
+        primer_max = start
         for primer, count in primer_counts["left"].items():
             if count < threshold:  # primer occurence threshold
                 # exclude this primer
                 continue
-            if primer.ref_start <= p1_min:
-                p1_min = primer.ref_start
-                p1 = primer
+            if primer.ref_start <= primer_min:
+                primer_min = primer.ref_start
+                left_primer = primer
         for primer, count in primer_counts["right"].items():
             if count < threshold:
                 continue
-            if primer.ref_end >= p2_max:
-                p2_max = primer.ref_end
-                p2 = primer
-        return p1, p2
+            if primer.ref_end >= primer_max:
+                primer_max = primer.ref_end
+                right_primer = primer
+        return left_primer, right_primer
 
     def __eq__(self, other):
-        pass
+        raise NotImplementedError
 
     def __str__(self):
-        pass
+        raise NotImplementedError
 
     def __iter__(self):
-        pass
+        raise NotImplementedError
 
-    def __getitem__(self, amplicon):
+    def __getitem__(self, amplicon: Amplicon) -> list[Fragment]:
         """Given an amplicon, returns list of Fragments"""
         return self.amplicons[amplicon]
 
-    def fetch(self, start=0, end=None):
-        pass
+    def fetch(self, start: Index0, end: Index0):
+        """Fetch reads from a specific range of positions"""
+        raise NotImplementedError
 
-    def count_fragment(self, fragment):
+    def count_fragment(self, fragment: Fragment):
+        """Update internal amplicon stats summary"""
         amplicon = self.amplicon_set.match(fragment)
         if not amplicon:
             self.unmatched_reads += 1
@@ -388,9 +407,13 @@ class ReadStore:
         ] += fragment.total_mapped_bases()
         self.summary[amplicon.name]["total_depth"] += 1
 
-    def push_fragment(self, fragment):
-        amplicon = self.amplicon_set.match(fragment)
-        if not amplicon:
+    def push_fragment(self, fragment: Fragment):
+        """Insert fragment into the readstore
+
+        This matches the fragment to the amplicon
+        """
+        amplicon: Optional[Amplicon] = self.amplicon_set.match(fragment)
+        if amplicon is None:
             return
 
         frags = self.reads_per_amplicon[amplicon]
@@ -409,95 +432,24 @@ class ReadStore:
             self.summary[amplicon.name]["sampled_depth"] += 1
 
     def summarise_amplicons(self):
-        # normalise the bases per amplicons and such
+        """normalise the bases per amplicons and such"""
+        depth_sum = 0
         for amplicon in self.amplicons:
-            self.amplicon_stats[amplicon] = {}
-            self.amplicon_stats[amplicon][False] = 0
-            self.amplicon_stats[amplicon][True] = 0
+            self.amplicon_stats[amplicon] = {False: 0, True: 0}
             for fragment in self.amplicons[amplicon]:
                 self.amplicon_stats[amplicon][fragment.strand] += 1
 
-            # print(
-            #    f"amplicon strand bias:\t{amplicon.name}\t{self.amplicon_stats[amplicon][False]}/{self.amplicon_stats[amplicon][True]}",
-            #    file=sys.stderr,
-            # )
-
-    def pileup(self, fasta, msa=None, minimap_presets=None, min_frs=0.7, min_depth=50):
-        """remap reads to consensus
-        """
-
-        cons = mp.Aligner(str(fasta), preset=minimap_presets, n_threads=1)
-        if len(cons.seq_names) != 1:
-            Exception(f"Consensus fasta {fasta} has more than one sequence")
-        consensus_seq = cons.seq(cons.seq_names[0])
-
-        qc_config = self_qc.Config(min_frs=min_frs, min_depth=min_depth)
-        pileup = self_qc.Pileup(consensus_seq, msa=msa, config=qc_config)
-        conspos_oob = 0  # consensus positions out-of-bounds
-        for amplicon in self.amplicons:
-            fragments = (
-                self.amplicons[amplicon]
-                if len(self.amplicons[amplicon]) >= self.target_depth
-                else self.amplicons[amplicon]
-            )
-            for fragment in fragments:
-                for read in fragment.reads:
-                    a = cons.map(read.seq)  # remap to consensus
-                    alignment = None
-                    for x in a:
-                        if x.is_primary:
-                            alignment = x
-
-                    if not alignment:
-                        continue
-
-                    assert alignment.q_en > alignment.q_st
-                    assert alignment.r_en > alignment.r_st
-
-                    aln = self_qc.parse_cigar(consensus_seq, read.seq, alignment)
-
-                    # testing for indel conditions:
-                    # ex = "".join(map(lambda x: x[1] if len(x[1]) == 1 else x[1], aln))
-                    # c = consensus_seq[alignment.r_st : alignment.r_en]
-
-                    # TODO: this is now made redundant. We could store the results
-                    # of match_primers from push_fragments
-                    primers = amplicon.match_primers(fragment)
-
-                    for consensus_pos, call in self_qc.parse_cigar(
-                        consensus_seq, read.seq, alignment
-                    ):
-                        if consensus_pos >= len(pileup):
-                            # print(f"consensus pos out of bounds: {consensus_pos}/{len(pileup)}", file=sys.stderr)
-                            conspos_oob += 1
-                            continue
-
-                        in_primer = False
-                        for primer in primers:
-                            # primers can be None
-                            if primer and in_range(
-                                (primer.ref_start, primer.ref_end),
-                                # consensus_to_ref is 1-indexed!!
-                                pileup.consensus_to_ref[consensus_pos + 1],
-                            ):
-                                in_primer = True
-                                break
-
-                        profile = self_qc.BaseProfile(
-                            call, in_primer, read.is_reverse, amplicon,
-                        )
-                        pileup[consensus_pos].update(profile)
-        print(f"consensus positions out of bounds: {conspos_oob}", file=sys.stderr)
-        return pileup
-
-    def reads_to_fastas(self, amplicon, outfile, target_bases):
-        bases_out = 0
+    def reads_to_fastas(
+        self, amplicon: Amplicon, outfile: Path, target_bases: int
+    ) -> int:
+        """Write out reads as fasta files"""
+        bases_out: int = 0
         with open(outfile, "w") as f:
             for i, fragment in enumerate(self[amplicon]):
                 for j, read in enumerate(fragment.reads):
                     print(
                         f">{i}.{j}",
-                        utils.revcomp(read.seq) if read.is_reverse else read.seq,
+                        revcomp(read.seq) if read.is_reverse else read.seq,
                         sep="\n",
                         file=f,
                     )
@@ -512,7 +464,6 @@ class ReadStore:
         names that should be failed because they had no reads"""
         os.mkdir(outdir)
         manifest_data = {}
-        self.failed_amplicons = set()
 
         fasta_number = 0  # let's find another way
         for amplicon in self.amplicon_set:
@@ -525,7 +476,8 @@ class ReadStore:
             target_bases = self.cylon_target_depth_factor * len(amplicon)
             bases_out = self.reads_to_fastas(amplicon, outfile, target_bases)
             print(
-                f"writing out {amplicon.name} reads {len(self[amplicon])}, {len(manifest_data)}.fa",
+                f"writing out {amplicon.name} reads {len(self[amplicon])}\
+                  ({bases_out} bases), {len(manifest_data)}.fa",
                 file=sys.stderr,
             )
             fasta_number += 1

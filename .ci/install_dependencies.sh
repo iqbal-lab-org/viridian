@@ -91,7 +91,7 @@ cp -s racon-git/build/bin/racon .
 cd $install_root
 git clone https://github.com/iqbal-lab-org/cylon.git
 cd cylon
-git checkout 8cb2b5fe7c5b9460062b57109756ea2d8dcaae4f
+git checkout 6b8c83699ff878d333c067ffb99618a47092eaa5
 pip3 install .
 
 #________________________ mummer ____________________________#
@@ -109,6 +109,6 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout 38e708fbb1b069f0fce3041eac49920d22cd9cf3
+git checkout 8a9621b4c340e769cf96536450f69af54cc32e88
 pip3 install .
 cd ..

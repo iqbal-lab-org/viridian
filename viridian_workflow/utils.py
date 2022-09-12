@@ -1,92 +1,120 @@
+"""
+Helper functions shared across modules
+"""
+from __future__ import annotations
+
+import sys
+from typing import NewType, Any, Optional
 from collections import namedtuple
 import json
 import logging
 from operator import itemgetter
-import os
-import subprocess
-import time
+from pathlib import Path
 
-import pyfastaq
+import pyfastaq  # type: ignore
 
 
 class PrimerError(Exception):
-    pass
+    """Exception raised by malformed Primer record"""
 
 
 class OutputFileError(Exception):
-    pass
+    """Output file cannot be written to or doesn't exist"""
 
 
 class PipelineProcessError(Exception):
-    pass
+    """Pipeline subprocess error"""
 
+
+Index0 = NewType("Index0", int)
+Index1 = NewType("Index1", int)
 
 TRANSLATE_TABLE = str.maketrans("ATCGatcg", "TAGCtagc")
 
 
-def revcomp(seq):
+def revcomp(seq: str) -> str:
+    """Reverse complement sequence"""
     return seq.translate(TRANSLATE_TABLE)[::-1]
 
 
-def check_file(fn):
-    if not os.path.isfile(fn):
-        raise OutputFileError(os.path.abspath(fn))
+def check_file(filename: Path) -> bool:
+    """Check if file exists"""
+    if not filename.exists():
+        raise OutputFileError(filename)
+    return True
 
 
-def rm(fn):
-    logging.info(f"Deleting file: {os.path.abspath(fn)}")
-    os.remove(os.path.abspath(fn))
+def in_range(interval: tuple[Index0, Index0], position: Index0) -> bool:
+    """Test whether a position is inside a range"""
+    start, end = interval
+    return start <= position < end
 
 
-def amplicons_json_to_bed_and_range(infile, outfile):
+def rm(filename: Path):
+    """File removal wrapper"""
+    filename = filename.resolve()
+    logging.info("Deleting file %s", filename)
+    filename.unlink()
+
+
+def amplicons_json_to_bed_and_range(
+    infile: Path, outfile: Path
+) -> tuple[Index0, Index0]:
     """Converts the amplicons JSON file to a BED file, which is used in
     various stages of the pipeline. Returns the 0-based inclusive coordinates
     of the start of the first amplicon and end of the last amplicon, as
     a tuple (start, end)"""
-    data = json.load(open(infile))
-    start = float("inf")
-    end = -1
+    data = json.load(open(infile, encoding="utf-8"))
+    start = Index0(sys.maxsize)
+    end = Index0(0)
 
     data_out = []
     for amplicon, d in data["amplicons"].items():
         data_out.append((amplicon, d["start"], d["end"] + 1))
-        start = min(start, d["start"])
-        end = max(end, d["end"])
+        start = Index0(min(start, d["start"]))
+        end = Index0(max(end, d["end"]))
     data_out.sort(key=itemgetter(1))
-    with open(outfile, "w") as f:
+    with open(outfile, "w", encoding="utf-8") as f:
         for t in data_out:
             print(*t, sep="\t", file=f)
     return start, end
 
 
-def load_amplicons_bed_file(infile):
-    Amplicon = namedtuple("Amplicon", ("name", "start", "end"))
-    amplicons = []
+Amplicon = namedtuple("Amplicon", ("name", "start", "end"))
 
-    with open(infile) as f:
+
+def load_amplicons_bed_file(infile: Path) -> list[Amplicon]:
+    """Load 0-based amplicon coords from bedfile"""
+    amplicons: list[Amplicon] = []
+
+    with open(infile, encoding="utf-8") as f:
         for line in f:
             if line.startswith("#"):
                 continue
             name, start, end = line.rstrip().split("\t")
-            amplicons.append(Amplicon(name, int(start), int(end) - 1))
+            amplicons.append(Amplicon(name, Index0(int(start)), Index0(int(end) - 1)))
 
     return amplicons
 
 
-def load_single_seq_fasta(infile):
-    d = {}
-    pyfastaq.tasks.file_to_dict(infile, d)
-    if len(d) != 1:
+def load_single_seq_fasta(infile: Path) -> Any:
+    """Load single fastaq sequence from a fasta"""
+    seq_dict: Any = {}
+    pyfastaq.tasks.file_to_dict(infile, seq_dict)
+    if len(seq_dict) != 1:
         raise Exception(
-            f"Expected exatcly 1 sequence in {infile} but got {len(d)} sequences"
+            f"Expected exactly 1 sequence in {infile} but got {len(seq_dict)} sequences"
         )
-    ref = list(d.values())[0]
+    ref = list(seq_dict.values())[0]
     ref.id = ref.id.split()[0]
     return ref
 
 
-def set_sample_name_in_vcf_file(infile, outfile, sample_name):
-    with open(infile) as f_in, open(outfile, "w") as f_out:
+def set_sample_name_in_vcf_file(infile: Path, outfile: Path, sample_name: str):
+    """Rename sample in vcf and write out to new file"""
+    with open(infile, encoding="utf-8") as f_in, open(
+        outfile, "w", encoding="utf-8"
+    ) as f_out:
         for line in f_in:
             if line.startswith("#CHROM\tPOS"):
                 fields = line.rstrip().split("\t")
@@ -96,16 +124,19 @@ def set_sample_name_in_vcf_file(infile, outfile, sample_name):
                 print(line, end="", file=f_out)
 
 
-def set_seq_name_in_fasta_file(infile, outfile, new_name):
+def set_seq_name_in_fasta_file(infile: Path, outfile: Path, new_name: str):
     """Changes name in FASTA file. Assumes that there is only one sequence
     in the file, raises Exception if it finds >1 sequence"""
     seq = load_single_seq_fasta(infile)
     seq.id = new_name
-    with open(outfile, "w") as f:
+    with open(outfile, "w", encoding="utf-8") as f:
         print(seq, file=f)
 
 
-def check_tech_and_reads_opts_and_get_reads(options):
+def check_tech_and_reads_opts_and_get_reads(
+    options: Any,
+) -> tuple[Path, Optional[Path]]:
+    """Normalise reads passed through options"""
     if options.tech == "ont":
         if options.reads1 is not None or options.reads2 is not None:
             raise Exception(

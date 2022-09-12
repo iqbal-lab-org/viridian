@@ -67,13 +67,19 @@ def main(args=None):
     # ----------------- reads and ref options --------------------------------
     reads_ref_parser = argparse.ArgumentParser(add_help=False)
     reads_ref_parser.add_argument(
-        "--reads1", help="Illumina reads file 1", metavar="FILENAME",
+        "--reads1",
+        help="Illumina reads file 1",
+        metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads2", help="Illumina reads file 2", metavar="FILENAME",
+        "--reads2",
+        help="Illumina reads file 2",
+        metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
-        "--reads", help="Unpaired reads (eg nanopore) file", metavar="FILENAME",
+        "--reads",
+        help="Unpaired reads (eg nanopore) file",
+        metavar="FILENAME",
     )
     reads_ref_parser.add_argument(
         "--ref_fasta",
@@ -109,7 +115,8 @@ def main(args=None):
         help="Keep BAM file of reads mapped to reference genome (it is deleted by default)",
     )
     run_one_sample_parser.add_argument(
-        "--dump_tsv", action="store_true",
+        "--dump_tsv",
+        action="store_true",
     )
     run_one_sample_parser.add_argument(
         "--force_amp_scheme",
@@ -172,7 +179,7 @@ def main(args=None):
         ],
     )
     subparser_cuckoo.add_argument("--consensus", required=True, metavar="FILENAME")
-    subparser_cuckoo.set_defaults(func=viridian_workflow.tasks.cuckoo.run)
+    subparser_cuckoo.set_defaults(func=viridian_workflow.tasks.run_one_sample.cuckoo)
 
     args = parser.parse_args()
     if not hasattr(args, "func"):

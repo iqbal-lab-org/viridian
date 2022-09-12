@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import pytest
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 from intervaltree import Interval
 from viridian_workflow import self_qc, primers
@@ -28,12 +28,12 @@ def test_cigar_tuple_construction():
     cigar = [(3, 0)]
 
     alignment = Alignment(0, cigar, 0)
-    assert self_qc.parse_cigar(ref, query, alignment) == [(0, "A"), (1, "A"), (2, "A")]
+    assert self_qc.parse_cigar(query, alignment) == [(0, "A"), (1, "A"), (2, "A")]
 
     ref = "AAA"
     query = "ATTAA"
     alignment = Alignment(0, [(1, 0), (2, 1), (2, 0)], 0)
-    assert self_qc.parse_cigar(ref, query, alignment) == [
+    assert self_qc.parse_cigar(query, alignment) == [
         (0, "A"),
         #        (1, "TT"),
         (1, "A"),
@@ -43,7 +43,7 @@ def test_cigar_tuple_construction():
     ref = "ATTAA"
     query = "AAA"
     alignment = Alignment(0, [(1, 0), (2, 2), (2, 0)], 0)
-    assert self_qc.parse_cigar(ref, query, alignment) == [
+    assert self_qc.parse_cigar(query, alignment) == [
         (0, "A"),
         (1, "-"),
         (2, "-"),
@@ -54,7 +54,7 @@ def test_cigar_tuple_construction():
     ref = "AAAA"
     query = "GGGAAAA"
     alignment = Alignment(0, [(3, 4), (4, 0)], 3)
-    assert self_qc.parse_cigar(ref, query, alignment) == [
+    assert self_qc.parse_cigar(query, alignment) == [
         (0, "A"),
         (1, "A"),
         (2, "A"),
@@ -110,7 +110,7 @@ def test_mappy_cigar_liftover():
     for op, count in pysam_cigar:
         cigar.append((count, op))
     alignment = Alignment(0, cigar, 0)
-    a = self_qc.parse_cigar(None, seq, alignment)
+    a = self_qc.parse_cigar(seq, alignment)
 
     assert len(ref) - 1 == a[-1][0]
     assert ref[-54:] == seq[-54:]
@@ -145,15 +145,21 @@ def test_stat_evaluation():
 def test_pileup_msa_mapping():
     ref = "ACTGACTATCGATCGATCGATCAG"
     msa = Path(data_dir) / "ref_first.msa"
-    pileup = self_qc.Pileup(ref, msa)
+
+    # ensure parse_msa doesn't throw error
+    self_qc.Msa(msa)
 
     # in this example the consensus sequence is in the first line
     bad_msa = Path(data_dir) / "cons_first.msa"
-    try:
-        bad_pileup = self_qc.Pileup(ref, bad_msa)
-    except AssertionError:
-        # an assertion should be thrown if ref != the first msa record
-        pass
+
+    with open(msa) as fd:
+        line1 = fd.readline().strip()
+        assert line1.replace("-", "") == ref
+
+    with open(bad_msa) as fd:
+        _ = fd.readline().strip()
+        line2 = fd.readline().strip()
+        assert line2.replace("-", "") == ref
 
 
 def test_ref_cons_position_translation():
@@ -166,21 +172,18 @@ def test_ref_cons_position_translation():
        1  4  7    1     1
                   0     6
     """
-    msa = Path(data_dir) / "ref_first.msa"
-    pileup = self_qc.Pileup(ref, msa)
+    msa = self_qc.Msa(Path(data_dir) / "ref_first.msa")
 
-    print(pileup.consensus_to_ref)
-    print(pileup.ref_to_consensus)
-    assert pileup.ref_to_consensus[1] == None
-    #    assert pileup.ref_to_consensus[7] == 4
-    assert pileup.consensus_to_ref[4] == 7
-    assert pileup.ref_to_consensus[13] == 10
-    assert pileup.ref_to_consensus[8] == 7
-    assert pileup.consensus_to_ref[7] == 8
-    assert pileup.consensus_to_ref[10] == 13
-    #    assert pileup.ref_to_consensus[24] == None
-    #    assert pileup.consensus_to_ref[16] == 19 # not strictly true
-    assert pileup.ref_to_consensus[8] == 7
+    assert msa._ref_to_consensus[1] == 0  # None
+    assert msa._ref_to_consensus[7] == 4
+    assert msa._consensus_to_ref[4] == 7
+    assert msa._ref_to_consensus[13] == 10
+    assert msa._ref_to_consensus[8] == 7
+    assert msa._consensus_to_ref[7] == 8
+    assert msa._consensus_to_ref[10] == 13
+    assert msa._ref_to_consensus[24] == 16
+    assert msa._consensus_to_ref[16] == 19
+    assert msa._ref_to_consensus[8] == 7
 
 
 def test_position_table_cons_shorter():
@@ -193,23 +196,23 @@ def test_position_table_cons_shorter():
                     1  4
     """
     ref = "GACTGCAGCGCCCTTCGCACG"
-    msa = Path(data_dir) / "cons_shorter.msa"
-    pileup = self_qc.Pileup(ref, msa)
+    msa = self_qc.Msa(Path(data_dir) / "cons_shorter.msa")
 
-    assert pileup.ref_to_consensus[1] == None
-    assert pileup.ref_to_consensus[3] == None
+    assert msa._ref_to_consensus[1] == 0  # None
+    assert msa._ref_to_consensus[3] == 0  # None
 
-    assert pileup.ref_to_consensus[5] == 1
-    assert pileup.consensus_to_ref[1] == 5
+    assert msa._ref_to_consensus[5] == 1
+    assert msa._consensus_to_ref[1] == 5
 
-    assert pileup.ref_to_consensus[10] == 4
-    assert pileup.consensus_to_ref[4] == 10
-    assert pileup.ref_to_consensus[15] == 11
-    assert pileup.consensus_to_ref[11] == 15
+    assert msa._ref_to_consensus[10] == 4
+    assert msa._consensus_to_ref[4] == 10
+    assert msa._ref_to_consensus[15] == 11
+    assert msa._consensus_to_ref[11] == 15
 
 
 def test_position_table_ref_shorter():
     """
+    Note that this situation is nonsensical
                     1  1
         1    4      1  4
     ----ACT--ATCGATCGATT---
@@ -220,37 +223,31 @@ def test_position_table_ref_shorter():
 
     ref = "ACTATCGATCGATT"
     # ref_alignment = "----ACT--ATCGATCGATT---"
-    msa = Path(data_dir) / "ref_shorter.msa"
-    pileup = self_qc.Pileup(ref, msa)
+    msa = self_qc.Msa(Path(data_dir) / "ref_shorter.msa")
 
-    assert pileup.consensus_to_ref[10] == 4
-    assert pileup.ref_to_consensus[4] == 10
-    assert pileup.consensus_to_ref[15] == 11
-    assert pileup.ref_to_consensus[11] == 15
+    assert msa._consensus_to_ref[10] == 4
+    assert msa._ref_to_consensus[4] == 10
+    assert msa._consensus_to_ref[15] == 11
+    assert msa._ref_to_consensus[11] == 15
 
 
 def test_pileup_masking():
 
-    fail = StatsTest(True)
-    succeed = StatsTest(False)
-
     ref = "ACTGACTATCGATCGATCGATCAG"
-    # ref_alignment = "ACTGACT--ATCGATCGATCGATCAG"
-    msa = Path(data_dir) / "ref_first.msa"
 
-    pileup = self_qc.Pileup(ref, msa)
+    stats = [
+        self_qc.EvaluatedStats(self_qc.Stats(i, base, base))
+        for (i, base) in enumerate(ref)
+    ]
 
-    masked_all_failed = pileup.mask()
+    failing_filters = {"easy_fail": (lambda x: x.total.refs >= 0, lambda _: "")}
+
+    masked_all_failed, _, _ = self_qc.Pileup._mask(ref, stats, failing_filters)
     assert masked_all_failed == "".join(["N" for _ in ref])
 
-    for p, base in enumerate(ref):
-        profile = self_qc.BaseProfile(
-            base=base, in_primer=False, forward_strand=True, amplicon_name=None
-        )
-        for i in range(0, 50):
-            pileup[p].update(profile)
-    masked = pileup.mask()
-    print(pileup.qc)
+    passing_filters = {"easy_pass": (lambda x: x.total.refs < 0, lambda _: "")}
+
+    masked, _, _ = self_qc.Pileup._mask(ref, stats, passing_filters)
     assert masked == ref
 
 
