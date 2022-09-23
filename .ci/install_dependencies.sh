@@ -91,7 +91,7 @@ cp -s racon-git/build/bin/racon .
 cd $install_root
 git clone https://github.com/iqbal-lab-org/cylon.git
 cd cylon
-git checkout 6b8c83699ff878d333c067ffb99618a47092eaa5
+git checkout 3479d309069d71e168aeeb69fd64e5af6fb8aba9
 pip3 install .
 
 #________________________ mummer ____________________________#
