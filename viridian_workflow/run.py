@@ -104,8 +104,12 @@ def run_pipeline(
     if force_consensus is not None:
         global_log["forced_consensus"] = str(force_consensus)
         consensus = Path(force_consensus)
-
+        hp_min_fix_length = None
+        sanitise_gaps = False
     else:
+        hp_min_fix_length = 6 if platform == "ont" else None
+        sanitise_gaps = True
+
         # save reads for cylon assembly
         amp_dir = work_dir / "amplicons"
         manifest_data = reads.make_reads_dir_for_cylon(amp_dir)
@@ -128,6 +132,8 @@ def run_pipeline(
         consensus,
         min_coord=reads.start_pos,
         max_coord=reads.end_pos,
+        sanitise_gaps=sanitise_gaps,
+        hp_min_fix_length=hp_min_fix_length,
     )
     vcf, msa, varifier_consensus = varifier.run()
     global_log["Summary"]["Progress"].append(varifier.log)
