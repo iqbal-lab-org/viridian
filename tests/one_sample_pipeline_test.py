@@ -1,4 +1,5 @@
 import copy
+import filecmp
 import os
 import pytest
 import random
@@ -229,7 +230,7 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
     fq2 = f"{pre_out}.2.fq"
     all_amplicon_names = set([x[0] for x in test_data["amplicons"]])
     make_catted_paired_reads_for_amplicon_set(test_data, all_amplicon_names, fq1, fq2)
-    outdir = f"{pre_out}.out"
+    outdir = f"{pre_out}.out.1"
     one_sample_pipeline.run_one_sample(
         "illumina",
         outdir,
@@ -240,6 +241,21 @@ def test_complete_assembly_from_all_good_amplicons(test_data):
         keep_intermediate=True,
     )
     # TODO: check that we got the expected output
+
+    # run a second time to check that the pipeline is deterministic
+    outdir_2 = f"{pre_out}.out.2"
+    one_sample_pipeline.run_one_sample(
+        "illumina",
+        outdir_2,
+        test_data["ref_fasta"],
+        fq1,
+        fq2=fq2,
+        tsv_of_amp_schemes=test_data["schemes_tsv"],
+        keep_intermediate=True,
+    )
+    cons1 = os.path.join(outdir, "consensus.fa")
+    cons2 = os.path.join(outdir_2, "consensus.fa")
+    assert filecmp.cmp(cons1, cons2, shallow=False)
     subprocess.check_output(f"rm -rf {pre_out}*", shell=True)
 
 
