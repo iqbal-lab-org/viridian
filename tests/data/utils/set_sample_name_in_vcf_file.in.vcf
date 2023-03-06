@@ -1,6 +1,0 @@
-##fileformat=VCFv4.2
-##INFO=<ID=DP,Number=1,Type=Integer,Description="Read depth">
-##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	OLD_NAME
-ref.1	1	.	A	G	61	.	DP=42	GT	1/1
-ref.1	5	.	C	T	62	.	DP=43	GT	0/0

@@ -34,12 +34,27 @@ apt-get install -y \
   samtools
 
 update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
-pip3 install tox
+python3 -m pip install tox
 
 if [ ! -d $install_root ]; then
   mkdir $install_root
 fi
 cd $install_root
+
+#_____________________ enaBrowserTools ____________________#
+cd $install_root
+git clone https://github.com/enasequence/enaBrowserTools.git
+
+
+#_________________________ NGmerge __________________________#
+cd $install_root
+git clone https://github.com/harvardinformatics/NGmerge.git NGmerge-git
+cd NGmerge-git
+git checkout 224fc6a0066024e05965d101d998704815cb4c41
+make
+cd ..
+cp -s NGmerge-git/NGmerge .
+
 
 #_________________________ bcftools _________________________#
 cd $install_root
@@ -63,14 +78,16 @@ cp -s vt-git/vt .
 cd $install_root
 git clone https://github.com/lh3/minimap2.git minimap2_git
 cd minimap2_git
-git checkout 4dfd495cc2816f67556bc6318654e572636ee40a
-make
+git checkout b0b199f5039e8da5e8d1a9a7ae130580fd33fe1f
+arch_is_arm=$(dpkg --print-architecture | grep '^arm' | wc -l)
+if [[ $arch_is_arm -gt 0 ]]
+then
+    make arm_neon=1 aarch64=1
+else
+    make
+fi
 cd ..
 cp -s minimap2_git/minimap2 .
-cp -s minimap2_git/misc/paftools.js .
-wget -q https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.2.4.tar.bz2
-tar -jxvf k8-0.2.4.tar.bz2
-cp k8-0.2.4/k8-`uname -s` k8
 
 #________________________ racon _____________________________#
 cd $install_root
@@ -83,13 +100,6 @@ make CC=gcc-10 CPP=g++-10 CXX=g++-10 LD=g++-10
 cd ../../
 cp -s racon-git/build/bin/racon .
 
-#________________________ viridian __________________________#
-cd $install_root
-git clone https://github.com/iqbal-lab-org/viridian.git
-cd viridian
-git checkout 014e1f49b2fddf3189c793203fcba332d7e4b249
-pip3 install .
-
 #________________________ mummer ____________________________#
 cd $install_root
 wget -q https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-4.0.0rc1.tar.gz
@@ -101,20 +111,27 @@ make install
 ldconfig
 cd ..
 
+#________________________ cylon _____________________________#
+cd $install_root
+git clone https://github.com/iqbal-lab-org/cylon.git
+cd cylon
+git checkout 91045f6958c1ed00f716ca56022f0f1f3a054161
+pip3 install .
+
+#______________________ ReadItAndKeep _______________________#
+cd $install_root
+git clone https://github.com/GlobalPathogenAnalysisService/read-it-and-keep.git
+cd read-it-and-keep
+git checkout 61ae15be1e515c960b0135eae7dd59568a9de30d
+cd src
+make
+cd $install_root
+cp -s read-it-and-keep/src/readItAndKeep .
+
 #________________________ varifier __________________________#
 cd $install_root
 git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout 9ad87db9d501e17c008716f53c386500d4ba8f63
-pip3 install .
-cd ..
-
-#________________________ qcovid ____________________________#
-cd $install_root
-git clone https://github.com/iqbal-lab-org/QCovid.git
-cd QCovid
-git checkout d2bba0a18f65277fd53ba8b532104b7b4c7ce191
-mkdir -p /viridian_workflow/data/
-cp primers/*.qcovid.tsv /viridian_workflow/data/
+git checkout 8bc8726ed3cdb337dc47b62515e709759e451137
 pip3 install .
 cd ..

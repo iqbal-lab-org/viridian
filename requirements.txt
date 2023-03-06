@@ -1,4 +1,6 @@
+cluster_vcf_records>=0.13.3
 intervaltree
+matplotlib
 pyfastaq
 pysam
-mappy
+requests>=2.26.0

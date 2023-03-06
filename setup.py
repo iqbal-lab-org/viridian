@@ -1,4 +1,3 @@
-import glob
 from setuptools import setup, find_packages
 
 
@@ -6,18 +5,20 @@ with open("requirements.txt") as f:
     install_requires = [x.rstrip() for x in f]
 
 setup(
-    name="viridian_workflow",
-    version="0.3.7",
-    description="FIXME",
+    name="viridian",
+    version="0.4.0",
+    description="Consensus builder from amplicon sequenced virus reads",
     packages=find_packages(),
-    package_data={"viridian_workflow": ["amplicon_scheme_data/*"]},
+    package_data={"viridian": ["amplicon_scheme_data/*"]},
     author="Jeff Knaggs,Martin Hunt",
     author_email="FIXME",
-    url="https://github.com/iqbal-lab-org/viridian_workflow",
-    test_suite="nose.collector",
+    url="https://github.com/iqbal-lab-org/viridian",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["viridian_workflow = viridian_workflow.__main__:main"]
+        "console_scripts": [
+            "viridian = viridian.__main__:main",
+            "viridian_workflow = viridian.__main__:main",
+        ]
     },
     install_requires=install_requires,
     license="MIT",
