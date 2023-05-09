@@ -386,6 +386,17 @@ class Qc:
 
                     print(*line[:4], mask_nt, *line[5:], sep="\t", file=f)
 
+        # Force indels at start/end of indel-as-ref MSA to be N, not -
+        assert len(msa_indel_ref) == len(msa_indel_N)
+        i = 0
+        while i < len(msa_indel_ref) and msa_indel_N[i] == "N":
+            msa_indel_ref[i] = "N"
+            i += 1
+        i = len(msa_indel_ref) - 1
+        while i > 0 and msa_indel_N[i] == "N":
+            msa_indel_ref[i] = "N"
+            i -= 1
+
         self.masked_cons_msa = "".join(msa)
         self.masked_cons_msa_indel_as_ref = "".join(msa_indel_ref)
         self.masked_cons_msa_indel_as_N = "".join(msa_indel_N)
