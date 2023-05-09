@@ -3,6 +3,7 @@ import csv
 import logging
 from operator import itemgetter
 import os
+import random
 import statistics
 
 import matplotlib as mpl
@@ -252,6 +253,33 @@ class Scheme:
 
         list_out.sort(key=itemgetter("start"))
         return list_out, cylon_out
+
+    def simulate_reads(
+        self, ref_seq, outfile, read_length=None, read_depth=50, min_read_length=50
+    ):
+        if read_length is not None:
+            random.seed(42)
+
+        with open(outfile, "w") as f:
+            for (start, end) in self.amp_coords:
+                if read_length is None:
+                    print(f">{start}_{end}", file=f)
+                    print(ref_seq[start : end + 1], file=f)
+                else:
+                    for i in range(read_depth):
+                        while True:
+                            middle = random.randint(
+                                start + min_read_length, end - min_read_length
+                            )
+                            this_start = max(start, middle - int(read_length / 2))
+                            this_end = min(end, this_start + read_length)
+                            if this_end - this_start >= min_read_length:
+                                print(
+                                    f">{start}_{end}_{i}_{this_start}_{this_end-1}",
+                                    file=f,
+                                )
+                                print(ref_seq[this_start:this_end], file=f)
+                                break
 
 
 def depth_increments_to_pileup_stats(depth_increments, min_depth_cutoff=20):

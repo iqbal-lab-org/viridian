@@ -23,12 +23,6 @@ def main(args=None):
         help="More verbose logging, and less file cleaning",
         action="store_true",
     )
-    tech_choices = sorted(list(viridian.constants.ALLOWED_TECH))
-    common_parser.add_argument(
-        "--tech",
-        choices=tech_choices,
-        help=f"Sequencing technology, currently supported: {','.join(tech_choices)}",
-    )
     common_parser.add_argument(
         "--outdir",
         help="REQUIRED. Name of output directory (will be created). This must not exist already, unless the --force option is used to overwrite",
@@ -57,60 +51,69 @@ def main(args=None):
         metavar="FILENAME",
     )
 
-    # ----------------- reads and ref options --------------------------------
-    reads_ref_parser = argparse.ArgumentParser(add_help=False)
-    reads_ref_parser.add_argument(
+    # --------------------- reads options ------------------------------------
+    reads_parser = argparse.ArgumentParser(add_help=False)
+    reads_parser.add_argument(
         "--ena_run",
         help="ENA run accession. Reads will be downloaded and --tech determined from ENA metadata",
         metavar="RUN_ID",
     )
-    reads_ref_parser.add_argument(
+    reads_parser.add_argument(
         "--keep_ena_reads",
         help="Keep reads downloaded from the ENA. Only relevant if --ena_run is used, otherwise is ignored",
         action="store_true",
     )
-    reads_ref_parser.add_argument(
+    reads_parser.add_argument(
         "--reads1",
         help="Forwards reads file",
         metavar="FILENAME",
     )
-    reads_ref_parser.add_argument(
+    reads_parser.add_argument(
         "--reads2",
         help="Reverse reads file",
         metavar="FILENAME",
     )
-    reads_ref_parser.add_argument(
+    reads_parser.add_argument(
         "--reads",
         help="Unpaired reads file",
         metavar="FILENAME",
     )
-    reads_ref_parser.add_argument(
+    reads_parser.add_argument(
         "--reads_bam",
         help="Sorted by coordinate and indexed BAM file of reads mapped to the reference genome (reference must be same as that given by --ref_fasta). Incompatible with --reads* and --decontam options",
         metavar="FILENAME",
     )
-    reads_ref_parser.add_argument(
-        "--ref_fasta",
-        help="FASTA file of reference genome. Default is to use built-in MN908947.3 SARS-CoV-2 reference genome. Only use this if you know what you are doing, since the amplicon scheme(s) must match this reference [%(default)s]",
-        metavar="FILENAME",
-        default=viridian.amplicon_schemes.REF_FASTA,
-    )
-    reads_ref_parser.add_argument(
+    reads_parser.add_argument(
         "--sample_name",
         default="sample",
         help="Name of sample to put in various output files (eg final FASTA, VCF, and BAM) [%(default)s]",
         metavar="STRING",
     )
-    reads_ref_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Use one of: 1) '--tech ont|iontorrent --reads reads.fq'; 2) '--tech illumina|iontorrent --reads1 reads1.fq --reads2 reads2.fq'; 3) (with any tech) --reads_bam reads.bam"
+    tech_choices = sorted(list(viridian.constants.ALLOWED_TECH))
+    reads_parser.add_argument(
+        "--tech",
+        choices=tech_choices,
+        help=f"Sequencing technology, currently supported: {','.join(tech_choices)}",
+    )
+    reads_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Use one of: 1) '--tech ont|iontorrent --reads reads.fq'; 2) '--tech illumina|iontorrent --reads1 reads1.fq --reads2 reads2.fq'; 3) (with any tech) --reads_bam reads.bam"
+
+    # --------------------------- ref options --------------------------------
+    ref_parser = argparse.ArgumentParser(add_help=False)
+    ref_parser.add_argument(
+        "--ref_fasta",
+        help="FASTA file of reference genome. Default is to use built-in MN908947.3 SARS-CoV-2 reference genome. Only use this if you know what you are doing, since the amplicon scheme(s) must match this reference [%(default)s]",
+        metavar="FILENAME",
+        default=viridian.amplicon_schemes.REF_FASTA,
+    )
 
     # ------------------------ run_one_sample ----------------------------
     subparser_run_one_sample = subparsers.add_parser(
         "run_one_sample",
-        parents=[common_parser, amplicons_parser, reads_ref_parser],
+        parents=[common_parser, amplicons_parser, reads_parser, ref_parser],
         help="Run the complete pipeline on one sample",
         usage=f"viridian run_one_sample [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)>",
         description="Run the complete pipeline on one sample",
-        epilog=reads_ref_epilog,
+        epilog=reads_epilog,
     )
     subparser_run_one_sample.add_argument(
         "--decontam",
@@ -229,12 +232,27 @@ def main(args=None):
     )
     subparser_run_one_sample.set_defaults(func=viridian.tasks.run_one_sample.run)
 
+    # ------------------------ sim_schemes -------------------------------
+    subparser_sim_schemes = subparsers.add_parser(
+        "sim_schemes",
+        parents=[amplicons_parser, common_parser, ref_parser],
+        help="For each scheme, simulate fragments and run scheme id code",
+        usage=f"viridian sim_schemes [options] --outdir <out>",
+        description="For each scheme, simulate fragments and run scheme id code",
+    )
+    subparser_sim_schemes.add_argument(
+        "--read_length",
+        help="Length of fragmented reads [%(default)s]",
+        type=int,
+        default=200,
+        metavar="INT",
+    )
+    subparser_sim_schemes.set_defaults(func=viridian.tasks.sim_schemes.run)
+
     args = parser.parse_args()
     if not hasattr(args, "func"):
         parser.print_help()
         sys.exit()
-
-    viridian.utils.check_tech_and_reads_options(args)
 
     logging.basicConfig(
         format="[%(asctime)s viridian %(levelname)s] %(message)s",
