@@ -95,7 +95,7 @@ def main(args=None):
         choices=tech_choices,
         help=f"Sequencing technology, currently supported: {','.join(tech_choices)}",
     )
-    reads_epilog = "IMPORTANT: --tech, --ref_fasta, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Use one of: 1) '--tech ont|iontorrent --reads reads.fq'; 2) '--tech illumina|iontorrent --reads1 reads1.fq --reads2 reads2.fq'; 3) (with any tech) --reads_bam reads.bam"
+    reads_epilog = "IMPORTANT: --tech, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Use one of: 1) '--tech ont|iontorrent --reads reads.fq'; 2) '--tech illumina|iontorrent --reads1 reads1.fq --reads2 reads2.fq'; 3) (with any tech) --reads_bam reads.bam"
 
     # --------------------------- ref options --------------------------------
     ref_parser = argparse.ArgumentParser(add_help=False)
@@ -111,7 +111,7 @@ def main(args=None):
         "run_one_sample",
         parents=[common_parser, amplicons_parser, reads_parser, ref_parser],
         help="Run the complete pipeline on one sample",
-        usage=f"viridian run_one_sample [options] --tech {'|'.join(tech_choices)} --ref_fasta ref.fasta --outdir out <reads options (see help)>",
+        usage=f"viridian run_one_sample [options] --tech {'|'.join(tech_choices)} --outdir out <reads options (see help)>",
         description="Run the complete pipeline on one sample",
         epilog=reads_epilog,
     )
