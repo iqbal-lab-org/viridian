@@ -651,6 +651,10 @@ class Pipeline:
             if traceback_lines is not None or not function_ok:
                 logging.error("Stopping pipeline")
                 self.add_errors_to_log(f"Error during stage: {description}")
+                try:
+                    self.final_tidy()
+                except:
+                    pass
                 self.finalise_json_log("Fail", errors=traceback_lines)
                 if traceback_lines is not None:
                     raise error
