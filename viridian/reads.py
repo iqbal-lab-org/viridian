@@ -320,6 +320,10 @@ class ReadSampler:
             stats["assemble_bases"] = write_cylon_fasta_unpaired(
                 fragments, cylon_fa, cylon_target_bases
             )
+            if stats["total_reads"] > 0:
+                fwd_percent = round(100 * stats["total_reads_fwd_strand"] / stats["total_reads"])
+                if not 0.10 <= fwd_percent <= 0.90:
+                    logging.warning(f"Reads for amplicon {amplicon['name']} mostly all mapped to one strand. {fwd_percent}% mapped to forwards strand")
         stats["qc_depth"] = round(stats["qc_bases"] / amp_length, 2)
         if stats["assemble_bases"] == 0:
             del self.cylon_fa_manifest[amplicon["name"]]
