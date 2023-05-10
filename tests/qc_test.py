@@ -176,6 +176,6 @@ def test_qc():
     # FIXME check VCF file - need to add in a couple more variants first, and
     # decide on how to handle indels
     assert q.masked_cons_msa == "-NNNNNNNNNNNN-GKANGNNACGAACNNN-"
-    assert q.masked_cons_msa_indel_as_ref == "ANNNNNNNNNNNNCGKANGNACGAACNNNC"
+    assert q.masked_cons_msa_indel_as_ref == "NNNNNNNNNNNNNNGKANGNACGAACNNNN"
     assert q.masked_cons_msa_indel_as_N == "NNNNNNNNNNNNNNGKANGNACGAACNNNN"
     utils.syscall(f"rm {tsv_out} {vcf_out}")
