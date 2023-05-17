@@ -275,6 +275,7 @@ def test_get_scores_from_schemes():
         "best_schemes": [],
         "best_score": None,
         "scores": {"s1": None},
+        "score_ratio": None,
     }
     assert scheme_id.get_scores_from_schemes(schemes) == expect
 
@@ -284,6 +285,7 @@ def test_get_scores_from_schemes():
         "best_schemes": ["s2"],
         "best_score": 100,
         "scores": {"s1": None, "s2": 100},
+        "score_ratio": None,
     }
     assert scheme_id.get_scores_from_schemes(schemes) == expect
 
@@ -293,6 +295,7 @@ def test_get_scores_from_schemes():
         "best_schemes": ["s2", "s2.2"],
         "best_score": 100,
         "scores": {"s1": None, "s2": 100, "s2.2": 100},
+        "score_ratio": 1.0,
     }
     assert scheme_id.get_scores_from_schemes(schemes) == expect
 
@@ -302,6 +305,7 @@ def test_get_scores_from_schemes():
         "best_schemes": ["s3"],
         "best_score": 200,
         "scores": {"s1": None, "s2": 100, "s2.2": 100, "s3": 200},
+        "score_ratio": 0.5,
     }
     assert scheme_id.get_scores_from_schemes(schemes) == expect
 

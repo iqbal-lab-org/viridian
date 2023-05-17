@@ -445,11 +445,18 @@ def get_scores_from_schemes(schemes):
     best_schemes = sorted(
         list({x for x in scores if scores[x] == best_score and scores[x] is not None})
     )
+    ordered_scores = sorted(x for x in scores.values() if x is not None)
+    if len(ordered_scores) >= 2 and ordered_scores[-1] != 0:
+        score_ratio = round(ordered_scores[-2] / ordered_scores[-1], 2)
+    else:
+        score_ratio = None
+
     return {
         "scores": scores,
         "best_schemes": best_schemes,
         "best_score": best_score,
         "best_scheme": None if len(best_schemes) == 0 else best_schemes[0],
+        "score_ratio": score_ratio,
     }
 
 

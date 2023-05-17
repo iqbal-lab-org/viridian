@@ -48,6 +48,7 @@ class Pipeline:
         msas_to_write=None,
         qc_depth=1000,
         min_scheme_score=250,
+        max_scheme_ratio=0.5,
         sample_name="sample",
         max_percent_amps_fail=50.0,
         max_cons_n_percent=50.0,
@@ -83,6 +84,7 @@ class Pipeline:
         self.msas_to_write = set() if msas_to_write is None else set(msas_to_write)
         self.qc_depth = qc_depth
         self.min_scheme_score = min_scheme_score
+        self.max_scheme_ratio = max_scheme_ratio
         self.sample_name = sample_name
         self.max_percent_amps_fail = max_percent_amps_fail
         self.max_cons_n_percent = max_cons_n_percent
@@ -360,16 +362,26 @@ class Pipeline:
             return False
         best_scheme = id_results["scheme_choice"]["best_scheme"]
         best_score = id_results["scheme_choice"]["best_score"]
+        score_ratio = id_results["scheme_choice"]["score_ratio"]
         logging.info(
-            f"Amplicon scheme that reads best match to: {best_scheme}, with score {best_score}"
+            f"Amplicon scheme that reads best match to: {best_scheme}, with score {best_score}, and (second best)/best = {score_ratio}"
         )
 
         if self.force_amp_scheme is None:
+            score_ok = True
             if best_score < self.min_scheme_score:
                 self.log_dict["amplicon_scheme_name"] = None
                 self.add_errors_to_log(
                     f"Best scheme score is {best_score}, which is less than required minimum score {self.min_scheme_score}"
                 )
+                score_ok = False
+            if score_ratio is None or score_ratio > self.max_scheme_ratio:
+                self.log_dict["amplicon_scheme_name"] = None
+                self.add_errors_to_log(
+                    f"(second best scheme score) / (best score) is {score_ratio}, which is more than the required maximum {self.max_scheme_ratio}"
+                )
+                score_ok = False
+            if not score_ok:
                 return False
             self.log_dict["amplicon_scheme_name"] = best_scheme
             logging.info(f"Using amplicon scheme {best_scheme}")

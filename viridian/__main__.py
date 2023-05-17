@@ -141,9 +141,16 @@ def main(args=None):
     subparser_run_one_sample.add_argument(
         "--min_scheme_score",
         type=int,
-        default=500,
+        default=250,
         help="Minimum score required for a matching scheme. If all schemes are less than this cutoff, the pipeline is stopped unless --force_amp_scheme is used [%(default)s]",
         metavar="INT",
+    )
+    subparser_run_one_sample.add_argument(
+        "--max_scheme_ratio",
+        type=float,
+        default=0.5,
+        help="Maximum allowed value of (second best scheme score) / (best scheme score). See also --min_scheme_score [%(default)s]",
+        metavar="FLOAT",
     )
     subparser_run_one_sample.add_argument(
         "--assemble_depth",

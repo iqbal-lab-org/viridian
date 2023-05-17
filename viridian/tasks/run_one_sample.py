@@ -36,6 +36,7 @@ def run(options):
         keep_bam=options.keep_bam,
         qc_depth=options.qc_depth,
         min_scheme_score=options.min_scheme_score,
+        max_scheme_ratio=options.max_scheme_ratio,
         sample_name=options.sample_name,
         max_percent_amps_fail=options.max_percent_amps_fail,
         max_cons_n_percent=options.max_cons_n_percent,
