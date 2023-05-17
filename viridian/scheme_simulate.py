@@ -103,7 +103,7 @@ def simulate_all_schemes(
                 outprefix,
                 read_length=this_read_length,
             )
-            key = scheme_name + "_" + ("fragmented" if fragment else "full_length")
+            key = scheme_name + ":" + ("fragmented" if fragment else "full_length")
             all_results[key] = results["scheme_choice"]
 
     outprefix = os.path.join(outdir, "wgs")

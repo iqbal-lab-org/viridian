@@ -23,7 +23,7 @@ def test_simulate_all_schemes():
     for test_scheme in results:
         if test_scheme == "wgs":
             continue
-        scheme_name, read_type = test_scheme.split("_", maxsplit=1)
+        scheme_name, read_type = test_scheme.split(":", maxsplit=1)
         assert read_type in ["full_length", "fragmented"]
         assert results[test_scheme]["best_schemes"] == [scheme_name]
 
