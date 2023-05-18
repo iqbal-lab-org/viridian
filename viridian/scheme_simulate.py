@@ -2,8 +2,6 @@ import logging
 import os
 import random
 
-import pyfastaq
-
 from viridian import amplicon_schemes, maptools, scheme_id, utils
 
 
@@ -72,7 +70,11 @@ def sim_reads_one_scheme(
 
 
 def simulate_all_schemes(
-    ref_fasta, outdir, built_in_amp_schemes=None, tsv_of_amp_schemes=None, read_length=300,
+    ref_fasta,
+    outdir,
+    built_in_amp_schemes=None,
+    tsv_of_amp_schemes=None,
+    read_length=300,
 ):
     ref_seq = utils.load_single_seq_fasta(ref_fasta)
     logging.info(f"Loaded reference sequence from file {ref_fasta}")

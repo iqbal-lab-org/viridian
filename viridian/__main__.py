@@ -244,7 +244,7 @@ def main(args=None):
         "sim_schemes",
         parents=[amplicons_parser, common_parser, ref_parser],
         help="For each scheme, simulate fragments and run scheme id code",
-        usage=f"viridian sim_schemes [options] --outdir <out>",
+        usage="viridian sim_schemes [options] --outdir <out>",
         description="For each scheme, simulate fragments and run scheme id code",
     )
     subparser_sim_schemes.add_argument(
