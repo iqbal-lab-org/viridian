@@ -16,7 +16,7 @@ Both the Docker and Singularity container have the main script
 ### Docker
 Get a Docker image of the latest release:
 ```
-docker pull ghcr.io/iqbal-lab-org/cte:latest
+docker pull ghcr.io/iqbal-lab-org/viridian_workflow:latest
 ```
 All Docker images are listed in the
 [packages page](https://github.com/iqbal-lab-org/viridian_workflow/pkgs/container/viridian_workflow).
