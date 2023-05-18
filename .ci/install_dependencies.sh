@@ -115,7 +115,7 @@ cd ..
 cd $install_root
 git clone https://github.com/iqbal-lab-org/cylon.git
 cd cylon
-git checkout 5d75a0738a0a280ef42b0f79e5d87fc3b5000afe
+git checkout 57d559a76254b0b95785f7c02fa58ef806713e01
 pip3 install .
 
 #______________________ ReadItAndKeep _______________________#
