@@ -1,0 +1,3715 @@
+{
+  "name": "covid-artic-v4.1",
+  "source_file": "https://raw.githubusercontent.com/artic-network/artic-ncov2019/master/primer_schemes/nCoV-2019/V4.1/SARS-CoV-2.primer.bed",
+  "source_file_sha256": "99cfdd0e5a757997042e326f793887d4884a6e1668870d06b4cd0a8560aaf219",
+  "reference_accession": "MN908947.3",
+  "amplicons": {
+    "SARS-CoV-2_1": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25",
+            "50",
+            "SARS-CoV-2_1_LEFT",
+            "1",
+            "+",
+            "AACAAACCAACCAACTTTCGATCTC"
+          ],
+          "start": 25,
+          "end": 49
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "408",
+            "431",
+            "SARS-CoV-2_1_RIGHT",
+            "1",
+            "-",
+            "CTTCTACTAAGCCACAAGTGCCA"
+          ],
+          "start": 408,
+          "end": 430
+        }
+      ],
+      "start": 25,
+      "end": 430,
+      "left_primer_end": 49,
+      "right_primer_start": 408
+    },
+    "SARS-CoV-2_2": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "324",
+            "344",
+            "SARS-CoV-2_2_LEFT",
+            "2",
+            "+",
+            "TTTACAGGTTCGCGACGTGC"
+          ],
+          "start": 324,
+          "end": 343
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "705",
+            "727",
+            "SARS-CoV-2_2_RIGHT",
+            "2",
+            "-",
+            "ATAAGGATCAGTGCCAAGCTCG"
+          ],
+          "start": 705,
+          "end": 726
+        }
+      ],
+      "start": 324,
+      "end": 726,
+      "left_primer_end": 343,
+      "right_primer_start": 705
+    },
+    "SARS-CoV-2_3": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "644",
+            "666",
+            "SARS-CoV-2_3_LEFT",
+            "1",
+            "+",
+            "GTAATAAAGGAGCTGGTGGCCA"
+          ],
+          "start": 644,
+          "end": 665
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1017",
+            "1044",
+            "SARS-CoV-2_3_RIGHT",
+            "1",
+            "-",
+            "GCCAATTTAATTTCAAAAGGTGTCTGC"
+          ],
+          "start": 1017,
+          "end": 1043
+        }
+      ],
+      "start": 644,
+      "end": 1043,
+      "left_primer_end": 665,
+      "right_primer_start": 1017
+    },
+    "SARS-CoV-2_4": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "944",
+            "966",
+            "SARS-CoV-2_4_LEFT",
+            "2",
+            "+",
+            "GTGTATACTGCTGCCGTGAACA"
+          ],
+          "start": 944,
+          "end": 965
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1337",
+            "1362",
+            "SARS-CoV-2_4_RIGHT",
+            "2",
+            "-",
+            "ACAACAGCATTTTGGGGTAAGTAAC"
+          ],
+          "start": 1337,
+          "end": 1361
+        }
+      ],
+      "start": 944,
+      "end": 1361,
+      "left_primer_end": 965,
+      "right_primer_start": 1337
+    },
+    "SARS-CoV-2_5": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1245",
+            "1266",
+            "SARS-CoV-2_5_LEFT",
+            "1",
+            "+",
+            "TGAAACTTCATGGCAGACGGG"
+          ],
+          "start": 1245,
+          "end": 1265
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1623",
+            "1650",
+            "SARS-CoV-2_5_RIGHT",
+            "1",
+            "-",
+            "TTGATGTTGACTTTCTCTTTTTGGAGT"
+          ],
+          "start": 1623,
+          "end": 1649
+        }
+      ],
+      "start": 1245,
+      "end": 1649,
+      "left_primer_end": 1265,
+      "right_primer_start": 1623
+    },
+    "SARS-CoV-2_6": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1540",
+            "1562",
+            "SARS-CoV-2_6_LEFT",
+            "2",
+            "+",
+            "CGTGCTAGCGCTAACATAGGTT"
+          ],
+          "start": 1540,
+          "end": 1561
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1925",
+            "1948",
+            "SARS-CoV-2_6_RIGHT",
+            "2",
+            "-",
+            "AACACGCACAGAATTTTGAGCAG"
+          ],
+          "start": 1925,
+          "end": 1947
+        }
+      ],
+      "start": 1540,
+      "end": 1947,
+      "left_primer_end": 1561,
+      "right_primer_start": 1925
+    },
+    "SARS-CoV-2_7": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1851",
+            "1875",
+            "SARS-CoV-2_7_LEFT",
+            "1",
+            "+",
+            "ACTGAGTCCTCTTTATGCATTTGC"
+          ],
+          "start": 1851,
+          "end": 1874
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2228",
+            "2250",
+            "SARS-CoV-2_7_RIGHT",
+            "1",
+            "-",
+            "CCACCGACAATTTCACAAGCAC"
+          ],
+          "start": 2228,
+          "end": 2249
+        }
+      ],
+      "start": 1851,
+      "end": 2249,
+      "left_primer_end": 1874,
+      "right_primer_start": 2228
+    },
+    "SARS-CoV-2_8": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2154",
+            "2180",
+            "SARS-CoV-2_8_LEFT",
+            "2",
+            "+",
+            "GCTTGAAGAGAAGTTTAAGGAAGGTG"
+          ],
+          "start": 2154,
+          "end": 2179
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2544",
+            "2571",
+            "SARS-CoV-2_8_RIGHT",
+            "2",
+            "-",
+            "GGTTGTTCTAATGGTTGTAAATCACCA"
+          ],
+          "start": 2544,
+          "end": 2570
+        }
+      ],
+      "start": 2154,
+      "end": 2570,
+      "left_primer_end": 2179,
+      "right_primer_start": 2544
+    },
+    "SARS-CoV-2_9": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2483",
+            "2508",
+            "SARS-CoV-2_9_LEFT",
+            "1",
+            "+",
+            "TCTTCTTAGAGGGAGAAACACTTCC"
+          ],
+          "start": 2483,
+          "end": 2507
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2861",
+            "2885",
+            "SARS-CoV-2_9_RIGHT",
+            "1",
+            "-",
+            "CACAGGCGAACTCATTTACTTCTG"
+          ],
+          "start": 2861,
+          "end": 2884
+        }
+      ],
+      "start": 2483,
+      "end": 2884,
+      "left_primer_end": 2507,
+      "right_primer_start": 2861
+    },
+    "SARS-CoV-2_10": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2780",
+            "2813",
+            "SARS-CoV-2_10_LEFT_alt1",
+            "2",
+            "+",
+            "TGAATATCACTTTTGAACTTGATGAAAGGATTG"
+          ],
+          "start": 2780,
+          "end": 2812
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "2826",
+            "2850",
+            "SARS-CoV-2_10_LEFT",
+            "2",
+            "+",
+            "TGAGAAGTGCTCTGCCTATACAGT"
+          ],
+          "start": 2826,
+          "end": 2849
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3156",
+            "3177",
+            "SARS-CoV-2_10_RIGHT_alt1",
+            "2",
+            "-",
+            "GGTTGAAGAGCAGCAGAAGTG"
+          ],
+          "start": 3156,
+          "end": 3176
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "3183",
+            "3210",
+            "SARS-CoV-2_10_RIGHT",
+            "2",
+            "-",
+            "TCATCTAACCAATCTTCTTCTTGCTCT"
+          ],
+          "start": 3183,
+          "end": 3209
+        }
+      ],
+      "start": 2780,
+      "end": 3209,
+      "left_primer_end": 2849,
+      "right_primer_start": 3156
+    },
+    "SARS-CoV-2_11": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3078",
+            "3102",
+            "SARS-CoV-2_11_LEFT",
+            "1",
+            "+",
+            "AGAAGAGTTTGAGCCATCAACTCA"
+          ],
+          "start": 3078,
+          "end": 3101
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3470",
+            "3492",
+            "SARS-CoV-2_11_RIGHT",
+            "1",
+            "-",
+            "TTTAAGGCTCCTGCAACACCTC"
+          ],
+          "start": 3470,
+          "end": 3491
+        }
+      ],
+      "start": 3078,
+      "end": 3491,
+      "left_primer_end": 3101,
+      "right_primer_start": 3470
+    },
+    "SARS-CoV-2_12": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3390",
+            "3412",
+            "SARS-CoV-2_12_LEFT",
+            "2",
+            "+",
+            "TGCAGACATTGTGGAAGAAGCT"
+          ],
+          "start": 3390,
+          "end": 3411
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3769",
+            "3794",
+            "SARS-CoV-2_12_RIGHT",
+            "2",
+            "-",
+            "CAGCTAAGTAGACATTTGTGCGAAC"
+          ],
+          "start": 3769,
+          "end": 3793
+        }
+      ],
+      "start": 3390,
+      "end": 3793,
+      "left_primer_end": 3411,
+      "right_primer_start": 3769
+    },
+    "SARS-CoV-2_13": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3683",
+            "3705",
+            "SARS-CoV-2_13_LEFT",
+            "1",
+            "+",
+            "AGCACGAAGTTCTACTTGCACC"
+          ],
+          "start": 3683,
+          "end": 3704
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4067",
+            "4093",
+            "SARS-CoV-2_13_RIGHT",
+            "1",
+            "-",
+            "GATGTCAATGTCACTAACAAGAGTGG"
+          ],
+          "start": 4067,
+          "end": 4092
+        }
+      ],
+      "start": 3683,
+      "end": 4092,
+      "left_primer_end": 3704,
+      "right_primer_start": 4067
+    },
+    "SARS-CoV-2_14": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3992",
+            "4018",
+            "SARS-CoV-2_14_LEFT",
+            "2",
+            "+",
+            "TGGAAGAAACTAAGTTCCTCACAGAA"
+          ],
+          "start": 3992,
+          "end": 4017
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4387",
+            "4409",
+            "SARS-CoV-2_14_RIGHT",
+            "2",
+            "-",
+            "CATGTGCAAGCATTTCTCGCAA"
+          ],
+          "start": 4387,
+          "end": 4408
+        }
+      ],
+      "start": 3992,
+      "end": 4408,
+      "left_primer_end": 4017,
+      "right_primer_start": 4387
+    },
+    "SARS-CoV-2_15": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4312",
+            "4339",
+            "SARS-CoV-2_15_LEFT",
+            "1",
+            "+",
+            "AAAAGTGCCTTTTACATTCTACCATCT"
+          ],
+          "start": 4312,
+          "end": 4338
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4685",
+            "4710",
+            "SARS-CoV-2_15_RIGHT",
+            "1",
+            "-",
+            "GCATCAGGTGAAGAAACAGAAACTG"
+          ],
+          "start": 4685,
+          "end": 4709
+        }
+      ],
+      "start": 4312,
+      "end": 4709,
+      "left_primer_end": 4338,
+      "right_primer_start": 4685
+    },
+    "SARS-CoV-2_16": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4620",
+            "4648",
+            "SARS-CoV-2_16_LEFT",
+            "2",
+            "+",
+            "TGTAACACATGGCTTAAATTTGGAAGAA"
+          ],
+          "start": 4620,
+          "end": 4647
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4995",
+            "5017",
+            "SARS-CoV-2_16_RIGHT",
+            "2",
+            "-",
+            "CACAACTTGCGTGTGGAGGTTA"
+          ],
+          "start": 4995,
+          "end": 5016
+        }
+      ],
+      "start": 4620,
+      "end": 5016,
+      "left_primer_end": 4647,
+      "right_primer_start": 4995
+    },
+    "SARS-CoV-2_17": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4923",
+            "4953",
+            "SARS-CoV-2_17_LEFT",
+            "1",
+            "+",
+            "TGACAATCTTAAGACACTTCTTTCTTTGAG"
+          ],
+          "start": 4923,
+          "end": 4952
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5302",
+            "5331",
+            "SARS-CoV-2_17_RIGHT",
+            "1",
+            "-",
+            "TTCAACTCTATTTGTTGGAGTGTTAACAA"
+          ],
+          "start": 5302,
+          "end": 5330
+        }
+      ],
+      "start": 4923,
+      "end": 5330,
+      "left_primer_end": 4952,
+      "right_primer_start": 5302
+    },
+    "SARS-CoV-2_18": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5230",
+            "5259",
+            "SARS-CoV-2_18_LEFT",
+            "2",
+            "+",
+            "TGGAAATACCCACAAGTTAATGGTTTAAC"
+          ],
+          "start": 5230,
+          "end": 5258
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5620",
+            "5643",
+            "SARS-CoV-2_18_RIGHT",
+            "2",
+            "-",
+            "GCTTGTTTACCACACGTACAAGG"
+          ],
+          "start": 5620,
+          "end": 5642
+        }
+      ],
+      "start": 5230,
+      "end": 5642,
+      "left_primer_end": 5258,
+      "right_primer_start": 5620
+    },
+    "SARS-CoV-2_19": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5561",
+            "5584",
+            "SARS-CoV-2_19_LEFT",
+            "1",
+            "+",
+            "AAGCTGTTATGTACATGGGCACA"
+          ],
+          "start": 5561,
+          "end": 5583
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5932",
+            "5957",
+            "SARS-CoV-2_19_RIGHT",
+            "1",
+            "-",
+            "TGTCCAACTTAGGGTCAATTTCTGT"
+          ],
+          "start": 5932,
+          "end": 5956
+        }
+      ],
+      "start": 5561,
+      "end": 5956,
+      "left_primer_end": 5583,
+      "right_primer_start": 5932
+    },
+    "SARS-CoV-2_20": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5867",
+            "5894",
+            "SARS-CoV-2_20_LEFT",
+            "2",
+            "+",
+            "ACAAAGAAAACAGTTACACAACAACCA"
+          ],
+          "start": 5867,
+          "end": 5893
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6247",
+            "6272",
+            "SARS-CoV-2_20_RIGHT",
+            "2",
+            "-",
+            "ACGTGGCTTTATTAGTTGCATTGTT"
+          ],
+          "start": 6247,
+          "end": 6271
+        }
+      ],
+      "start": 5867,
+      "end": 6271,
+      "left_primer_end": 5893,
+      "right_primer_start": 6247
+    },
+    "SARS-CoV-2_21": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6184",
+            "6210",
+            "SARS-CoV-2_21_LEFT",
+            "1",
+            "+",
+            "CACTACACACCCTCTTTTAAGAAAGG"
+          ],
+          "start": 6184,
+          "end": 6209
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6553",
+            "6582",
+            "SARS-CoV-2_21_RIGHT",
+            "1",
+            "-",
+            "GTAAGACTAGAATTGTCTACATAAGCAGC"
+          ],
+          "start": 6553,
+          "end": 6581
+        }
+      ],
+      "start": 6184,
+      "end": 6581,
+      "left_primer_end": 6209,
+      "right_primer_start": 6553
+    },
+    "SARS-CoV-2_22": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6478",
+            "6507",
+            "SARS-CoV-2_22_LEFT",
+            "2",
+            "+",
+            "GTAGGAGACATTATACTTAAACCAGCAAA"
+          ],
+          "start": 6478,
+          "end": 6506
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6859",
+            "6885",
+            "SARS-CoV-2_22_RIGHT",
+            "2",
+            "-",
+            "CCGACACTCTTAACAGTATTCTTTGC"
+          ],
+          "start": 6859,
+          "end": 6884
+        }
+      ],
+      "start": 6478,
+      "end": 6884,
+      "left_primer_end": 6506,
+      "right_primer_start": 6859
+    },
+    "SARS-CoV-2_23": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6747",
+            "6776",
+            "SARS-CoV-2_23_LEFT",
+            "1",
+            "+",
+            "AAACCGTGTTTGTACTAATTATATGCCTT"
+          ],
+          "start": 6747,
+          "end": 6775
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7122",
+            "7148",
+            "SARS-CoV-2_23_RIGHT",
+            "1",
+            "-",
+            "AACCACTAAGACAAACACTACAAGGT"
+          ],
+          "start": 7122,
+          "end": 7147
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "7127",
+            "7156",
+            "SARS-CoV-2_23_RIGHT_alt1",
+            "1",
+            "-",
+            "AGAATCTAAACCACTAAGACAAACACTAC"
+          ],
+          "start": 7127,
+          "end": 7155
+        }
+      ],
+      "start": 6747,
+      "end": 7155,
+      "left_primer_end": 6775,
+      "right_primer_start": 7122
+    },
+    "SARS-CoV-2_24": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7057",
+            "7084",
+            "SARS-CoV-2_24_LEFT",
+            "2",
+            "+",
+            "GGTTACAGAGAAGGCTATTTGAACTCT"
+          ],
+          "start": 7057,
+          "end": 7083
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7440",
+            "7467",
+            "SARS-CoV-2_24_RIGHT",
+            "2",
+            "-",
+            "ACAACATGCACATAACTTTTCCATACA"
+          ],
+          "start": 7440,
+          "end": 7466
+        }
+      ],
+      "start": 7057,
+      "end": 7466,
+      "left_primer_end": 7083,
+      "right_primer_start": 7440
+    },
+    "SARS-CoV-2_25": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7381",
+            "7403",
+            "SARS-CoV-2_25_LEFT",
+            "1",
+            "+",
+            "CAAATGGCCCCGATTTCAGCTA"
+          ],
+          "start": 7381,
+          "end": 7402
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7747",
+            "7770",
+            "SARS-CoV-2_25_RIGHT",
+            "1",
+            "-",
+            "TGGATGGAACCATTCTTCACTGT"
+          ],
+          "start": 7747,
+          "end": 7769
+        }
+      ],
+      "start": 7381,
+      "end": 7769,
+      "left_primer_end": 7402,
+      "right_primer_start": 7747
+    },
+    "SARS-CoV-2_26": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7672",
+            "7695",
+            "SARS-CoV-2_26_LEFT",
+            "2",
+            "+",
+            "GCGAGAGACTTGTCACTACAGTT"
+          ],
+          "start": 7672,
+          "end": 7694
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8063",
+            "8092",
+            "SARS-CoV-2_26_RIGHT",
+            "2",
+            "-",
+            "GAGTTTTTCCATTGGTACGTTAAAAGTTG"
+          ],
+          "start": 8063,
+          "end": 8091
+        }
+      ],
+      "start": 7672,
+      "end": 8091,
+      "left_primer_end": 7694,
+      "right_primer_start": 8063
+    },
+    "SARS-CoV-2_27": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7997",
+            "8019",
+            "SARS-CoV-2_27_LEFT",
+            "1",
+            "+",
+            "CTGATGTTGGTGATAGTGCGGA"
+          ],
+          "start": 7997,
+          "end": 8018
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8367",
+            "8392",
+            "SARS-CoV-2_27_RIGHT_alt1",
+            "1",
+            "-",
+            "AATGTTGTGACTTTTTGCTACCTGC"
+          ],
+          "start": 8367,
+          "end": 8391
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "8370",
+            "8395",
+            "SARS-CoV-2_27_RIGHT",
+            "1",
+            "-",
+            "AGCAATGTTGTGACTTTTTGCTACC"
+          ],
+          "start": 8370,
+          "end": 8394
+        }
+      ],
+      "start": 7997,
+      "end": 8394,
+      "left_primer_end": 8018,
+      "right_primer_start": 8367
+    },
+    "SARS-CoV-2_28": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8304",
+            "8326",
+            "SARS-CoV-2_28_LEFT",
+            "2",
+            "+",
+            "TGAAAACATGACACCCCGTGAC"
+          ],
+          "start": 8304,
+          "end": 8325
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8691",
+            "8714",
+            "SARS-CoV-2_28_RIGHT",
+            "2",
+            "-",
+            "TGACACCACCATCAATAGCCTTG"
+          ],
+          "start": 8691,
+          "end": 8713
+        }
+      ],
+      "start": 8304,
+      "end": 8713,
+      "left_primer_end": 8325,
+      "right_primer_start": 8691
+    },
+    "SARS-CoV-2_29": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8596",
+            "8619",
+            "SARS-CoV-2_29_LEFT",
+            "1",
+            "+",
+            "CTTGTGTTCCTTTTTGTTGCTGC"
+          ],
+          "start": 8596,
+          "end": 8618
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8990",
+            "9013",
+            "SARS-CoV-2_29_RIGHT",
+            "1",
+            "-",
+            "AGCCAAAACACAAGCTGATGTTG"
+          ],
+          "start": 8990,
+          "end": 9012
+        }
+      ],
+      "start": 8596,
+      "end": 9012,
+      "left_primer_end": 8618,
+      "right_primer_start": 8990
+    },
+    "SARS-CoV-2_30": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8919",
+            "8944",
+            "SARS-CoV-2_30_LEFT",
+            "2",
+            "+",
+            "ACCTAGAGTTTTTAGTGCAGTTGGT"
+          ],
+          "start": 8919,
+          "end": 8943
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9306",
+            "9329",
+            "SARS-CoV-2_30_RIGHT",
+            "2",
+            "-",
+            "CTACACCACAGAAAACTCCTGGT"
+          ],
+          "start": 9306,
+          "end": 9328
+        }
+      ],
+      "start": 8919,
+      "end": 9328,
+      "left_primer_end": 8943,
+      "right_primer_start": 9306
+    },
+    "SARS-CoV-2_31": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9168",
+            "9192",
+            "SARS-CoV-2_31_LEFT",
+            "1",
+            "+",
+            "CCTTGAAGGTTCTGTTAGAGTGGT"
+          ],
+          "start": 9168,
+          "end": 9191
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9535",
+            "9564",
+            "SARS-CoV-2_31_RIGHT",
+            "1",
+            "-",
+            "AATGAGTAAACTGGTGTTAAACAGAGTAC"
+          ],
+          "start": 9535,
+          "end": 9563
+        }
+      ],
+      "start": 9168,
+      "end": 9563,
+      "left_primer_end": 9191,
+      "right_primer_start": 9535
+    },
+    "SARS-CoV-2_32": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9470",
+            "9497",
+            "SARS-CoV-2_32_LEFT",
+            "2",
+            "+",
+            "GAGCTTTTGGTGAATACAGTCATGTAG"
+          ],
+          "start": 9470,
+          "end": 9496
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9842",
+            "9866",
+            "SARS-CoV-2_32_RIGHT",
+            "2",
+            "-",
+            "GAGGTAATAGCACATCACTACGCA"
+          ],
+          "start": 9842,
+          "end": 9865
+        }
+      ],
+      "start": 9470,
+      "end": 9865,
+      "left_primer_end": 9496,
+      "right_primer_start": 9842
+    },
+    "SARS-CoV-2_33": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9782",
+            "9805",
+            "SARS-CoV-2_33_LEFT",
+            "1",
+            "+",
+            "GTACTTTTGAAGAAGCTGCGCTG"
+          ],
+          "start": 9782,
+          "end": 9804
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10150",
+            "10176",
+            "SARS-CoV-2_33_RIGHT",
+            "1",
+            "-",
+            "TGTCTTGGACAGTAAACTACGTCATC"
+          ],
+          "start": 10150,
+          "end": 10175
+        }
+      ],
+      "start": 9782,
+      "end": 10175,
+      "left_primer_end": 9804,
+      "right_primer_start": 10150
+    },
+    "SARS-CoV-2_34": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10076",
+            "10099",
+            "SARS-CoV-2_34_LEFT",
+            "2",
+            "+",
+            "TCCCATCTGGTAAAGTTGAGGGT"
+          ],
+          "start": 10076,
+          "end": 10098
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10465",
+            "10491",
+            "SARS-CoV-2_34_RIGHT",
+            "2",
+            "-",
+            "CCACATGAACCATTAAGGAATGAACC"
+          ],
+          "start": 10465,
+          "end": 10490
+        }
+      ],
+      "start": 10076,
+      "end": 10490,
+      "left_primer_end": 10098,
+      "right_primer_start": 10465
+    },
+    "SARS-CoV-2_35": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10393",
+            "10419",
+            "SARS-CoV-2_35_LEFT",
+            "1",
+            "+",
+            "GTGTTAGCTTGTTACAATGGTTCACC"
+          ],
+          "start": 10393,
+          "end": 10418
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10785",
+            "10810",
+            "SARS-CoV-2_35_RIGHT",
+            "1",
+            "-",
+            "AGGTCCTAGTATGTCAACATGGTCT"
+          ],
+          "start": 10785,
+          "end": 10809
+        }
+      ],
+      "start": 10393,
+      "end": 10809,
+      "left_primer_end": 10418,
+      "right_primer_start": 10785
+    },
+    "SARS-CoV-2_36": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10713",
+            "10742",
+            "SARS-CoV-2_36_LEFT",
+            "2",
+            "+",
+            "CAATCGATTTACCACAACTCTTAATGACT"
+          ],
+          "start": 10713,
+          "end": 10741
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11092",
+            "11116",
+            "SARS-CoV-2_36_RIGHT",
+            "2",
+            "-",
+            "ACCCATAGCAAAAGGTAAAAAGGC"
+          ],
+          "start": 11092,
+          "end": 11115
+        }
+      ],
+      "start": 10713,
+      "end": 11115,
+      "left_primer_end": 10741,
+      "right_primer_start": 11092
+    },
+    "SARS-CoV-2_37": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11000",
+            "11023",
+            "SARS-CoV-2_37_LEFT",
+            "1",
+            "+",
+            "CACACCACTGGTTGTTACTCACA"
+          ],
+          "start": 11000,
+          "end": 11022
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11388",
+            "11414",
+            "SARS-CoV-2_37_RIGHT",
+            "1",
+            "-",
+            "GTGTCAAGACATTCATAAGTGTCCAC"
+          ],
+          "start": 11388,
+          "end": 11413
+        }
+      ],
+      "start": 11000,
+      "end": 11413,
+      "left_primer_end": 11022,
+      "right_primer_start": 11388
+    },
+    "SARS-CoV-2_38": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11305",
+            "11330",
+            "SARS-CoV-2_38_LEFT",
+            "2",
+            "+",
+            "GACTGTGTTATGTATGCATCAGCTG"
+          ],
+          "start": 11305,
+          "end": 11329
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11689",
+            "11720",
+            "SARS-CoV-2_38_RIGHT",
+            "2",
+            "-",
+            "CCTGTGTAGAAACTAAGTAATCATAAACACC"
+          ],
+          "start": 11689,
+          "end": 11719
+        }
+      ],
+      "start": 11305,
+      "end": 11719,
+      "left_primer_end": 11329,
+      "right_primer_start": 11689
+    },
+    "SARS-CoV-2_39": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11624",
+            "11651",
+            "SARS-CoV-2_39_LEFT",
+            "1",
+            "+",
+            "GCTATTTTTGTACTTGTTACTTTGGCC"
+          ],
+          "start": 11624,
+          "end": 11650
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12011",
+            "12033",
+            "SARS-CoV-2_39_RIGHT",
+            "1",
+            "-",
+            "CCCTGCATGGAAAGCAAAACAG"
+          ],
+          "start": 12011,
+          "end": 12032
+        }
+      ],
+      "start": 11624,
+      "end": 12032,
+      "left_primer_end": 11650,
+      "right_primer_start": 12011
+    },
+    "SARS-CoV-2_40": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11937",
+            "11963",
+            "SARS-CoV-2_40_LEFT",
+            "2",
+            "+",
+            "TGTCCAGTTACACAATGACATTCTCT"
+          ],
+          "start": 11937,
+          "end": 11962
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12317",
+            "12339",
+            "SARS-CoV-2_40_RIGHT",
+            "2",
+            "-",
+            "ACTTTTGCCCTCTTGTCCTCAG"
+          ],
+          "start": 12317,
+          "end": 12338
+        }
+      ],
+      "start": 11937,
+      "end": 12338,
+      "left_primer_end": 11962,
+      "right_primer_start": 12317
+    },
+    "SARS-CoV-2_41": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12234",
+            "12255",
+            "SARS-CoV-2_41_LEFT",
+            "1",
+            "+",
+            "ATTTGACCGTGATGCAGCCAT"
+          ],
+          "start": 12234,
+          "end": 12254
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12618",
+            "12643",
+            "SARS-CoV-2_41_RIGHT",
+            "1",
+            "-",
+            "AAGAGGCCATGCTAAATTAGGTGAA"
+          ],
+          "start": 12618,
+          "end": 12642
+        }
+      ],
+      "start": 12234,
+      "end": 12642,
+      "left_primer_end": 12254,
+      "right_primer_start": 12618
+    },
+    "SARS-CoV-2_42": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12519",
+            "12546",
+            "SARS-CoV-2_42_LEFT",
+            "2",
+            "+",
+            "TGGTACAACATTTACTTATGCATCAGC"
+          ],
+          "start": 12519,
+          "end": 12545
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12895",
+            "12920",
+            "SARS-CoV-2_42_RIGHT",
+            "2",
+            "-",
+            "TGTCTGTAACAAACCTACAAGGTGG"
+          ],
+          "start": 12895,
+          "end": 12919
+        }
+      ],
+      "start": 12519,
+      "end": 12919,
+      "left_primer_end": 12545,
+      "right_primer_start": 12895
+    },
+    "SARS-CoV-2_43": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12831",
+            "12856",
+            "SARS-CoV-2_43_LEFT",
+            "1",
+            "+",
+            "GGATTTGAAATGGGCTAGATTCCCT"
+          ],
+          "start": 12831,
+          "end": 12855
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13218",
+            "13240",
+            "SARS-CoV-2_43_RIGHT",
+            "1",
+            "-",
+            "CGATGCACCACCAAAGGATTCT"
+          ],
+          "start": 13218,
+          "end": 13239
+        }
+      ],
+      "start": 12831,
+      "end": 13239,
+      "left_primer_end": 12855,
+      "right_primer_start": 13218
+    },
+    "SARS-CoV-2_44": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13124",
+            "13148",
+            "SARS-CoV-2_44_LEFT",
+            "2",
+            "+",
+            "GGGGACAACCAATCACTAATTGTG"
+          ],
+          "start": 13124,
+          "end": 13147
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13506",
+            "13528",
+            "SARS-CoV-2_44_RIGHT",
+            "2",
+            "-",
+            "CATCAGTACTAGTGCCTGTGCC"
+          ],
+          "start": 13506,
+          "end": 13527
+        }
+      ],
+      "start": 13124,
+      "end": 13527,
+      "left_primer_end": 13147,
+      "right_primer_start": 13506
+    },
+    "SARS-CoV-2_45": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13463",
+            "13485",
+            "SARS-CoV-2_45_LEFT",
+            "1",
+            "+",
+            "TAAACGGGTTTGCGGTGTAAGT"
+          ],
+          "start": 13463,
+          "end": 13484
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13833",
+            "13859",
+            "SARS-CoV-2_45_RIGHT",
+            "1",
+            "-",
+            "TCACAATTACCTTCATCAAAATGCCT"
+          ],
+          "start": 13833,
+          "end": 13858
+        }
+      ],
+      "start": 13463,
+      "end": 13858,
+      "left_primer_end": 13484,
+      "right_primer_start": 13833
+    },
+    "SARS-CoV-2_46": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13752",
+            "13775",
+            "SARS-CoV-2_46_LEFT",
+            "2",
+            "+",
+            "AGAATAGACGGTGACATGGTACC"
+          ],
+          "start": 13752,
+          "end": 13774
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14120",
+            "14144",
+            "SARS-CoV-2_46_RIGHT",
+            "2",
+            "-",
+            "TCTACAACAGGAACTCCACTACCT"
+          ],
+          "start": 14120,
+          "end": 14143
+        }
+      ],
+      "start": 13752,
+      "end": 14143,
+      "left_primer_end": 13774,
+      "right_primer_start": 14120
+    },
+    "SARS-CoV-2_47": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14045",
+            "14075",
+            "SARS-CoV-2_47_LEFT",
+            "1",
+            "+",
+            "TGGTGTACTGACATTAGATAATCAAGATCT"
+          ],
+          "start": 14045,
+          "end": 14074
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14428",
+            "14457",
+            "SARS-CoV-2_47_RIGHT",
+            "1",
+            "-",
+            "TGGAACACCATCAACAAATATTTTTCTCA"
+          ],
+          "start": 14428,
+          "end": 14456
+        }
+      ],
+      "start": 14045,
+      "end": 14456,
+      "left_primer_end": 14074,
+      "right_primer_start": 14428
+    },
+    "SARS-CoV-2_48": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14338",
+            "14362",
+            "SARS-CoV-2_48_LEFT",
+            "2",
+            "+",
+            "ACTGTTTGGATGACAGATGCATTC"
+          ],
+          "start": 14338,
+          "end": 14361
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14717",
+            "14743",
+            "SARS-CoV-2_48_RIGHT",
+            "2",
+            "-",
+            "CAGAACTTCCTTCCTTAAAGAAACCC"
+          ],
+          "start": 14717,
+          "end": 14742
+        }
+      ],
+      "start": 14338,
+      "end": 14742,
+      "left_primer_end": 14361,
+      "right_primer_start": 14717
+    },
+    "SARS-CoV-2_49": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14647",
+            "14674",
+            "SARS-CoV-2_49_LEFT",
+            "1",
+            "+",
+            "ACAATGTTGCTTTTCAAACTGTCAAAC"
+          ],
+          "start": 14647,
+          "end": 14673
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15023",
+            "15050",
+            "SARS-CoV-2_49_RIGHT",
+            "1",
+            "-",
+            "GGGATGACATTACGTTTTGTATATGCG"
+          ],
+          "start": 15023,
+          "end": 15049
+        }
+      ],
+      "start": 14647,
+      "end": 15049,
+      "left_primer_end": 14673,
+      "right_primer_start": 15023
+    },
+    "SARS-CoV-2_50": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14953",
+            "14983",
+            "SARS-CoV-2_50_LEFT",
+            "2",
+            "+",
+            "CATTTAATAAATGGGGTAAGGCTAGACTTT"
+          ],
+          "start": 14953,
+          "end": 14982
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15336",
+            "15358",
+            "SARS-CoV-2_50_RIGHT",
+            "2",
+            "-",
+            "GAGCAAGAACAAGTGAGGCCAT"
+          ],
+          "start": 15336,
+          "end": 15357
+        }
+      ],
+      "start": 14953,
+      "end": 15357,
+      "left_primer_end": 14982,
+      "right_primer_start": 15336
+    },
+    "SARS-CoV-2_51": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15214",
+            "15237",
+            "SARS-CoV-2_51_LEFT",
+            "1",
+            "+",
+            "GCAAATTCTATGGTGGTTGGCAC"
+          ],
+          "start": 15214,
+          "end": 15236
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15596",
+            "15619",
+            "SARS-CoV-2_51_RIGHT",
+            "1",
+            "-",
+            "GTCTGTGTTGTAAATTGCGGACA"
+          ],
+          "start": 15596,
+          "end": 15618
+        }
+      ],
+      "start": 15214,
+      "end": 15618,
+      "left_primer_end": 15236,
+      "right_primer_start": 15596
+    },
+    "SARS-CoV-2_52": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15535",
+            "15557",
+            "SARS-CoV-2_52_LEFT",
+            "2",
+            "+",
+            "CTGTCACGGCCAATGTTAATGC"
+          ],
+          "start": 15535,
+          "end": 15556
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15917",
+            "15941",
+            "SARS-CoV-2_52_RIGHT",
+            "2",
+            "-",
+            "GGATCTGGGTAAGGAAGGTACACA"
+          ],
+          "start": 15917,
+          "end": 15940
+        }
+      ],
+      "start": 15535,
+      "end": 15940,
+      "left_primer_end": 15556,
+      "right_primer_start": 15917
+    },
+    "SARS-CoV-2_53": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15855",
+            "15881",
+            "SARS-CoV-2_53_LEFT",
+            "1",
+            "+",
+            "ACTAAAGGACCTCATGAATTTTGCTC"
+          ],
+          "start": 15855,
+          "end": 15880
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16239",
+            "16260",
+            "SARS-CoV-2_53_RIGHT",
+            "1",
+            "-",
+            "GCAAAGAACACAAGCCCCAAC"
+          ],
+          "start": 16239,
+          "end": 16259
+        }
+      ],
+      "start": 15855,
+      "end": 16259,
+      "left_primer_end": 15880,
+      "right_primer_start": 16239
+    },
+    "SARS-CoV-2_54": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16112",
+            "16137",
+            "SARS-CoV-2_54_LEFT",
+            "2",
+            "+",
+            "ACATGATGAGTTAACAGGACACATG"
+          ],
+          "start": 16112,
+          "end": 16136
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16483",
+            "16508",
+            "SARS-CoV-2_54_RIGHT",
+            "2",
+            "-",
+            "CCAAAAACTTGTCCATTAGCACACA"
+          ],
+          "start": 16483,
+          "end": 16507
+        }
+      ],
+      "start": 16112,
+      "end": 16507,
+      "left_primer_end": 16136,
+      "right_primer_start": 16483
+    },
+    "SARS-CoV-2_55": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16386",
+            "16408",
+            "SARS-CoV-2_55_LEFT",
+            "1",
+            "+",
+            "AATGCTCCAGGTTGTGATGTCA"
+          ],
+          "start": 16386,
+          "end": 16407
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16767",
+            "16796",
+            "SARS-CoV-2_55_RIGHT",
+            "1",
+            "-",
+            "ACACGATAACCAGTAAAGACATAATTTCG"
+          ],
+          "start": 16767,
+          "end": 16795
+        }
+      ],
+      "start": 16386,
+      "end": 16795,
+      "left_primer_end": 16407,
+      "right_primer_start": 16767
+    },
+    "SARS-CoV-2_56": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16692",
+            "16714",
+            "SARS-CoV-2_56_LEFT",
+            "2",
+            "+",
+            "ACTGTACGTGAAGTGCTGTCTG"
+          ],
+          "start": 16692,
+          "end": 16713
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17082",
+            "17105",
+            "SARS-CoV-2_56_RIGHT",
+            "2",
+            "-",
+            "TGACTCTTACCAGTACCAGGTGG"
+          ],
+          "start": 17082,
+          "end": 17104
+        }
+      ],
+      "start": 16692,
+      "end": 17104,
+      "left_primer_end": 16713,
+      "right_primer_start": 17082
+    },
+    "SARS-CoV-2_57": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16986",
+            "17013",
+            "SARS-CoV-2_57_LEFT",
+            "1",
+            "+",
+            "GGCTTATACCCAACACTCAATATCTCA"
+          ],
+          "start": 16986,
+          "end": 17012
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17381",
+            "17405",
+            "SARS-CoV-2_57_RIGHT",
+            "1",
+            "-",
+            "CTGGCATTGACAACACTCAAATCA"
+          ],
+          "start": 17381,
+          "end": 17404
+        }
+      ],
+      "start": 16986,
+      "end": 17404,
+      "left_primer_end": 17012,
+      "right_primer_start": 17381
+    },
+    "SARS-CoV-2_58": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17323",
+            "17345",
+            "SARS-CoV-2_58_LEFT",
+            "2",
+            "+",
+            "TGCCTGAGACGACAGCAGATAT"
+          ],
+          "start": 17323,
+          "end": 17344
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17688",
+            "17711",
+            "SARS-CoV-2_58_RIGHT",
+            "2",
+            "-",
+            "TGTGGCCTGTTAATTGCAGATGA"
+          ],
+          "start": 17688,
+          "end": 17710
+        }
+      ],
+      "start": 17323,
+      "end": 17710,
+      "left_primer_end": 17344,
+      "right_primer_start": 17688
+    },
+    "SARS-CoV-2_59": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17615",
+            "17642",
+            "SARS-CoV-2_59_LEFT",
+            "1",
+            "+",
+            "GCTTAAAGCACATAAAGACAAATCAGC"
+          ],
+          "start": 17615,
+          "end": 17641
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17997",
+            "18022",
+            "SARS-CoV-2_59_RIGHT",
+            "1",
+            "-",
+            "TCCTACGTGGAATTTCAAGACTTGT"
+          ],
+          "start": 17997,
+          "end": 18021
+        }
+      ],
+      "start": 17615,
+      "end": 18021,
+      "left_primer_end": 17641,
+      "right_primer_start": 17997
+    },
+    "SARS-CoV-2_60": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17911",
+            "17939",
+            "SARS-CoV-2_60_LEFT",
+            "2",
+            "+",
+            "ACAGATTTAATGTTGCTATTACCAGAGC"
+          ],
+          "start": 17911,
+          "end": 17938
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18307",
+            "18328",
+            "SARS-CoV-2_60_RIGHT",
+            "2",
+            "-",
+            "TAGCATGACACCCCTCGACAT"
+          ],
+          "start": 18307,
+          "end": 18327
+        }
+      ],
+      "start": 17911,
+      "end": 18327,
+      "left_primer_end": 17938,
+      "right_primer_start": 18307
+    },
+    "SARS-CoV-2_61": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18244",
+            "18267",
+            "SARS-CoV-2_61_LEFT",
+            "1",
+            "+",
+            "ACCCTAACATGTTTATCACCCGC"
+          ],
+          "start": 18244,
+          "end": 18266
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18624",
+            "18652",
+            "SARS-CoV-2_61_RIGHT",
+            "1",
+            "-",
+            "GCTCAGGTCCTATTTTCACAAAATACTT"
+          ],
+          "start": 18624,
+          "end": 18651
+        }
+      ],
+      "start": 18244,
+      "end": 18651,
+      "left_primer_end": 18266,
+      "right_primer_start": 18624
+    },
+    "SARS-CoV-2_62": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18550",
+            "18578",
+            "SARS-CoV-2_62_LEFT",
+            "2",
+            "+",
+            "GTGACACACTTAAAAATCTCTCTGACAG"
+          ],
+          "start": 18550,
+          "end": 18577
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18936",
+            "18961",
+            "SARS-CoV-2_62_RIGHT",
+            "2",
+            "-",
+            "CCGCATTAATCTTCAGTTCATCACC"
+          ],
+          "start": 18936,
+          "end": 18960
+        }
+      ],
+      "start": 18550,
+      "end": 18960,
+      "left_primer_end": 18577,
+      "right_primer_start": 18936
+    },
+    "SARS-CoV-2_63": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18869",
+            "18891",
+            "SARS-CoV-2_63_LEFT",
+            "1",
+            "+",
+            "TAGGTGTCTAGCTGTCCACGAG"
+          ],
+          "start": 18869,
+          "end": 18890
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19252",
+            "19277",
+            "SARS-CoV-2_63_RIGHT",
+            "1",
+            "-",
+            "CCAGGCAAGTTAAGGTTAGATAGCA"
+          ],
+          "start": 19252,
+          "end": 19276
+        }
+      ],
+      "start": 18869,
+      "end": 19276,
+      "left_primer_end": 18890,
+      "right_primer_start": 19252
+    },
+    "SARS-CoV-2_64": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19183",
+            "19208",
+            "SARS-CoV-2_64_LEFT",
+            "2",
+            "+",
+            "GCCTATTTTGGAATTGCAATGTCGA"
+          ],
+          "start": 19183,
+          "end": 19207
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19558",
+            "19586",
+            "SARS-CoV-2_64_RIGHT",
+            "2",
+            "-",
+            "GTATCAAATTGTTTGTAAACCCACAAGC"
+          ],
+          "start": 19558,
+          "end": 19585
+        }
+      ],
+      "start": 19183,
+      "end": 19585,
+      "left_primer_end": 19207,
+      "right_primer_start": 19558
+    },
+    "SARS-CoV-2_65": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19485",
+            "19513",
+            "SARS-CoV-2_65_LEFT",
+            "1",
+            "+",
+            "GTCTGTAGACATCATGCTAATGAGTACA"
+          ],
+          "start": 19485,
+          "end": 19512
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19877",
+            "19901",
+            "SARS-CoV-2_65_RIGHT",
+            "1",
+            "-",
+            "GCTGGAGCATCTCTTTTGTAGTCC"
+          ],
+          "start": 19877,
+          "end": 19900
+        }
+      ],
+      "start": 19485,
+      "end": 19900,
+      "left_primer_end": 19512,
+      "right_primer_start": 19877
+    },
+    "SARS-CoV-2_66": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19810",
+            "19836",
+            "SARS-CoV-2_66_LEFT",
+            "2",
+            "+",
+            "AACCAGTACCAGAGGTGAAAATACTC"
+          ],
+          "start": 19810,
+          "end": 19835
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20186",
+            "20216",
+            "SARS-CoV-2_66_RIGHT",
+            "2",
+            "-",
+            "TTTCTACTCTGAGTAAAGTAAGTTTCAGGT"
+          ],
+          "start": 20186,
+          "end": 20215
+        }
+      ],
+      "start": 19810,
+      "end": 20215,
+      "left_primer_end": 19835,
+      "right_primer_start": 20186
+    },
+    "SARS-CoV-2_67": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20090",
+            "20117",
+            "SARS-CoV-2_67_LEFT",
+            "1",
+            "+",
+            "CAAACAAGCTAGTCTTAATGGAGTCAC"
+          ],
+          "start": 20090,
+          "end": 20116
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20472",
+            "20497",
+            "SARS-CoV-2_67_RIGHT",
+            "1",
+            "-",
+            "AACACACACACTTAGATGAACCTGT"
+          ],
+          "start": 20472,
+          "end": 20496
+        }
+      ],
+      "start": 20090,
+      "end": 20496,
+      "left_primer_end": 20116,
+      "right_primer_start": 20472
+    },
+    "SARS-CoV-2_68": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20377",
+            "20405",
+            "SARS-CoV-2_68_LEFT",
+            "2",
+            "+",
+            "GACTAGCTAAACGTTTTAAGGAATCACC"
+          ],
+          "start": 20377,
+          "end": 20404
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20766",
+            "20792",
+            "SARS-CoV-2_68_RIGHT",
+            "2",
+            "-",
+            "GCGACATTCATCATTATGCCTTTAGG"
+          ],
+          "start": 20766,
+          "end": 20791
+        }
+      ],
+      "start": 20377,
+      "end": 20791,
+      "left_primer_end": 20404,
+      "right_primer_start": 20766
+    },
+    "SARS-CoV-2_69": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20677",
+            "20699",
+            "SARS-CoV-2_69_LEFT",
+            "1",
+            "+",
+            "CGGGTGTTGCTATGCCTAATCT"
+          ],
+          "start": 20677,
+          "end": 20698
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21050",
+            "21080",
+            "SARS-CoV-2_69_RIGHT",
+            "1",
+            "-",
+            "TTTGTAACATTTTTAGTCTTAGGGTCGTAC"
+          ],
+          "start": 21050,
+          "end": 21079
+        }
+      ],
+      "start": 20677,
+      "end": 21079,
+      "left_primer_end": 20698,
+      "right_primer_start": 21050
+    },
+    "SARS-CoV-2_70": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20988",
+            "21013",
+            "SARS-CoV-2_70_LEFT",
+            "2",
+            "+",
+            "TTGATTGGTGATTGTGCAACTGTAC"
+          ],
+          "start": 20988,
+          "end": 21012
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21358",
+            "21387",
+            "SARS-CoV-2_70_RIGHT",
+            "2",
+            "-",
+            "AGAATAGGAAGACAACTGAATTGGATTTG"
+          ],
+          "start": 21358,
+          "end": 21386
+        }
+      ],
+      "start": 20988,
+      "end": 21386,
+      "left_primer_end": 21012,
+      "right_primer_start": 21358
+    },
+    "SARS-CoV-2_71": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21294",
+            "21316",
+            "SARS-CoV-2_71_LEFT",
+            "1",
+            "+",
+            "GGCAAACCACGCGAACAAATAG"
+          ],
+          "start": 21294,
+          "end": 21315
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21675",
+            "21700",
+            "SARS-CoV-2_71_RIGHT",
+            "1",
+            "-",
+            "TGAGGATCTGAAAACTTTGTCAGGG"
+          ],
+          "start": 21675,
+          "end": 21699
+        }
+      ],
+      "start": 21294,
+      "end": 21699,
+      "left_primer_end": 21315,
+      "right_primer_start": 21675
+    },
+    "SARS-CoV-2_72": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21532",
+            "21561",
+            "SARS-CoV-2_72_LEFT",
+            "2",
+            "+",
+            "GTGATGTTCTTGTTAACAACTAAACGAAC"
+          ],
+          "start": 21532,
+          "end": 21560
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21904",
+            "21933",
+            "SARS-CoV-2_72_RIGHT",
+            "2",
+            "-",
+            "GTAGCGTTATTAACAATAAGTAGGGACTG"
+          ],
+          "start": 21904,
+          "end": 21932
+        }
+      ],
+      "start": 21532,
+      "end": 21932,
+      "left_primer_end": 21560,
+      "right_primer_start": 21904
+    },
+    "SARS-CoV-2_73": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21865",
+            "21889",
+            "SARS-CoV-2_73_LEFT",
+            "1",
+            "+",
+            "AGAGGCTGGATTTTTGGTACTACT"
+          ],
+          "start": 21865,
+          "end": 21888
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22247",
+            "22274",
+            "SARS-CoV-2_73_RIGHT",
+            "1",
+            "-",
+            "ACCTAGTGATGTTAATACCTATTGGCA"
+          ],
+          "start": 22247,
+          "end": 22273
+        }
+      ],
+      "start": 21865,
+      "end": 22273,
+      "left_primer_end": 21888,
+      "right_primer_start": 22247
+    },
+    "SARS-CoV-2_74": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22091",
+            "22113",
+            "SARS-CoV-2_74_LEFT",
+            "2",
+            "+",
+            "TGGACCTTGAAGGAAAACAGGG"
+          ],
+          "start": 22091,
+          "end": 22112
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22474",
+            "22503",
+            "SARS-CoV-2_74_RIGHT",
+            "2",
+            "-",
+            "TGATAGATTCCTTTTTCTACAGTGAAGGA"
+          ],
+          "start": 22474,
+          "end": 22502
+        }
+      ],
+      "start": 22091,
+      "end": 22502,
+      "left_primer_end": 22112,
+      "right_primer_start": 22474
+    },
+    "SARS-CoV-2_75": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22402",
+            "22428",
+            "SARS-CoV-2_75_LEFT",
+            "1",
+            "+",
+            "GAAAATGGAACCATTACAGATGCTGT"
+          ],
+          "start": 22402,
+          "end": 22427
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22785",
+            "22805",
+            "SARS-CoV-2_75_RIGHT",
+            "1",
+            "-",
+            "TTTGCCCTGGAGCGATTTGT"
+          ],
+          "start": 22785,
+          "end": 22804
+        }
+      ],
+      "start": 22402,
+      "end": 22804,
+      "left_primer_end": 22427,
+      "right_primer_start": 22785
+    },
+    "SARS-CoV-2_76": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22648",
+            "22677",
+            "SARS-CoV-2_76_LEFT",
+            "2",
+            "+",
+            "GCTGATTATTCTGTCCTATATAATTCCGC"
+          ],
+          "start": 22648,
+          "end": 22676
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "22742",
+            "22774",
+            "SARS-CoV-2_76_LEFT_alt1",
+            "2",
+            "+",
+            "ATGTCTATGCAGATTCATTTGTAATTAGAGGT"
+          ],
+          "start": 22742,
+          "end": 22773
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23028",
+            "23057",
+            "SARS-CoV-2_76_RIGHT",
+            "2",
+            "-",
+            "GTTGGAAACCATATGATTGTAAAGGAAAG"
+          ],
+          "start": 23028,
+          "end": 23056
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "23120",
+            "23141",
+            "SARS-CoV-2_76_RIGHT_alt1",
+            "2",
+            "-",
+            "GTCCACAAACAGTTGCTGGTG"
+          ],
+          "start": 23120,
+          "end": 23140
+        }
+      ],
+      "start": 22648,
+      "end": 23140,
+      "left_primer_end": 22773,
+      "right_primer_start": 23028
+    },
+    "SARS-CoV-2_77": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22944",
+            "22974",
+            "SARS-CoV-2_77_LEFT",
+            "1",
+            "+",
+            "CAAACCTTTTGAGAGAGATATTTCAACTGA"
+          ],
+          "start": 22944,
+          "end": 22973
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23327",
+            "23351",
+            "SARS-CoV-2_77_RIGHT",
+            "1",
+            "-",
+            "CACTGACACCACCAAAAGAACATG"
+          ],
+          "start": 23327,
+          "end": 23350
+        }
+      ],
+      "start": 22944,
+      "end": 23350,
+      "left_primer_end": 22973,
+      "right_primer_start": 23327
+    },
+    "SARS-CoV-2_78": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23219",
+            "23246",
+            "SARS-CoV-2_78_LEFT",
+            "2",
+            "+",
+            "CTGAGTCTAACAAAAAGTTTCTGCCTT"
+          ],
+          "start": 23219,
+          "end": 23245
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23611",
+            "23635",
+            "SARS-CoV-2_78_RIGHT",
+            "2",
+            "-",
+            "GGATTGACTAGCTACACTACGTGC"
+          ],
+          "start": 23611,
+          "end": 23634
+        }
+      ],
+      "start": 23219,
+      "end": 23634,
+      "left_primer_end": 23245,
+      "right_primer_start": 23611
+    },
+    "SARS-CoV-2_79": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23553",
+            "23575",
+            "SARS-CoV-2_79_LEFT",
+            "1",
+            "+",
+            "ACCCATTGGTGCAGGTATATGC"
+          ],
+          "start": 23553,
+          "end": 23574
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23914",
+            "23944",
+            "SARS-CoV-2_79_RIGHT_alt1",
+            "1",
+            "-",
+            "AATTGGTGGTGTTTTGTAAATTTGTTTGAC"
+          ],
+          "start": 23914,
+          "end": 23943
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "23927",
+            "23955",
+            "SARS-CoV-2_79_RIGHT",
+            "1",
+            "-",
+            "CCAAAATCTTTAATTGGTGGTGTTTTGT"
+          ],
+          "start": 23927,
+          "end": 23954
+        }
+      ],
+      "start": 23553,
+      "end": 23954,
+      "left_primer_end": 23574,
+      "right_primer_start": 23914
+    },
+    "SARS-CoV-2_80": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23853",
+            "23876",
+            "SARS-CoV-2_80_LEFT",
+            "2",
+            "+",
+            "CCGTGCTTTAACTGGAATAGCTG"
+          ],
+          "start": 23853,
+          "end": 23875
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24233",
+            "24258",
+            "SARS-CoV-2_80_RIGHT",
+            "2",
+            "-",
+            "GCAAATGGTATTTGTAATGCAGCAC"
+          ],
+          "start": 24233,
+          "end": 24257
+        }
+      ],
+      "start": 23853,
+      "end": 24257,
+      "left_primer_end": 23875,
+      "right_primer_start": 24233
+    },
+    "SARS-CoV-2_81": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24171",
+            "24194",
+            "SARS-CoV-2_81_LEFT",
+            "1",
+            "+",
+            "TGCTCAATACACTTCTGCACTGT"
+          ],
+          "start": 24171,
+          "end": 24193
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24545",
+            "24567",
+            "SARS-CoV-2_81_RIGHT",
+            "1",
+            "-",
+            "TGAAGTCTGCCTGTGATCAACC"
+          ],
+          "start": 24545,
+          "end": 24566
+        }
+      ],
+      "start": 24171,
+      "end": 24566,
+      "left_primer_end": 24193,
+      "right_primer_start": 24545
+    },
+    "SARS-CoV-2_82": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24426",
+            "24448",
+            "SARS-CoV-2_82_LEFT",
+            "2",
+            "+",
+            "TGCACAAGCTTTAAACACGCTT"
+          ],
+          "start": 24426,
+          "end": 24447
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24814",
+            "24836",
+            "SARS-CoV-2_82_RIGHT",
+            "2",
+            "-",
+            "CACGAGGAAAGTGTGCTTTTCC"
+          ],
+          "start": 24814,
+          "end": 24835
+        }
+      ],
+      "start": 24426,
+      "end": 24835,
+      "left_primer_end": 24447,
+      "right_primer_start": 24814
+    },
+    "SARS-CoV-2_83": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24750",
+            "24772",
+            "SARS-CoV-2_83_LEFT",
+            "1",
+            "+",
+            "GCATGTGACTTATGTCCCTGCA"
+          ],
+          "start": 24750,
+          "end": 24771
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25122",
+            "25150",
+            "SARS-CoV-2_83_RIGHT",
+            "1",
+            "-",
+            "AGATTCATTTAAATTCTTGGCAACCTCA"
+          ],
+          "start": 25122,
+          "end": 25149
+        }
+      ],
+      "start": 24750,
+      "end": 25149,
+      "left_primer_end": 24771,
+      "right_primer_start": 25122
+    },
+    "SARS-CoV-2_84": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25051",
+            "25076",
+            "SARS-CoV-2_84_LEFT",
+            "2",
+            "+",
+            "GTTGATTTAGGTGACATCTCTGGCA"
+          ],
+          "start": 25051,
+          "end": 25075
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25438",
+            "25461",
+            "SARS-CoV-2_84_RIGHT",
+            "2",
+            "-",
+            "AGCATCCTTGATTTCACCTTGCT"
+          ],
+          "start": 25438,
+          "end": 25460
+        }
+      ],
+      "start": 25051,
+      "end": 25460,
+      "left_primer_end": 25075,
+      "right_primer_start": 25438
+    },
+    "SARS-CoV-2_85": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25331",
+            "25353",
+            "SARS-CoV-2_85_LEFT",
+            "1",
+            "+",
+            "ATGAAGACGACTCTGAGCCAGT"
+          ],
+          "start": 25331,
+          "end": 25352
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25711",
+            "25740",
+            "SARS-CoV-2_85_RIGHT",
+            "1",
+            "-",
+            "CTGCAAGAAGTAGACTAAAGCATAAAGAT"
+          ],
+          "start": 25711,
+          "end": 25739
+        }
+      ],
+      "start": 25331,
+      "end": 25739,
+      "left_primer_end": 25352,
+      "right_primer_start": 25711
+    },
+    "SARS-CoV-2_86": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25645",
+            "25672",
+            "SARS-CoV-2_86_LEFT",
+            "2",
+            "+",
+            "TGTTGTTTGTAACAGTTTACTCACACC"
+          ],
+          "start": 25645,
+          "end": 25671
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26026",
+            "26050",
+            "SARS-CoV-2_86_RIGHT",
+            "2",
+            "-",
+            "TCAATTGAGTTGAGTACAGCTGGT"
+          ],
+          "start": 26026,
+          "end": 26049
+        }
+      ],
+      "start": 25645,
+      "end": 26049,
+      "left_primer_end": 25671,
+      "right_primer_start": 26026
+    },
+    "SARS-CoV-2_87": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25951",
+            "25979",
+            "SARS-CoV-2_87_LEFT",
+            "1",
+            "+",
+            "GTGGTTATACTGAAAAATGGGAATCTGG"
+          ],
+          "start": 25951,
+          "end": 25978
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26338",
+            "26360",
+            "SARS-CoV-2_87_RIGHT",
+            "1",
+            "-",
+            "AATCGAAGCGCAGTAAGGATGG"
+          ],
+          "start": 26338,
+          "end": 26359
+        }
+      ],
+      "start": 25951,
+      "end": 26359,
+      "left_primer_end": 25978,
+      "right_primer_start": 26338
+    },
+    "SARS-CoV-2_88": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26242",
+            "26268",
+            "SARS-CoV-2_88_LEFT_alt1",
+            "2",
+            "+",
+            "TTATGTACTCATTCGTTTCGGAAGAG"
+          ],
+          "start": 26242,
+          "end": 26267
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "26255",
+            "26277",
+            "SARS-CoV-2_88_LEFT",
+            "2",
+            "+",
+            "CGTTTCGGAAGAGACAGGTACG"
+          ],
+          "start": 26255,
+          "end": 26276
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26635",
+            "26661",
+            "SARS-CoV-2_88_RIGHT",
+            "2",
+            "-",
+            "ACAAAAACCTATTCCTGTTGGCATAG"
+          ],
+          "start": 26635,
+          "end": 26660
+        }
+      ],
+      "start": 26242,
+      "end": 26660,
+      "left_primer_end": 26276,
+      "right_primer_start": 26635
+    },
+    "SARS-CoV-2_89": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26564",
+            "26587",
+            "SARS-CoV-2_89_LEFT",
+            "1",
+            "+",
+            "AAGCTCCTTGAACAATGGAACCT"
+          ],
+          "start": 26564,
+          "end": 26586
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "26592",
+            "26621",
+            "SARS-CoV-2_89_LEFT_alt1",
+            "1",
+            "+",
+            "TAGGTTTCCTATTCCTTACATGGATTTGT"
+          ],
+          "start": 26592,
+          "end": 26620
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26956",
+            "26979",
+            "SARS-CoV-2_89_RIGHT",
+            "1",
+            "-",
+            "CAGCAATACGAAGATGTCCACGA"
+          ],
+          "start": 26956,
+          "end": 26978
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "26966",
+            "26991",
+            "SARS-CoV-2_89_RIGHT_alt1",
+            "1",
+            "-",
+            "CTAGATGGTGTCCAGCAATACGAAG"
+          ],
+          "start": 26966,
+          "end": 26990
+        }
+      ],
+      "start": 26564,
+      "end": 26990,
+      "left_primer_end": 26620,
+      "right_primer_start": 26956
+    },
+    "SARS-CoV-2_90": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26873",
+            "26895",
+            "SARS-CoV-2_90_LEFT",
+            "2",
+            "+",
+            "ATTCTTCTCAACGTGCCACTCC"
+          ],
+          "start": 26873,
+          "end": 26894
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27218",
+            "27251",
+            "SARS-CoV-2_90_RIGHT_alt1",
+            "2",
+            "-",
+            "ATTAGTAATATCTCTGCTATAGTAACCTGAAAG"
+          ],
+          "start": 27218,
+          "end": 27250
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "27256",
+            "27283",
+            "SARS-CoV-2_90_RIGHT",
+            "2",
+            "-",
+            "TCCAAATGGAAACTTTAAAAGTCCTCA"
+          ],
+          "start": 27256,
+          "end": 27282
+        }
+      ],
+      "start": 26873,
+      "end": 27282,
+      "left_primer_end": 26894,
+      "right_primer_start": 27218
+    },
+    "SARS-CoV-2_91": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27152",
+            "27177",
+            "SARS-CoV-2_91_LEFT",
+            "1",
+            "+",
+            "TCCAGTAGCAGTGACAATATTGCTT"
+          ],
+          "start": 27152,
+          "end": 27176
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27534",
+            "27560",
+            "SARS-CoV-2_91_RIGHT",
+            "1",
+            "-",
+            "AGTGCAAATTTGTTATCAGCTAGAGG"
+          ],
+          "start": 27534,
+          "end": 27559
+        }
+      ],
+      "start": 27152,
+      "end": 27559,
+      "left_primer_end": 27176,
+      "right_primer_start": 27534
+    },
+    "SARS-CoV-2_92": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27447",
+            "27473",
+            "SARS-CoV-2_92_LEFT",
+            "2",
+            "+",
+            "CACTACCAAGAGTGTGTTAGAGGTAC"
+          ],
+          "start": 27447,
+          "end": 27472
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27826",
+            "27855",
+            "SARS-CoV-2_92_RIGHT",
+            "2",
+            "-",
+            "GTTCAAGTGAGAACCAAAAGATAATAAGC"
+          ],
+          "start": 27826,
+          "end": 27854
+        }
+      ],
+      "start": 27447,
+      "end": 27854,
+      "left_primer_end": 27472,
+      "right_primer_start": 27826
+    },
+    "SARS-CoV-2_93": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27700",
+            "27726",
+            "SARS-CoV-2_93_LEFT",
+            "1",
+            "+",
+            "TTGTTGCGGCAATAGTGTTTATAACA"
+          ],
+          "start": 27700,
+          "end": 27725
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28082",
+            "28104",
+            "SARS-CoV-2_93_RIGHT",
+            "1",
+            "-",
+            "TGGGTGATTTAGAACCAGCCTC"
+          ],
+          "start": 28082,
+          "end": 28103
+        }
+      ],
+      "start": 27700,
+      "end": 28103,
+      "left_primer_end": 27725,
+      "right_primer_start": 28082
+    },
+    "SARS-CoV-2_94": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27996",
+            "28021",
+            "SARS-CoV-2_94_LEFT",
+            "2",
+            "+",
+            "ACCCGTGTCCTATTCACTTCTATTC"
+          ],
+          "start": 27996,
+          "end": 28020
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28394",
+            "28416",
+            "SARS-CoV-2_94_RIGHT",
+            "2",
+            "-",
+            "TTATTGGGTAAACCTTGGGGCC"
+          ],
+          "start": 28394,
+          "end": 28415
+        }
+      ],
+      "start": 27996,
+      "end": 28415,
+      "left_primer_end": 28020,
+      "right_primer_start": 28394
+    },
+    "SARS-CoV-2_95": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28190",
+            "28214",
+            "SARS-CoV-2_95_LEFT",
+            "1",
+            "+",
+            "GTGCGTTGTTCGTTCTATGAAGAC"
+          ],
+          "start": 28190,
+          "end": 28213
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28572",
+            "28598",
+            "SARS-CoV-2_95_RIGHT",
+            "1",
+            "-",
+            "ACCATCTTGGACTGAGATCTTTCATT"
+          ],
+          "start": 28572,
+          "end": 28597
+        }
+      ],
+      "start": 28190,
+      "end": 28597,
+      "left_primer_end": 28213,
+      "right_primer_start": 28572
+    },
+    "SARS-CoV-2_96": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28512",
+            "28536",
+            "SARS-CoV-2_96_LEFT",
+            "2",
+            "+",
+            "AGATGACCAAATTGGCTACTACCG"
+          ],
+          "start": 28512,
+          "end": 28535
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28893",
+            "28914",
+            "SARS-CoV-2_96_RIGHT",
+            "2",
+            "-",
+            "CCATTGCCAGCCATTCTAGCA"
+          ],
+          "start": 28893,
+          "end": 28913
+        }
+      ],
+      "start": 28512,
+      "end": 28913,
+      "left_primer_end": 28535,
+      "right_primer_start": 28893
+    },
+    "SARS-CoV-2_97": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28827",
+            "28849",
+            "SARS-CoV-2_97_LEFT",
+            "1",
+            "+",
+            "TTCCTCATCACGTAGTCGCAAC"
+          ],
+          "start": 28827,
+          "end": 28848
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29206",
+            "29227",
+            "SARS-CoV-2_97_RIGHT",
+            "1",
+            "-",
+            "CGACATTCCGAAGAACGCTGA"
+          ],
+          "start": 29206,
+          "end": 29226
+        }
+      ],
+      "start": 28827,
+      "end": 29226,
+      "left_primer_end": 28848,
+      "right_primer_start": 29206
+    },
+    "SARS-CoV-2_98": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29136",
+            "29161",
+            "SARS-CoV-2_98_LEFT",
+            "2",
+            "+",
+            "CCAGGAACTAATCAGACAAGGAACT"
+          ],
+          "start": 29136,
+          "end": 29160
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29512",
+            "29534",
+            "SARS-CoV-2_98_RIGHT",
+            "2",
+            "-",
+            "TTTAGGCCTGAGTTGAGTCAGC"
+          ],
+          "start": 29512,
+          "end": 29533
+        }
+      ],
+      "start": 29136,
+      "end": 29533,
+      "left_primer_end": 29160,
+      "right_primer_start": 29512
+    },
+    "SARS-CoV-2_99": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29452",
+            "29475",
+            "SARS-CoV-2_99_LEFT",
+            "1",
+            "+",
+            "CTTCTTCCTGCTGCAGATTTGGA"
+          ],
+          "start": 29452,
+          "end": 29474
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29827",
+            "29854",
+            "SARS-CoV-2_99_RIGHT",
+            "1",
+            "-",
+            "GCTATTAAAATCACATGGGGATAGCAC"
+          ],
+          "start": 29827,
+          "end": 29853
+        }
+      ],
+      "start": 29452,
+      "end": 29853,
+      "left_primer_end": 29474,
+      "right_primer_start": 29827
+    }
+  }
+}

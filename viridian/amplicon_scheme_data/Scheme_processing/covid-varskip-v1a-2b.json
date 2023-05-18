@@ -1,0 +1,2682 @@
+{
+  "name": "covid-varskip-v1a",
+  "source_file_1a": "https://raw.githubusercontent.com/nebiolabs/VarSkip/main/schemes/NEB_VarSkip/V1a/NEB_VarSkip.scheme.bed",
+  "source_file_sha256_1a": "a1b93e9df2d4cf405c913cf39a2fb982223dce94dfaeb2cf8edd230b80a84379",
+  "source_file_2b": "https://raw.githubusercontent.com/nebiolabs/VarSkip/main/schemes/NEB_VarSkip/V2b/NEB_VarSkip.scheme.bed",
+  "source_file_sha256_2b": "9ae24df57e05c29432fe9032676fad4402403af0f4ad7118f5ac6ac29d670399",
+  "reference_accession": "MN908947.3",
+  "amplicons": {
+    "varskip-0317-1_01": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22",
+            "46",
+            "varskip-0317-1_01_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 22,
+          "end": 45
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "559",
+            "581",
+            "varskip-0317-1_01_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 559,
+          "end": 580
+        }
+      ],
+      "start": 22,
+      "end": 580,
+      "left_primer_end": 45,
+      "right_primer_start": 559
+    },
+    "varskip-0317-1_02": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "418",
+            "443",
+            "varskip-0317-1_02_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 418,
+          "end": 442
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "976",
+            "998",
+            "varskip-0317-1_02_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 976,
+          "end": 997
+        }
+      ],
+      "start": 418,
+      "end": 997,
+      "left_primer_end": 442,
+      "right_primer_start": 976
+    },
+    "varskip-0317-1_03": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "841",
+            "863",
+            "varskip-0317-1_03_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 841,
+          "end": 862
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1402",
+            "1424",
+            "varskip-0317-1_03_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 1402,
+          "end": 1423
+        }
+      ],
+      "start": 841,
+      "end": 1423,
+      "left_primer_end": 862,
+      "right_primer_start": 1402
+    },
+    "varskip-0317-1_04": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1277",
+            "1299",
+            "varskip-0317-1_04_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 1277,
+          "end": 1298
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1821",
+            "1844",
+            "varskip-0317-1_04_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 1821,
+          "end": 1843
+        }
+      ],
+      "start": 1277,
+      "end": 1843,
+      "left_primer_end": 1298,
+      "right_primer_start": 1821
+    },
+    "varskip-0317-1_05": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "1695",
+            "1717",
+            "varskip-0317-1_05_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 1695,
+          "end": 1716
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2228",
+            "2250",
+            "varskip-0317-1_05_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 2228,
+          "end": 2249
+        }
+      ],
+      "start": 1695,
+      "end": 2249,
+      "left_primer_end": 1716,
+      "right_primer_start": 2228
+    },
+    "varskip-0317-1_06": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2061",
+            "2086",
+            "varskip-0317-1_06_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 2061,
+          "end": 2085
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2621",
+            "2643",
+            "varskip-0317-1_06_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 2621,
+          "end": 2642
+        }
+      ],
+      "start": 2061,
+      "end": 2642,
+      "left_primer_end": 2085,
+      "right_primer_start": 2621
+    },
+    "varskip-0317-1_07": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2483",
+            "2508",
+            "varskip-0317-1_07_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 2483,
+          "end": 2507
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3043",
+            "3067",
+            "varskip-0317-1_07_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 3043,
+          "end": 3066
+        }
+      ],
+      "start": 2483,
+      "end": 3066,
+      "left_primer_end": 2507,
+      "right_primer_start": 3043
+    },
+    "varskip-0317-1_08": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "2923",
+            "2947",
+            "varskip-0317-1_08_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 2923,
+          "end": 2946
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3470",
+            "3492",
+            "varskip-0317-1_08_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 3470,
+          "end": 3491
+        }
+      ],
+      "start": 2923,
+      "end": 3491,
+      "left_primer_end": 2946,
+      "right_primer_start": 3470
+    },
+    "varskip-0317-1_09": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3326",
+            "3355",
+            "varskip-0317-1_09_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 3326,
+          "end": 3354
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3887",
+            "3915",
+            "varskip-0317-1_09_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 3887,
+          "end": 3914
+        }
+      ],
+      "start": 3326,
+      "end": 3914,
+      "left_primer_end": 3354,
+      "right_primer_start": 3887
+    },
+    "varskip-0317-1_10": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "3753",
+            "3778",
+            "varskip-0317-1_10_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 3753,
+          "end": 3777
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4296",
+            "4322",
+            "varskip-0317-1_10_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 4296,
+          "end": 4321
+        }
+      ],
+      "start": 3753,
+      "end": 4321,
+      "left_primer_end": 3777,
+      "right_primer_start": 4296
+    },
+    "varskip-0317-1_11": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4154",
+            "4180",
+            "varskip-0317-1_11_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 4154,
+          "end": 4179
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4714",
+            "4743",
+            "varskip-0317-1_11_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 4714,
+          "end": 4742
+        }
+      ],
+      "start": 4154,
+      "end": 4742,
+      "left_primer_end": 4179,
+      "right_primer_start": 4714
+    },
+    "varskip-0317-1_12": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "4594",
+            "4617",
+            "varskip-0317-1_12_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 4594,
+          "end": 4616
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5145",
+            "5168",
+            "varskip-0317-1_12_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 5145,
+          "end": 5167
+        }
+      ],
+      "start": 4594,
+      "end": 5167,
+      "left_primer_end": 4616,
+      "right_primer_start": 5145
+    },
+    "varskip-0317-1_13": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5006",
+            "5028",
+            "varskip-0317-1_13_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 5006,
+          "end": 5027
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5555",
+            "5580",
+            "varskip-0317-1_13_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 5555,
+          "end": 5579
+        }
+      ],
+      "start": 5006,
+      "end": 5579,
+      "left_primer_end": 5027,
+      "right_primer_start": 5555
+    },
+    "varskip-0317-1_14": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5340",
+            "5366",
+            "varskip-0317-1_14_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 5340,
+          "end": 5365
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5914",
+            "5939",
+            "varskip-0317-1_14_RIGHT_ALT-v1a",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 5914,
+          "end": 5938
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "5987",
+            "6011",
+            "varskip-0317-1_14_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 5987,
+          "end": 6010
+        }
+      ],
+      "start": 5340,
+      "end": 6010,
+      "left_primer_end": 5365,
+      "right_primer_start": 5914
+    },
+    "varskip-0317-1_15": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "5794",
+            "5817",
+            "varskip-0317-1_15_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 5794,
+          "end": 5816
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6341",
+            "6363",
+            "varskip-0317-1_15_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 6341,
+          "end": 6362
+        }
+      ],
+      "start": 5794,
+      "end": 6362,
+      "left_primer_end": 5816,
+      "right_primer_start": 6341
+    },
+    "varskip-0317-1_16": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6217",
+            "6245",
+            "varskip-0317-1_16_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 6217,
+          "end": 6244
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6749",
+            "6776",
+            "varskip-0317-1_16_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 6749,
+          "end": 6775
+        }
+      ],
+      "start": 6217,
+      "end": 6775,
+      "left_primer_end": 6244,
+      "right_primer_start": 6749
+    },
+    "varskip-0317-1_17": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "6561",
+            "6594",
+            "varskip-0317-1_17_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 6561,
+          "end": 6593
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7124",
+            "7151",
+            "varskip-0317-1_17_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 7124,
+          "end": 7150
+        }
+      ],
+      "start": 6561,
+      "end": 7150,
+      "left_primer_end": 6593,
+      "right_primer_start": 7124
+    },
+    "varskip-0317-1_18": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7000",
+            "7022",
+            "varskip-0317-1_18_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 7000,
+          "end": 7021
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7547",
+            "7574",
+            "varskip-0317-1_18_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 7547,
+          "end": 7573
+        }
+      ],
+      "start": 7000,
+      "end": 7573,
+      "left_primer_end": 7021,
+      "right_primer_start": 7547
+    },
+    "varskip-0317-1_19": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7403",
+            "7429",
+            "varskip-0317-1_19_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 7403,
+          "end": 7428
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7984",
+            "8007",
+            "varskip-0317-1_19_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 7984,
+          "end": 8006
+        }
+      ],
+      "start": 7403,
+      "end": 8006,
+      "left_primer_end": 7428,
+      "right_primer_start": 7984
+    },
+    "varskip-0317-1_20": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "7836",
+            "7861",
+            "varskip-0317-1_20_LEFT_ALT-v1a",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 7836,
+          "end": 7860
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "7851",
+            "7883",
+            "varskip-0317-1_20_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 7851,
+          "end": 7882
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8348",
+            "8370",
+            "varskip-0317-1_20_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 8348,
+          "end": 8369
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "8384",
+            "8409",
+            "varskip-0317-1_20_RIGHT_ALT-v1a",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 8384,
+          "end": 8408
+        }
+      ],
+      "start": 7836,
+      "end": 8408,
+      "left_primer_end": 7882,
+      "right_primer_start": 8348
+    },
+    "varskip-0317-1_21": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8245",
+            "8269",
+            "varskip-0317-1_21_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 8245,
+          "end": 8268
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8818",
+            "8843",
+            "varskip-0317-1_21_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 8818,
+          "end": 8842
+        }
+      ],
+      "start": 8245,
+      "end": 8842,
+      "left_primer_end": 8268,
+      "right_primer_start": 8818
+    },
+    "varskip-0317-1_22": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "8685",
+            "8709",
+            "varskip-0317-1_22_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 8685,
+          "end": 8708
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9221",
+            "9243",
+            "varskip-0317-1_22_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 9221,
+          "end": 9242
+        }
+      ],
+      "start": 8685,
+      "end": 9242,
+      "left_primer_end": 8708,
+      "right_primer_start": 9221
+    },
+    "varskip-0317-1_23": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9099",
+            "9121",
+            "varskip-0317-1_23_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 9099,
+          "end": 9120
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9644",
+            "9667",
+            "varskip-0317-1_23_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 9644,
+          "end": 9666
+        }
+      ],
+      "start": 9099,
+      "end": 9666,
+      "left_primer_end": 9120,
+      "right_primer_start": 9644
+    },
+    "varskip-0317-1_24": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9478",
+            "9502",
+            "varskip-0317-1_24_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 9478,
+          "end": 9501
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10039",
+            "10061",
+            "varskip-0317-1_24_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 10039,
+          "end": 10060
+        }
+      ],
+      "start": 9478,
+      "end": 10060,
+      "left_primer_end": 9501,
+      "right_primer_start": 10039
+    },
+    "varskip-0317-1_25": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "9842",
+            "9865",
+            "varskip-0317-1_25_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 9842,
+          "end": 9864
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10396",
+            "10422",
+            "varskip-0317-1_25_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 10396,
+          "end": 10421
+        }
+      ],
+      "start": 9842,
+      "end": 10421,
+      "left_primer_end": 9864,
+      "right_primer_start": 10396
+    },
+    "varskip-0317-1_26": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10269",
+            "10293",
+            "varskip-0317-1_26_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 10269,
+          "end": 10292
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10816",
+            "10838",
+            "varskip-0317-1_26_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 10816,
+          "end": 10837
+        }
+      ],
+      "start": 10269,
+      "end": 10837,
+      "left_primer_end": 10292,
+      "right_primer_start": 10816
+    },
+    "varskip-0317-1_27": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "10696",
+            "10719",
+            "varskip-0317-1_27_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 10696,
+          "end": 10718
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11243",
+            "11268",
+            "varskip-0317-1_27_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 11243,
+          "end": 11267
+        }
+      ],
+      "start": 10696,
+      "end": 11267,
+      "left_primer_end": 10718,
+      "right_primer_start": 11243
+    },
+    "varskip-0317-1_28": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11092",
+            "11116",
+            "varskip-0317-1_28_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 11092,
+          "end": 11115
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11647",
+            "11670",
+            "varskip-0317-1_28_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 11647,
+          "end": 11669
+        }
+      ],
+      "start": 11092,
+      "end": 11669,
+      "left_primer_end": 11115,
+      "right_primer_start": 11647
+    },
+    "varskip-0317-1_29": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11371",
+            "11393",
+            "varskip-0317-1_29_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 11371,
+          "end": 11392
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11921",
+            "11943",
+            "varskip-0317-1_29_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 11921,
+          "end": 11942
+        }
+      ],
+      "start": 11371,
+      "end": 11942,
+      "left_primer_end": 11392,
+      "right_primer_start": 11921
+    },
+    "varskip-0317-1_30": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "11824",
+            "11851",
+            "varskip-0317-1_30_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 11824,
+          "end": 11850
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12329",
+            "12353",
+            "varskip-0317-1_30_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 12329,
+          "end": 12352
+        }
+      ],
+      "start": 11824,
+      "end": 12352,
+      "left_primer_end": 11850,
+      "right_primer_start": 12329
+    },
+    "varskip-0317-1_31": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12201",
+            "12226",
+            "varskip-0317-1_31_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 12201,
+          "end": 12225
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12752",
+            "12774",
+            "varskip-0317-1_31_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 12752,
+          "end": 12773
+        }
+      ],
+      "start": 12201,
+      "end": 12773,
+      "left_primer_end": 12225,
+      "right_primer_start": 12752
+    },
+    "varskip-0317-1_32": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "12632",
+            "12656",
+            "varskip-0317-1_32_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 12632,
+          "end": 12655
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13166",
+            "13188",
+            "varskip-0317-1_32_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 13166,
+          "end": 13187
+        }
+      ],
+      "start": 12632,
+      "end": 13187,
+      "left_primer_end": 12655,
+      "right_primer_start": 13166
+    },
+    "varskip-0317-1_33": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13034",
+            "13058",
+            "varskip-0317-1_33_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 13034,
+          "end": 13057
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13599",
+            "13621",
+            "varskip-0317-1_33_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 13599,
+          "end": 13620
+        }
+      ],
+      "start": 13034,
+      "end": 13620,
+      "left_primer_end": 13057,
+      "right_primer_start": 13599
+    },
+    "varskip-0317-1_34": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13479",
+            "13501",
+            "varskip-0317-1_34_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 13479,
+          "end": 13500
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14009",
+            "14031",
+            "varskip-0317-1_34_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 14009,
+          "end": 14030
+        }
+      ],
+      "start": 13479,
+      "end": 14030,
+      "left_primer_end": 13500,
+      "right_primer_start": 14009
+    },
+    "varskip-0317-1_35": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "13874",
+            "13901",
+            "varskip-0317-1_35_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 13874,
+          "end": 13900
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14417",
+            "14444",
+            "varskip-0317-1_35_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 14417,
+          "end": 14443
+        }
+      ],
+      "start": 13874,
+      "end": 14443,
+      "left_primer_end": 13900,
+      "right_primer_start": 14417
+    },
+    "varskip-0317-1_36": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14290",
+            "14319",
+            "varskip-0317-1_36_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 14290,
+          "end": 14318
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14826",
+            "14855",
+            "varskip-0317-1_36_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 14826,
+          "end": 14854
+        }
+      ],
+      "start": 14290,
+      "end": 14854,
+      "left_primer_end": 14318,
+      "right_primer_start": 14826
+    },
+    "varskip-0317-1_37": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "14651",
+            "14675",
+            "varskip-0317-1_37_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 14651,
+          "end": 14674
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15191",
+            "15217",
+            "varskip-0317-1_37_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 15191,
+          "end": 15216
+        }
+      ],
+      "start": 14651,
+      "end": 15216,
+      "left_primer_end": 14674,
+      "right_primer_start": 15191
+    },
+    "varskip-0317-1_38": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15064",
+            "15091",
+            "varskip-0317-1_38_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 15064,
+          "end": 15090
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15598",
+            "15622",
+            "varskip-0317-1_38_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 15598,
+          "end": 15621
+        }
+      ],
+      "start": 15064,
+      "end": 15621,
+      "left_primer_end": 15090,
+      "right_primer_start": 15598
+    },
+    "varskip-0317-1_39": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15428",
+            "15450",
+            "varskip-0317-1_39_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 15428,
+          "end": 15449
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16007",
+            "16029",
+            "varskip-0317-1_39_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 16007,
+          "end": 16028
+        }
+      ],
+      "start": 15428,
+      "end": 16028,
+      "left_primer_end": 15449,
+      "right_primer_start": 16007
+    },
+    "varskip-0317-1_40": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "15862",
+            "15887",
+            "varskip-0317-1_40_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 15862,
+          "end": 15886
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16416",
+            "16443",
+            "varskip-0317-1_40_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 16416,
+          "end": 16442
+        }
+      ],
+      "start": 15862,
+      "end": 16442,
+      "left_primer_end": 15886,
+      "right_primer_start": 16416
+    },
+    "varskip-0317-1_41": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16277",
+            "16299",
+            "varskip-0317-1_41_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 16277,
+          "end": 16298
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16842",
+            "16865",
+            "varskip-0317-1_41_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 16842,
+          "end": 16864
+        }
+      ],
+      "start": 16277,
+      "end": 16864,
+      "left_primer_end": 16298,
+      "right_primer_start": 16842
+    },
+    "varskip-0317-1_42": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "16689",
+            "16711",
+            "varskip-0317-1_42_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 16689,
+          "end": 16710
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17244",
+            "17266",
+            "varskip-0317-1_42_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 17244,
+          "end": 17265
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "17276",
+            "17305",
+            "varskip-0317-1_42_RIGHT_ALT-v1a",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 17276,
+          "end": 17304
+        }
+      ],
+      "start": 16689,
+      "end": 17304,
+      "left_primer_end": 16710,
+      "right_primer_start": 17244
+    },
+    "varskip-0317-1_43": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17057",
+            "17082",
+            "varskip-0317-1_43_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 17057,
+          "end": 17081
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17621",
+            "17646",
+            "varskip-0317-1_43_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 17621,
+          "end": 17645
+        }
+      ],
+      "start": 17057,
+      "end": 17645,
+      "left_primer_end": 17081,
+      "right_primer_start": 17621
+    },
+    "varskip-0317-1_44": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17476",
+            "17500",
+            "varskip-0317-1_44_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 17476,
+          "end": 17499
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18033",
+            "18059",
+            "varskip-0317-1_44_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 18033,
+          "end": 18058
+        }
+      ],
+      "start": 17476,
+      "end": 18058,
+      "left_primer_end": 17499,
+      "right_primer_start": 18033
+    },
+    "varskip-0317-1_45": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "17889",
+            "17915",
+            "varskip-0317-1_45_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 17889,
+          "end": 17914
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18441",
+            "18463",
+            "varskip-0317-1_45_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 18441,
+          "end": 18462
+        }
+      ],
+      "start": 17889,
+      "end": 18462,
+      "left_primer_end": 17914,
+      "right_primer_start": 18441
+    },
+    "varskip-0317-1_46": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18311",
+            "18333",
+            "varskip-0317-1_46_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 18311,
+          "end": 18332
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18852",
+            "18876",
+            "varskip-0317-1_46_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 18852,
+          "end": 18875
+        }
+      ],
+      "start": 18311,
+      "end": 18875,
+      "left_primer_end": 18332,
+      "right_primer_start": 18852
+    },
+    "varskip-0317-1_47": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "18712",
+            "18737",
+            "varskip-0317-1_47_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 18712,
+          "end": 18736
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19247",
+            "19273",
+            "varskip-0317-1_47_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 19247,
+          "end": 19272
+        }
+      ],
+      "start": 18712,
+      "end": 19272,
+      "left_primer_end": 18736,
+      "right_primer_start": 19247
+    },
+    "varskip-0317-1_48": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19092",
+            "19114",
+            "varskip-0317-1_48_LEFT_ALT-v1a",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 19092,
+          "end": 19113
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "19098",
+            "19125",
+            "varskip-0317-1_48_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 19098,
+          "end": 19124
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19623",
+            "19655",
+            "varskip-0317-1_48_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 19623,
+          "end": 19654
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "19641",
+            "19669",
+            "varskip-0317-1_48_RIGHT_ALT-v1a",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 19641,
+          "end": 19668
+        }
+      ],
+      "start": 19092,
+      "end": 19668,
+      "left_primer_end": 19124,
+      "right_primer_start": 19623
+    },
+    "varskip-0317-1_49": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19488",
+            "19515",
+            "varskip-0317-1_49_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 19488,
+          "end": 19514
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20010",
+            "20038",
+            "varskip-0317-1_49_RIGHT_ALT1",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 20010,
+          "end": 20037
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "20037",
+            "20064",
+            "varskip-0317-1_49_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 20037,
+          "end": 20063
+        }
+      ],
+      "start": 19488,
+      "end": 20063,
+      "left_primer_end": 19514,
+      "right_primer_start": 20010
+    },
+    "varskip-0317-1_50": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "19885",
+            "19911",
+            "varskip-0317-1_50_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 19885,
+          "end": 19910
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20462",
+            "20484",
+            "varskip-0317-1_50_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 20462,
+          "end": 20483
+        }
+      ],
+      "start": 19885,
+      "end": 20483,
+      "left_primer_end": 19910,
+      "right_primer_start": 20462
+    },
+    "varskip-0317-1_51": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20340",
+            "20366",
+            "varskip-0317-1_51_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 20340,
+          "end": 20365
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20890",
+            "20912",
+            "varskip-0317-1_51_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 20890,
+          "end": 20911
+        }
+      ],
+      "start": 20340,
+      "end": 20911,
+      "left_primer_end": 20365,
+      "right_primer_start": 20890
+    },
+    "varskip-0317-1_52": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "20766",
+            "20792",
+            "varskip-0317-1_52_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 20766,
+          "end": 20791
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21314",
+            "21338",
+            "varskip-0317-1_52_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 21314,
+          "end": 21337
+        }
+      ],
+      "start": 20766,
+      "end": 21337,
+      "left_primer_end": 20791,
+      "right_primer_start": 21314
+    },
+    "varskip-0317-1_53": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21194",
+            "21219",
+            "varskip-0317-1_53_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 21194,
+          "end": 21218
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21724",
+            "21753",
+            "varskip-0317-1_53_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 21724,
+          "end": 21752
+        }
+      ],
+      "start": 21194,
+      "end": 21752,
+      "left_primer_end": 21218,
+      "right_primer_start": 21724
+    },
+    "varskip-0317-1_54": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21537",
+            "21566",
+            "varskip-0317-1_54_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 21537,
+          "end": 21565
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22091",
+            "22113",
+            "varskip-0317-1_54_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 22091,
+          "end": 22112
+        }
+      ],
+      "start": 21537,
+      "end": 22112,
+      "left_primer_end": 21565,
+      "right_primer_start": 22091
+    },
+    "varskip-0317-1_55": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "21926",
+            "21955",
+            "varskip-0317-1_55_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 21926,
+          "end": 21954
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22480",
+            "22510",
+            "varskip-0317-1_55_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 22480,
+          "end": 22509
+        }
+      ],
+      "start": 21926,
+      "end": 22509,
+      "left_primer_end": 21954,
+      "right_primer_start": 22480
+    },
+    "varskip-0317-1_56": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22347",
+            "22373",
+            "varskip-0317-1_56_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 22347,
+          "end": 22372
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22853",
+            "22877",
+            "varskip-0317-1_56_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 22853,
+          "end": 22876
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "22879",
+            "22907",
+            "varskip-0317-1_56_RIGHT_ALT-v1a",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 22879,
+          "end": 22906
+        }
+      ],
+      "start": 22347,
+      "end": 22906,
+      "left_primer_end": 22372,
+      "right_primer_start": 22853
+    },
+    "varskip-0317-1_57": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "22742",
+            "22773",
+            "varskip-0317-1_57_LEFT_ALT2",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 22742,
+          "end": 22772
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "22749",
+            "22776",
+            "varskip-0317-1_57_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 22749,
+          "end": 22775
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23288",
+            "23310",
+            "varskip-0317-1_57_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 23288,
+          "end": 23309
+        }
+      ],
+      "start": 22742,
+      "end": 23309,
+      "left_primer_end": 22775,
+      "right_primer_start": 23288
+    },
+    "varskip-0317-1_58": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23122",
+            "23144",
+            "varskip-0317-1_58_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 23122,
+          "end": 23143
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23681",
+            "23708",
+            "varskip-0317-1_58_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 23681,
+          "end": 23707
+        }
+      ],
+      "start": 23122,
+      "end": 23707,
+      "left_primer_end": 23143,
+      "right_primer_start": 23681
+    },
+    "varskip-0317-1_59": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23545",
+            "23567",
+            "varskip-0317-1_59_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 23545,
+          "end": 23566
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24103",
+            "24129",
+            "varskip-0317-1_59_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 24103,
+          "end": 24128
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "24112",
+            "24134",
+            "varskip-0317-1_59_RIGHT_ALT-v1a",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 24112,
+          "end": 24133
+        }
+      ],
+      "start": 23545,
+      "end": 24133,
+      "left_primer_end": 23566,
+      "right_primer_start": 24103
+    },
+    "varskip-0317-1_60": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "23979",
+            "24002",
+            "varskip-0317-1_60_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 23979,
+          "end": 24001
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24518",
+            "24541",
+            "varskip-0317-1_60_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 24518,
+          "end": 24540
+        }
+      ],
+      "start": 23979,
+      "end": 24540,
+      "left_primer_end": 24001,
+      "right_primer_start": 24518
+    },
+    "varskip-0317-1_61": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24375",
+            "24397",
+            "varskip-0317-1_61_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 24375,
+          "end": 24396
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24924",
+            "24948",
+            "varskip-0317-1_61_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 24924,
+          "end": 24947
+        }
+      ],
+      "start": 24375,
+      "end": 24947,
+      "left_primer_end": 24396,
+      "right_primer_start": 24924
+    },
+    "varskip-0317-1_62": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "24789",
+            "24811",
+            "varskip-0317-1_62_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 24789,
+          "end": 24810
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25331",
+            "25353",
+            "varskip-0317-1_62_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 25331,
+          "end": 25352
+        }
+      ],
+      "start": 24789,
+      "end": 25352,
+      "left_primer_end": 24810,
+      "right_primer_start": 25331
+    },
+    "varskip-0317-1_63": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25171",
+            "25200",
+            "varskip-0317-1_63_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 25171,
+          "end": 25199
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25725",
+            "25754",
+            "varskip-0317-1_63_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 25725,
+          "end": 25753
+        }
+      ],
+      "start": 25171,
+      "end": 25753,
+      "left_primer_end": 25199,
+      "right_primer_start": 25725
+    },
+    "varskip-0317-1_64": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25526",
+            "25548",
+            "varskip-0317-1_64_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 25526,
+          "end": 25547
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "25575",
+            "25600",
+            "varskip-0317-1_64_LEFT_ALT-v1a",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 25575,
+          "end": 25599
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26120",
+            "26143",
+            "varskip-0317-1_64_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 26120,
+          "end": 26142
+        }
+      ],
+      "start": 25526,
+      "end": 26142,
+      "left_primer_end": 25599,
+      "right_primer_start": 26120
+    },
+    "varskip-0317-1_65": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "25970",
+            "25995",
+            "varskip-0317-1_65_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 25970,
+          "end": 25994
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26497",
+            "26525",
+            "varskip-0317-1_65_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 26497,
+          "end": 26524
+        }
+      ],
+      "start": 25970,
+      "end": 26524,
+      "left_primer_end": 25994,
+      "right_primer_start": 26497
+    },
+    "varskip-0317-1_66": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26359",
+            "26381",
+            "varskip-0317-1_66_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 26359,
+          "end": 26380
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26905",
+            "26927",
+            "varskip-0317-1_66_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 26905,
+          "end": 26926
+        }
+      ],
+      "start": 26359,
+      "end": 26926,
+      "left_primer_end": 26380,
+      "right_primer_start": 26905
+    },
+    "varskip-0317-1_67": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "26682",
+            "26705",
+            "varskip-0317-1_67_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 26682,
+          "end": 26704
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "26706",
+            "26728",
+            "varskip-0317-1_67_LEFT_ALT-v1a",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 26706,
+          "end": 26727
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27256",
+            "27283",
+            "varskip-0317-1_67_RIGHT_ALT-v1a",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 27256,
+          "end": 27282
+        },
+        {
+          "original_data": [
+            "MN908947.3",
+            "27259",
+            "27288",
+            "varskip-0317-1_67_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 27259,
+          "end": 27287
+        }
+      ],
+      "start": 26682,
+      "end": 27287,
+      "left_primer_end": 26727,
+      "right_primer_start": 27256
+    },
+    "varskip-0317-1_68": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27081",
+            "27103",
+            "varskip-0317-1_68_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 27081,
+          "end": 27102
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27647",
+            "27671",
+            "varskip-0317-1_68_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 27647,
+          "end": 27670
+        }
+      ],
+      "start": 27081,
+      "end": 27670,
+      "left_primer_end": 27102,
+      "right_primer_start": 27647
+    },
+    "varskip-0317-1_69": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27485",
+            "27511",
+            "varskip-0317-1_69_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 27485,
+          "end": 27510
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28051",
+            "28076",
+            "varskip-0317-1_69_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 28051,
+          "end": 28075
+        }
+      ],
+      "start": 27485,
+      "end": 28075,
+      "left_primer_end": 27510,
+      "right_primer_start": 28051
+    },
+    "varskip-0317-1_70": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "27835",
+            "27859",
+            "varskip-0317-1_70_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 27835,
+          "end": 27858
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28380",
+            "28400",
+            "varskip-0317-1_70_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 28380,
+          "end": 28399
+        }
+      ],
+      "start": 27835,
+      "end": 28399,
+      "left_primer_end": 27858,
+      "right_primer_start": 28380
+    },
+    "varskip-0317-1_71": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28219",
+            "28243",
+            "varskip-0317-1_71_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 28219,
+          "end": 28242
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28783",
+            "28805",
+            "varskip-0317-1_71_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 28783,
+          "end": 28804
+        }
+      ],
+      "start": 28219,
+      "end": 28804,
+      "left_primer_end": 28242,
+      "right_primer_start": 28783
+    },
+    "varskip-0317-1_72": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "28627",
+            "28649",
+            "varskip-0317-1_72_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 28627,
+          "end": 28648
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29203",
+            "29225",
+            "varskip-0317-1_72_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 29203,
+          "end": 29224
+        }
+      ],
+      "start": 28627,
+      "end": 29224,
+      "left_primer_end": 28648,
+      "right_primer_start": 29203
+    },
+    "varskip-0317-1_73": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29062",
+            "29088",
+            "varskip-0317-1_73_LEFT",
+            "nCoV-2019_1",
+            "+"
+          ],
+          "start": 29062,
+          "end": 29087
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29617",
+            "29644",
+            "varskip-0317-1_73_RIGHT",
+            "nCoV-2019_1",
+            "-"
+          ],
+          "start": 29617,
+          "end": 29643
+        }
+      ],
+      "start": 29062,
+      "end": 29643,
+      "left_primer_end": 29087,
+      "right_primer_start": 29617
+    },
+    "varskip-0317-1_74": {
+      "left_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29270",
+            "29292",
+            "varskip-0317-1_74_LEFT",
+            "nCoV-2019_2",
+            "+"
+          ],
+          "start": 29270,
+          "end": 29291
+        }
+      ],
+      "right_primers": [
+        {
+          "original_data": [
+            "MN908947.3",
+            "29799",
+            "29831",
+            "varskip-0317-1_74_RIGHT",
+            "nCoV-2019_2",
+            "-"
+          ],
+          "start": 29799,
+          "end": 29830
+        }
+      ],
+      "start": 29270,
+      "end": 29830,
+      "left_primer_end": 29291,
+      "right_primer_start": 29799
+    }
+  }
+}

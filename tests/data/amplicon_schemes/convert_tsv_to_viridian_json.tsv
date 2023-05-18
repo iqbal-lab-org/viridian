@@ -1,7 +1,0 @@
-Amplicon_name	Primer_name	Left_or_right	Sequence	Position
-amp1	amp1_left_primer	left	ACGTACGTAC	100
-amp1	amp1_right_primer	right	TCTCTTCTCAG	300
-amp2	amp2_left_primer	left	GGGCGCGTAGTC	290
-amp2	amp2_left_primer_alt	left	GCGCGTAGTCAT	292
-amp2	amp2_right_primer	right	ATGCGCGTAAGCT	500
-amp2	amp2_right_primer_alt	right	TGCGCGTAAGCTA	501
