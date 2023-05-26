@@ -113,7 +113,6 @@ class Pipeline:
             self.final_masked_fasta += ".gz"
         self.minimap_x_opt = constants.TECH2MINIMAP_X[self.tech]
 
-
     def set_command_line_dict(self):
         # Make a dict of the command line options to go in the JSON output file.
         # The tests don't use argparse (they use Mock), which means convert to dict
