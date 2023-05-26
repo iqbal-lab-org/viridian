@@ -8,6 +8,12 @@ TECH2FRS = {
     "iontorrent": 0.5,
 }
 
+TECH2MINIMAP_X = {
+    "illumina": "-x sr",
+    "ont": "-x map-ont",
+    "iontorrent": "-x sr",
+}
+
 CYLON_TECH = {
     "illumina": "illumina",
     "ont": "ont",

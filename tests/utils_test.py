@@ -72,47 +72,26 @@ def test_check_tech_and_reads_options():
     options.reads2 = None
     assert f(options)
 
-    options = mock.Mock()
-    options.reads_bam = None
-    options.reads = None
-    options.reads1 = None
-    options.reads2 = None
-    options.tech = None
-    options.ena_run = None
-    with pytest.raises(Exception):
-        f(options)
-    options.tech = "illumina"
-    with pytest.raises(Exception):
-        f(options)
-    options.reads = "r.fq"
-    with pytest.raises(Exception):
-        f(options)
-    options.reads1 = "r1.fq"
-    with pytest.raises(Exception):
-        f(options)
-    options.reads = None
-    with pytest.raises(Exception):
-        f(options)
-    options.reads2 = "r2.fq"
-    assert f(options)
-
-    options = mock.Mock()
-    options.reads_bam = None
-    options.reads = None
-    options.reads1 = None
-    options.reads2 = None
-    options.tech = None
-    options.ena_run = None
-    options.tech = "iontorrent"
-    with pytest.raises(Exception):
-        f(options)
-    options.reads = "r.fq"
-    assert f(options)
-    options.reads1 = "r1.fq"
-    with pytest.raises(Exception):
-        f(options)
-    options.reads2 = "r2.fq"
-    with pytest.raises(Exception):
-        f(options)
-    options.reads = None
-    assert f(options)
+    for tech in ["illumina", "iontorrent"]:
+        options = mock.Mock()
+        options.reads_bam = None
+        options.reads = None
+        options.reads1 = None
+        options.reads2 = None
+        options.tech = None
+        options.ena_run = None
+        with pytest.raises(Exception):
+            f(options)
+        options.tech = tech
+        with pytest.raises(Exception):
+            f(options)
+        options.reads = "r.fq"
+        assert f(options)
+        options.reads1 = "r1.fq"
+        with pytest.raises(Exception):
+            f(options)
+        options.reads = None
+        with pytest.raises(Exception):
+            f(options)
+        options.reads2 = "r2.fq"
+        assert f(options)

@@ -95,7 +95,7 @@ def main(args=None):
         choices=tech_choices,
         help=f"Sequencing technology, currently supported: {','.join(tech_choices)}",
     )
-    reads_epilog = "IMPORTANT: --tech, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Use one of: 1) '--tech ont|iontorrent --reads reads.fq'; 2) '--tech illumina|iontorrent --reads1 reads1.fq --reads2 reads2.fq'; 3) (with any tech) --reads_bam reads.bam"
+    reads_epilog = "IMPORTANT: --tech, --outdir are REQUIRED. Reads files are required, and depend on the --tech option. Use one of: 1) '--tech illumina|ont|iontorrent --reads reads.fq'; 2) '--tech illumina|iontorrent --reads1 reads1.fq --reads2 reads2.fq'; 3) (with any tech) --reads_bam reads.bam"
 
     # --------------------------- ref options --------------------------------
     ref_parser = argparse.ArgumentParser(add_help=False)
