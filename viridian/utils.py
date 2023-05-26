@@ -103,22 +103,21 @@ def check_tech_and_reads_options(args):
             raise Exception("--decontam is not compatible with --reads_bam")
         return True
 
-    if args.tech == "illumina" and not (reads1 and reads2 and not reads):
-        raise Exception(
-            "For Illumina tech, must provide --reads1, --reads2 and not provide --reads"
-        )
-    elif args.tech == "ont" and not (reads and not reads1 and not reads2):
-        raise Exception(
-            "For ont tech, must provide --reads, and provide --reads1, --reads2"
-        )
-    elif args.tech == "iontorrent":
+    if args.tech == "ont":
+        if not (reads and not reads1 and not reads2):
+            raise Exception(
+                "For ont tech, must provide --reads, and provide --reads1, --reads2"
+            )
+    elif args.tech in ["illumina", "iontorrent"]:
         ok1 = reads and not (reads1 or reads2)
         ok2 = reads1 and reads2 and not reads
         print(reads, reads1, reads2, ok1, ok2)
         if not (ok1 or ok2):
             raise Exception(
-                "For iontorrent tech, must provide either --reads, or alternatively provide both --reads1, --reads2"
+                "For illumina/iontorrent tech, must provide either --reads, or alternatively provide both --reads1, --reads2"
             )
+    else:
+        raise NotImplementedError()
 
     return True
 

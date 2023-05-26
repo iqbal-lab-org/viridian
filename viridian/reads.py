@@ -439,7 +439,7 @@ class ReadSampler:
             os.path.join(self.cylon_dir, "manifest.json"), self.cylon_fa_manifest
         )
 
-    def pileups(self, consensus_fasta, tmp_outdir, debug=False):
+    def pileups(self, consensus_fasta, tmp_outdir, minimap_x_opt=None, debug=False):
         pileups = {}
         os.mkdir(tmp_outdir)
         for amplicon, reads_dict in self.qc_reads_files.items():
@@ -454,6 +454,7 @@ class ReadSampler:
                     consensus_fasta,
                     reads1,
                     reads2,
+                    minimap_x_opt=minimap_x_opt,
                     debug=debug,
                 )
 
