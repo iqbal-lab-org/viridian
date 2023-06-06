@@ -23,20 +23,26 @@ def syscall(command, stdouterr=None, quiet=False, silent=False, cwd=None):
     )
     completed_process.stdout = completed_process.stdout.rstrip()
     completed_process.stderr = completed_process.stderr.rstrip()
-    if not silent and not quiet:
+
+    if completed_process.returncode == 0:
+        log_out = logging.info
+    else:
+        logging.error(f"Error running this command: {command}")
+        logging.error(f"cwd: {os.getcwd()}")
+        logging.error(f"Return code: {completed_process.returncode}")
+        log_out = logging.error
+
+    if completed_process.returncode != 0 or not (silent or quiet):
         if completed_process.stdout != "":
-            logging.info(f"stdout:\n{completed_process.stdout.rstrip()}")
+            log_out(f"stdout:\n{completed_process.stdout.rstrip()}")
         if completed_process.stderr != "":
-            logging.info(f"stderr:\n{completed_process.stderr.rstrip()}")
+            log_out(f"stderr:\n{completed_process.stderr.rstrip()}")
+
+    if completed_process.returncode != 0:
+        raise RuntimeError("Error in system call. Cannot continue")
 
     if not silent:
         logging.info(f"Return code {completed_process.returncode} from: {command}")
-
-    if completed_process.returncode != 0:
-        print("Error running this command:", command, file=sys.stderr)
-        print("cwd:", os.getcwd(), file=sys.stderr)
-        print("Return code:", completed_process.returncode, file=sys.stderr)
-        raise RuntimeError("Error in system call. Cannot continue")
 
     if stdouterr is not None:
         with open(f"{stdouterr}.out", "w") as f:
@@ -111,7 +117,6 @@ def check_tech_and_reads_options(args):
     elif args.tech in ["illumina", "iontorrent"]:
         ok1 = reads and not (reads1 or reads2)
         ok2 = reads1 and reads2 and not reads
-        print(reads, reads1, reads2, ok1, ok2)
         if not (ok1 or ok2):
             raise Exception(
                 "For illumina/iontorrent tech, must provide either --reads, or alternatively provide both --reads1, --reads2"
