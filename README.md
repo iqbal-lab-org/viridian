@@ -2,6 +2,8 @@
 
 # Viridian Workflow
 
+Ultra-careful amplicon-aware viral assembly for tiled amplicon schemes.
+
 Please see the [Viridian Workflow Wiki](https://github.com/iqbal-lab-org/viridian_workflow/wiki)
 for full documentation.
 
