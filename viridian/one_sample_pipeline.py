@@ -111,7 +111,6 @@ class Pipeline:
         if self.gzip_files:
             self.json_log_file += ".gz"
             self.final_masked_fasta += ".gz"
-        self.minimap_x_opt = constants.TECH2MINIMAP_X[self.tech]
 
     def set_command_line_dict(self):
         # Make a dict of the command line options to go in the JSON output file.
@@ -328,7 +327,7 @@ class Pipeline:
             reads2=self.reads_file2,
             debug=self.debug,
             sample_name=self.sample_name,
-            minimap_x_opt=self.minimap_x_opt,
+            minimap_x_opt=constants.TECH2MINIMAP_X[self.tech],
         )
         return True
 
@@ -503,7 +502,7 @@ class Pipeline:
         self.pileups = self.read_sampler.pileups(
             self.final_unmasked_fasta,
             self.qc_bams_dir,
-            minimap_x_opt=self.minimap_x_opt,
+            minimap_x_opt=constants.TECH2MINIMAP_X[self.tech],
             debug=self.debug,
         )
         if len(self.pileups) == 0:
