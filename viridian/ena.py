@@ -61,18 +61,12 @@ def fastq_ftp_string_to_files(fastq_ftp_str):
 
 
 def wanted_reads_files(all_files, platform):
-    if platform == "ILLUMINA":
-        if len(all_files["paired"]) != 2:
-            raise Exception(
-                "Need paired files for Illumina but did not get pair of files"
-            )
-        return None, *all_files["paired"]
-    elif platform == "OXFORD_NANOPORE":
+    if platform == "OXFORD_NANOPORE":
         # Just in case there were multiple files and the first two happened
         # to be called foo_1.fastq.gz, foo_2.fastq.gz, assume all reads
         # are unpaired
         return all_files["unpaired"] + all_files["paired"], None, None
-    elif platform == "ION_TORRENT":
+    elif platform in ["ILLUMINA", "ION_TORRENT"]:
         if len(all_files["paired"]) == 2:
             return None, *all_files["paired"]
         else:
