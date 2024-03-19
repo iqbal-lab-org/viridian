@@ -54,6 +54,17 @@ To run on paired or unpaired Ion Torrent reads, use either of the
 above commands, but with the option `--tech iontorrent`.
 
 
+You can run on a batch of reads, using a file
+`runs.txt` of INSDC run accessions.
+This will download each run from the ENA and run Viridian on it:
+```
+viridian dl_and_run --acc_file runs.txt --outdir OUT
+```
+The sequencing tech and unpaired/paired is taken from the ENA metadata
+for each run.
+
+
+
 ## Output files
 
 The default files in the output directory are:
@@ -95,6 +106,6 @@ to the reference will also be present, called
   used to build trees. It has the consensus sequence aligned to the
   reference genome, but with insertions in the consensus ignored and
   deletions replaced with the reference sequence.
-* `--ena_run RUN_ID`: using this option will download the specified reads
+* `--run_accession RUN_ID`: using this option will download the specified reads
   from the ENA, and infer the `--tech` option from the ENA metadata
 
