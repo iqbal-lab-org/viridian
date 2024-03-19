@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import subprocess
-import sys
 
 import pyfastaq
 
@@ -84,7 +83,7 @@ def load_single_seq_fasta(infile):
 
 
 def check_tech_and_reads_options(args):
-    if args.ena_run is not None:
+    if args.run_accession is not None:
         return True
 
     if getattr(args, "tech") is None:

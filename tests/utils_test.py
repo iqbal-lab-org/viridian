@@ -48,13 +48,13 @@ def test_check_tech_and_reads_options():
     options.reads1 = None
     options.reads2 = None
     options.tech = None
-    options.ena_run = None
+    options.run_accession = None
     with pytest.raises(Exception):
         f(options)
 
-    options.ena_run = "ERR12345"
+    options.run_accession = "ERR12345"
     assert f(options)
-    options.ena_run = None
+    options.run_accession = None
 
     options.tech = "ont"
     with pytest.raises(Exception):
@@ -79,7 +79,7 @@ def test_check_tech_and_reads_options():
         options.reads1 = None
         options.reads2 = None
         options.tech = None
-        options.ena_run = None
+        options.run_accession = None
         with pytest.raises(Exception):
             f(options)
         options.tech = tech
