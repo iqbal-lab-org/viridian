@@ -1,10 +1,10 @@
-![Build Status](https://github.com/iqbal-lab-org/viridian_workflow/actions/workflows/build.yaml/badge.svg)
+![Build Status](https://github.com/iqbal-lab-org/viridian/actions/workflows/build.yaml/badge.svg)
 
-# Viridian Workflow
+# Viridian
 
 Ultra-careful amplicon-aware viral assembly for tiled amplicon schemes.
 
-Please see the [Viridian Workflow Wiki](https://github.com/iqbal-lab-org/viridian_workflow/wiki)
+Please see the [Viridian Wiki](https://github.com/iqbal-lab-org/viridian/wiki)
 for full documentation.
 
 ## Installation
@@ -77,7 +77,7 @@ The default files in the output directory are:
 * `variants.vcf`: a VCF file of the identified variants between the consensus
   sequence and the reference genome.
 * `log.json.gz`: a gzipped JSON file that contains logging information
-  for the viridian workflow run.
+  for the viridian run.
 * `qc.tsv.gz`: a gzipped tab-delimited file of per-base QC information
 * `scheme_id.depth_across_genome.pdf`: a plot of the read depth across
   the genome, with amplicons coloured in the background.
