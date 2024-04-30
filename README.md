@@ -18,16 +18,25 @@ Both the Docker and Singularity container have the main script
 ### Docker
 Get a Docker image of the latest release:
 ```
-docker pull ghcr.io/iqbal-lab-org/viridian_workflow:latest
+docker pull ghcr.io/iqbal-lab-org/viridian:latest
 ```
-All Docker images are listed in the
-[packages page](https://github.com/iqbal-lab-org/viridian_workflow/pkgs/container/viridian_workflow).
+All Docker images from v1.2.1 onwards are listed in the
+[packages page](https://github.com/iqbal-lab-org/viridian/pkgs/container/viridian).
+Older images can be found on the 
+[old packages page](https://github.com/iqbal-lab-org/viridian_workflow/pkgs/container/viridian_workflow)
+(viridian used to be called "viridian_workflow", and hence were put on a packages page
+called "viridian_workflow" by github).
+
+
 
 ### Singularity
-[Releases](https://github.com/iqbal-lab-org/viridian_workflow/releases)
+[Releases](https://github.com/iqbal-lab-org/viridian/releases)
 include a Singularity image to download.
-Each release has a singularity image file called
-`viridian_workflow_vX.Y.Z.img`, where `X.Y.Z` is the release version.
+Each release from v1.2.1 onwards has a singularity image file called
+`viridian_vX.Y.Z.img`, where `X.Y.Z` is the release version. Newer releases
+also have an image for ARM architecture called `viridian_vX.Y.Z.arm.img`.
+Older images (from when viridian was called "viridian_workflow") are
+called `viridian_workflow_vX.Y.Z.img`.
 
 
 ## Usage
