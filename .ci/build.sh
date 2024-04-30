@@ -1,2 +1,2 @@
 sudo apt-get install debootstrap
-sudo singularity build viridian_workflow.img Singularity.def
+sudo singularity build viridian.img Singularity.def

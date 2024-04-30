@@ -72,7 +72,7 @@ jobs:
     - name: Build Singularity container
       env:
         SINGULARITY_RECIPE: Singularity.def
-        OUTPUT_CONTAINER: viridian_workflow_${{env.RELEASE_VERSION}}.img
+        OUTPUT_CONTAINER: viridian_${{env.RELEASE_VERSION}}.img
       run: |
         ls
         if [ -f "${SINGULARITY_RECIPE}" ]; then
@@ -87,7 +87,7 @@ jobs:
       if: startsWith(github.event.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
-        files: viridian_workflow*.img
+        files: viridian_*.img
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
