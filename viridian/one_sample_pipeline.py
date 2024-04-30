@@ -363,10 +363,16 @@ class Pipeline:
             return False
         best_scheme = id_results["scheme_choice"]["best_scheme"]
         best_score = id_results["scheme_choice"]["best_score"]
+        number_of_schemes = len(id_results["scheme_choice"]["scores"])
         score_ratio = id_results["scheme_choice"]["score_ratio"]
-        logging.info(
-            f"Amplicon scheme that reads best match to: {best_scheme}, with score {best_score}, and (second best)/best = {score_ratio}"
-        )
+        if number_of_schemes > 1:
+            logging.info(
+                f"Amplicon scheme that reads best match to: {best_scheme}, with score {best_score}, and (second best)/best = {score_ratio}"
+            )
+        else:
+            logging.info(
+                f"Amplicon scheme that reads best match to: {best_scheme}, with score {best_score}, not using (second best)/best because only one scheme"
+            )
 
         if self.force_amp_scheme is None:
             score_ok = True
@@ -376,7 +382,9 @@ class Pipeline:
                     f"Best scheme score is {best_score}, which is less than required minimum score {self.min_scheme_score}"
                 )
                 score_ok = False
-            if score_ratio is None or score_ratio > self.max_scheme_ratio:
+            if number_of_schemes > 1 and (
+                score_ratio is None or score_ratio > self.max_scheme_ratio
+            ):
                 self.log_dict["amplicon_scheme_name"] = None
                 self.add_errors_to_log(
                     f"(second best scheme score) / (best score) is {score_ratio}, which is more than the required maximum {self.max_scheme_ratio}"
