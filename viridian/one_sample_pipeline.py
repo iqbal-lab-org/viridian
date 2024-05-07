@@ -623,9 +623,9 @@ class Pipeline:
         if not self.debug:
             utils.syscall(f"rm -rf {self.processing_dir} {self.final_unmasked_fasta}*")
             if not (self.keep_bam or self.reads_bam is not None):
-                utils.syscall(f"rm {self.all_reads_bam}*")
+                utils.syscall(f"rm -f {self.all_reads_bam}*")
             if self.ena_run is not None and not self.keep_ena_reads:
-                utils.syscall(f"rm -r {self.ena_reads_dir}")
+                utils.syscall(f"rm -rf {self.ena_reads_dir}")
             if "debug" in self.log_dict:
                 del self.log_dict["debug"]
 
