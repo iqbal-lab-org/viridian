@@ -86,7 +86,7 @@ def simulate_all_schemes(
 
     for scheme_name, scheme_tsv in amplicon_scheme_name_to_tsv.items():
         logging.info(f"Processing scheme {scheme_name}")
-        scheme = scheme_id.Scheme(tsv_file=scheme_tsv)
+        scheme = scheme_id.Scheme(amp_scheme_file=scheme_tsv)
 
         for fragment in False, True:
             if fragment:
