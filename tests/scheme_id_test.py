@@ -19,21 +19,9 @@ SCHEME_TSV_HEADER_FIELDS = [
 ]
 
 
-def test_scheme_init_from_tsv():
-    tmp_tsv = "test_scheme_init_from_tsv.tsv"
-    with open(tmp_tsv, "w") as f:
-        print(*SCHEME_TSV_HEADER_FIELDS, sep="\t", file=f)
-        print("amp1", "amp1_left", "left", "ACGT", "20", sep="\t", file=f)
-        print("amp1", "amp1_left_alt", "left", "CAG", "15", sep="\t", file=f)
-        print("amp1", "amp1_left_alt2", "left", "CA", "15", sep="\t", file=f)
-        print("amp1", "amp1_right", "right", "AAA", "50", sep="\t", file=f)
-        print("amp2", "amp2_left", "left", "A", "40", sep="\t", file=f)
-        print("amp2", "amp2_right", "right", "ATGTT", "90", sep="\t", file=f)
-        print("amp2", "amp2_right_alt", "right", "GTA", "101", sep="\t", file=f)
-        print("amp2", "amp2_right_alt2", "right", "GGTA", "100", sep="\t", file=f)
-
-    scheme = scheme_id.Scheme(tsv_file=tmp_tsv)
-    assert scheme.amplicons == [
+@pytest.fixture()
+def amp_scheme_data():
+    amps = [
         {
             "name": "amp1",
             "start": 15,
@@ -53,12 +41,58 @@ def test_scheme_init_from_tsv():
             },
         },
     ]
-    assert scheme.left_starts == {15: 0, 20: 0, 40: 1}
-    assert scheme.right_ends == {52: 0, 94: 1, 103: 1}
-    assert scheme.amplicon_name_indexes == {"amp1": 0, "amp2": 1}
-    mean_amp_length = statistics.mean([52 - 15 + 1, 40 - 15, 103 - 52, 103 - 40 + 1])
-    assert scheme.mean_amp_length == mean_amp_length
+    return {
+        "amplicons": amps,
+        "left_starts": {15: 0, 20: 0, 40: 1},
+        "right_ends": {52: 0, 94: 1, 103: 1},
+        "amplicon_name_indexes": {"amp1": 0, "amp2": 1},
+        "mean_amp_length": statistics.mean(
+            [52 - 15 + 1, 40 - 15, 103 - 52, 103 - 40 + 1]
+        ),
+    }
+
+
+def test_scheme_init_from_tsv(amp_scheme_data):
+    tmp_tsv = "test_scheme_init_from_tsv.tsv"
+    with open(tmp_tsv, "w") as f:
+        print(*SCHEME_TSV_HEADER_FIELDS, sep="\t", file=f)
+        print("amp1", "amp1_left", "left", "ACGT", "20", sep="\t", file=f)
+        print("amp1", "amp1_left_alt", "left", "CAG", "15", sep="\t", file=f)
+        print("amp1", "amp1_left_alt2", "left", "CA", "15", sep="\t", file=f)
+        print("amp1", "amp1_right", "right", "AAA", "50", sep="\t", file=f)
+        print("amp2", "amp2_left", "left", "A", "40", sep="\t", file=f)
+        print("amp2", "amp2_right", "right", "ATGTT", "90", sep="\t", file=f)
+        print("amp2", "amp2_right_alt", "right", "GTA", "101", sep="\t", file=f)
+        print("amp2", "amp2_right_alt2", "right", "GGTA", "100", sep="\t", file=f)
+
+    scheme = scheme_id.Scheme(amp_scheme_file=tmp_tsv)
+    assert scheme.amplicons == amp_scheme_data["amplicons"]
+    assert scheme.left_starts == amp_scheme_data["left_starts"]
+    assert scheme.right_ends == amp_scheme_data["right_ends"]
+    assert scheme.amplicon_name_indexes == amp_scheme_data["amplicon_name_indexes"]
+    assert scheme.mean_amp_length == amp_scheme_data["mean_amp_length"]
     os.unlink(tmp_tsv)
+
+
+def test_scheme_init_from_bed(amp_scheme_data):
+    tmp_bed = "test_scheme_init_from_tsv.bed"
+    with open(tmp_bed, "w") as f:
+        print("REF", 20, 24, "amp1_LEFT_1", "1", "+", "ACGT", sep="\t", file=f)
+        print("REF", 15, 18, "amp1_LEFT_alt", "1", "+", "CAG", sep="\t", file=f)
+        print("REF", 15, 17, "amp1_LEFT_alt2", "1", "+", "CA", sep="\t", file=f)
+        print("REF", 50, 53, "amp1_RIGHT_1", "1", "+", "AAA", sep="\t", file=f)
+        print("REF", 40, 41, "amp2_LEFT_1", "1", "+", "A", sep="\t", file=f)
+        print("REF", 90, 95, "amp2_RIGHT_1", "1", "+", "ATGTT", sep="\t", file=f)
+        print("REF", 101, 104, "amp2_RIGHT_1", "1", "+", "GTA", sep="\t", file=f)
+        print("REF", 100, 104, "amp2_RIGHT_2", "1", "+", "GGTA", sep="\t", file=f)
+
+    scheme = scheme_id.Scheme(amp_scheme_file=tmp_bed)
+    assert scheme.amplicons == amp_scheme_data["amplicons"]
+    assert scheme.left_starts == amp_scheme_data["left_starts"]
+    assert scheme.right_ends == amp_scheme_data["right_ends"]
+    assert scheme.amplicon_name_indexes == amp_scheme_data["amplicon_name_indexes"]
+    assert scheme.mean_amp_length == amp_scheme_data["mean_amp_length"]
+    os.unlink(tmp_bed)
 
 
 def test_scheme_init_distance_lists():
@@ -123,7 +157,7 @@ def test_count_primer_hits():
         print("amp1", "amp1_left_alt2", "left", "AAAAAA", "30", sep="\t", file=f)
         print("amp1", "amp1_right", "right", "ACGTACG", "50", sep="\t", file=f)
         print("amp1", "amp1_right_alt1", "right", "ACGT", "54", sep="\t", file=f)
-    scheme = scheme_id.Scheme(tsv_file=tmp_tsv)
+    scheme = scheme_id.Scheme(amp_scheme_file=tmp_tsv)
     scheme.init_distance_lists(65)
     expect_amplicons = copy.deepcopy(scheme.amplicons)
     left_hits = [0] * 65

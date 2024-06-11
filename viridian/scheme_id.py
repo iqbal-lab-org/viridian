@@ -18,7 +18,7 @@ LOG_PREFIX = "(scheme_id)"
 
 
 class Scheme:
-    def __init__(self, tsv_file=None, end_tolerance=3):
+    def __init__(self, amp_scheme_file=None, end_tolerance=3):
         self.left_starts = {}
         self.right_ends = {}
         self.left_dists = []
@@ -35,64 +35,105 @@ class Scheme:
         self.end_tolerance = end_tolerance
         self.last_amplicon_end = -1
 
-        if tsv_file is not None:
+        if amp_scheme_file is not None:
             try:
-                self.load_from_tsv_file(tsv_file)
+                self.load_from_file(amp_scheme_file)
             except:
-                raise Exception(f"Error loading primer scheme from TSV file {tsv_file}")
+                raise Exception(
+                    f"Error loading primer scheme from file {amp_scheme_file}"
+                )
 
             self.amp_coords = [(a["start"], a["end"]) for a in self.amplicons]
             self.amp_coords.sort()
             self._calculate_mean_amp_length()
 
-    def load_from_tsv_file(self, tsv_file):
+    def read_tsv_lines(self, tsv_file):
         with open(tsv_file) as f:
             for d in csv.DictReader(f, delimiter="\t"):
                 if d["Left_or_right"] not in ["left", "right"]:
                     raise Exception(
                         f"Left_or_right column not left or right. Got: {d['Left_or_right']}"
                     )
+                yield d
 
-                if d["Amplicon_name"] not in self.amplicon_name_indexes:
-                    self.amplicons.append(
-                        {
-                            "name": d["Amplicon_name"],
-                            "start": float("inf"),
-                            "end": -1,
-                            "primers": {"left": [], "right": []},
-                        }
-                    )
-                    self.amplicon_name_indexes[d["Amplicon_name"]] = (
-                        len(self.amplicons) - 1
+    def read_bed_lines(self, bed_file):
+        with open(bed_file) as f:
+            for line in f:
+                fields = line.rstrip().split("\t")
+                if len(fields) != 7:
+                    raise Exception(
+                        f"Error reading amplicon scheme BED file {bed_file}. Expected 7 columns, but got {len(fields)}:\n{line}"
                     )
 
-                amp_index = self.amplicon_name_indexes[d["Amplicon_name"]]
-                amp = self.amplicons[amp_index]
-                primer_start = int(d["Position"])
-                primer_end = primer_start + len(d["Sequence"]) - 1
+                d = {}
+                try:
+                    d["Position"] = int(fields[1])
+                except:
+                    raise Exception(
+                        f"Error reading amplicon scheme BED file {bed_file}. Could not get amplicon start position from second column:\n{line}"
+                    )
 
-                if d["Left_or_right"] == "left":
-                    primers = amp["primers"]["left"]
-                    same = [x for x in primers if x[0] == primer_start]
-                    if len(same):
-                        same[0][1] = max(primer_end, same[0][1])
-                    else:
-                        primers.append([primer_start, primer_end])
-                        primers.sort()
-                    self.left_starts[primer_start] = amp_index
-                    amp["start"] = min(amp["start"], primer_start)
-                elif d["Left_or_right"] == "right":
-                    primers = amp["primers"]["right"]
-                    same = [x for x in primers if x[1] == primer_end]
-                    if len(same):
-                        same[0][0] = min(primer_start, same[0][0])
-                    else:
-                        primers.append([primer_start, primer_end])
-                        primers.sort()
+                try:
+                    d["Amplicon_name"], d["Left_or_right"], primer_name = fields[
+                        3
+                    ].rsplit("_", maxsplit=2)
+                except:
+                    raise Exception(
+                        f"Error reading amplicon scheme BED file {bed_file}. Could not get amplicon name, left/right, primer name from column 4:\n{line}"
+                    )
 
-                    self.right_ends[primer_end] = amp_index
-                    amp["end"] = max(amp["end"], primer_end)
-                    self.last_amplicon_end = max(amp["end"], self.last_amplicon_end)
+                d["Left_or_right"] = d["Left_or_right"].lower()
+                if d["Left_or_right"] not in ["left", "right"]:
+                    raise Exception(
+                        f"Error reading amplicon scheme BED file {bed_file}. Could not get left/right from column 4:\n{line}"
+                    )
+
+                d["Sequence"] = fields[6]
+                yield d
+
+    def load_from_file(self, filename):
+        read_func = (
+            self.read_bed_lines if filename.endswith(".bed") else self.read_tsv_lines
+        )
+        for d in read_func(filename):
+            if d["Amplicon_name"] not in self.amplicon_name_indexes:
+                self.amplicons.append(
+                    {
+                        "name": d["Amplicon_name"],
+                        "start": float("inf"),
+                        "end": -1,
+                        "primers": {"left": [], "right": []},
+                    }
+                )
+                self.amplicon_name_indexes[d["Amplicon_name"]] = len(self.amplicons) - 1
+
+            amp_index = self.amplicon_name_indexes[d["Amplicon_name"]]
+            amp = self.amplicons[amp_index]
+            primer_start = int(d["Position"])
+            primer_end = primer_start + len(d["Sequence"]) - 1
+
+            if d["Left_or_right"] == "left":
+                primers = amp["primers"]["left"]
+                same = [x for x in primers if x[0] == primer_start]
+                if len(same):
+                    same[0][1] = max(primer_end, same[0][1])
+                else:
+                    primers.append([primer_start, primer_end])
+                    primers.sort()
+                self.left_starts[primer_start] = amp_index
+                amp["start"] = min(amp["start"], primer_start)
+            elif d["Left_or_right"] == "right":
+                primers = amp["primers"]["right"]
+                same = [x for x in primers if x[1] == primer_end]
+                if len(same):
+                    same[0][0] = min(primer_start, same[0][0])
+                else:
+                    primers.append([primer_start, primer_end])
+                    primers.sort()
+
+                self.right_ends[primer_end] = amp_index
+                amp["end"] = max(amp["end"], primer_end)
+                self.last_amplicon_end = max(amp["end"], self.last_amplicon_end)
 
     def _calculate_mean_amp_length(self):
         left_lengths = [
@@ -261,7 +302,7 @@ class Scheme:
             random.seed(42)
 
         with open(outfile, "w") as f:
-            for (start, end) in self.amp_coords:
+            for start, end in self.amp_coords:
                 if read_length is None:
                     print(f">{start}_{end}", file=f)
                     print(ref_seq[start : end + 1], file=f)
@@ -506,7 +547,7 @@ def analyse_bam(
     for scheme_name, scheme_tsv in scheme_tsvs.items():
         logging.info(f"{LOG_PREFIX} Analysing amplicon scheme {scheme_name}")
         logging.debug(f"{LOG_PREFIX} {scheme_name} Load TSV file {scheme_tsv}")
-        scheme = Scheme(tsv_file=scheme_tsv, end_tolerance=end_tolerance)
+        scheme = Scheme(amp_scheme_file=scheme_tsv, end_tolerance=end_tolerance)
         if scheme.last_amplicon_end > ref_length:
             return (
                 json_dict,
