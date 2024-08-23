@@ -7,6 +7,8 @@ Ultra-careful amplicon-aware viral assembly for tiled amplicon schemes.
 Please see the [Viridian Wiki](https://github.com/iqbal-lab-org/viridian/wiki)
 for full documentation.
 
+Preprint: https://doi.org/10.1101/2024.04.29.591666
+
 ## Installation
 
 The recommended method is to use a pre-built Docker or Singularity container
