@@ -6,7 +6,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="viridian",
-    version="1.2.2",
+    version="1.3.0",
     description="Consensus builder from amplicon sequenced virus reads",
     packages=find_packages(),
     package_data={"viridian": ["amplicon_scheme_data/*"]},
