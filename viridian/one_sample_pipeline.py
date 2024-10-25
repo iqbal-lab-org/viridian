@@ -343,6 +343,7 @@ class Pipeline:
             min_depth_cutoff=self.coverage_min_x,
             min_percent_genome_cutoff=self.coverage_min_pc,
             max_primer_dist=constants.SCHEME_ID_PRIMER_WITHIN_END,
+            force_scheme_choice=self.force_amp_scheme,
         )
         self.log_dict["reads"] = id_results["read_counts"]
         self.log_dict["amplicons"] = id_results["amplicons"]

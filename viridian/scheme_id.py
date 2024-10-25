@@ -512,6 +512,7 @@ def analyse_bam(
     min_depth_cutoff=20,
     min_percent_genome_cutoff=50.0,
     min_primer_hits=constants.READ_SAMPLE_MIN_PRIMER_HITS,
+    force_scheme_choice=None,
 ):
     json_dict = {
         "amplicons": None,
@@ -570,7 +571,11 @@ def analyse_bam(
     cumulative_score_plot(schemes, score_plot, title=sample_name)
     scores = get_scores_from_schemes(schemes)
     json_dict["scheme_choice"] = scores
-    best_scheme_name = scores["best_scheme"]
+    if force_scheme_choice is None:
+        best_scheme_name = scores["best_scheme"]
+    else:
+        best_scheme_name = force_scheme_choice
+
     best_scheme = schemes.get(best_scheme_name, None)
 
     per_pos_depth_plot = os.path.join(outdir, "depth_across_genome.pdf")
@@ -585,7 +590,12 @@ def analyse_bam(
 
     if best_scheme is None:
         raise Exception("Error getting best amplicon scheme. Cannot continue")
-    logging.info(f"{LOG_PREFIX} Best scheme: {best_scheme_name}")
+    if force_scheme_choice is None:
+        logging.info(f"{LOG_PREFIX} Best scheme: {best_scheme_name}")
+    else:
+        logging.info(
+            f"{LOG_PREFIX} Using forced scheme: {best_scheme_name} (may not have the best score)"
+        )
     logging.info(f"{LOG_PREFIX} Counting primer matches for scheme {best_scheme_name}")
     best_scheme.count_primer_hits(
         left_primer_hits, right_primer_hits, max_dist=max_primer_dist
