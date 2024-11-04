@@ -41,6 +41,24 @@ Older images (from when viridian was called "viridian_workflow") are
 called `viridian_workflow_vX.Y.Z.img`.
 
 
+## Test
+
+To quickly test if the installation is successful, this command
+will download the FASTQ reads files for SARS-CoV-2 sequencing
+run ERR8959214 and assemble it:
+
+```
+viridian run_one_sample --run_accession ERR8959214 --outdir test
+```
+
+It should take less than 1 minute to run, and make a new directory
+called `test` containing the results. The output files are
+described below. The important thing here is that the log
+file `log.json.gz` should have the entry
+`"result": "Success"` (around line 40-50), indicating that
+the run was successful.
+
+
 ## Usage
 
 These instructions assume that you are assembling SARS-CoV-2 data.
