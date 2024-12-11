@@ -32,7 +32,7 @@ def run_varifier(
         "msa_unmasked_consensus": None,
         "msa_ref": None,
     }
-    command = f"varifier make_truth_vcf {debug} {sanitise_gaps_opt} {indel_fix} --global_align --global_align_min_coord {min_coord} --global_align_max_coord {max_coord} {cons_fasta} {ref_fasta} {outdir}"
+    command = f"varifier make_truth_vcf {debug} {sanitise_gaps_opt} {indel_fix} --global_align --use_mafft --global_align_min_coord {min_coord} --global_align_max_coord {max_coord} {cons_fasta} {ref_fasta} {outdir}"
 
     try:
         utils.syscall(command)
