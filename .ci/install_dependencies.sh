@@ -145,3 +145,24 @@ git checkout 8bc8726ed3cdb337dc47b62515e709759e451137
 pip3 install .
 cd ..
 rm -rf varifier
+
+
+apt-get remove -y \
+  build-essential \
+  cmake \
+  automake \
+  gcc \
+  gcc-10 \
+  g++-10 \
+  gdb \
+  git \
+  wget \
+  zlib1g-dev \
+  libbz2-dev \
+  liblzma-dev \
+  libhts-dev \
+  tabix \
+  curl \
+  libvcflib-tools \
+  libcurl4-gnutls-dev \
+  libssl-dev
