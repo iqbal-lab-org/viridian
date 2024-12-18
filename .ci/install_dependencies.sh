@@ -53,7 +53,8 @@ cd NGmerge-git
 git checkout 224fc6a0066024e05965d101d998704815cb4c41
 make
 cd ..
-cp -s NGmerge-git/NGmerge .
+mv NGmerge-git/NGmerge .
+rm -rf NGmerge-git
 
 
 #_________________________ bcftools _________________________#
@@ -63,7 +64,8 @@ tar xf bcftools-1.10.2.tar.bz2
 cd bcftools-1.10.2/
 make
 cd ..
-cp -s bcftools-1.10.2/bcftools .
+mv bcftools-1.10.2/bcftools .
+rm -rf bcftools-1.10.2
 
 #________________________ vt ________________________________#
 cd $install_root
@@ -72,7 +74,8 @@ cd vt-git
 git checkout 2187ff6347086e38f71bd9f8ca622cd7dcfbb40c
 make
 cd ..
-cp -s vt-git/vt .
+mv vt-git/vt .
+rm -rf vt-git
 
 #________________________ minimap2 __________________________#
 cd $install_root
@@ -87,7 +90,8 @@ else
     make
 fi
 cd ..
-cp -s minimap2_git/minimap2 .
+mv minimap2_git/minimap2 .
+rm -rf minimap2_git
 
 #________________________ racon _____________________________#
 cd $install_root
@@ -98,7 +102,8 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make CC=gcc-10 CPP=g++-10 CXX=g++-10 LD=g++-10
 cd ../../
-cp -s racon-git/build/bin/racon .
+mv racon-git/build/bin/racon .
+rm -rf racon-git
 
 #________________________ mummer ____________________________#
 cd $install_root
@@ -110,6 +115,7 @@ make
 make install
 ldconfig
 cd ..
+rm -rf mummer-4.0.0rc1
 
 #________________________ cylon _____________________________#
 cd $install_root
@@ -117,6 +123,8 @@ git clone https://github.com/iqbal-lab-org/cylon.git
 cd cylon
 git checkout 57d559a76254b0b95785f7c02fa58ef806713e01
 pip3 install .
+cd ..
+rm -rf cylon
 
 #______________________ ReadItAndKeep _______________________#
 cd $install_root
@@ -126,7 +134,8 @@ git checkout 61ae15be1e515c960b0135eae7dd59568a9de30d
 cd src
 make
 cd $install_root
-cp -s read-it-and-keep/src/readItAndKeep .
+mv read-it-and-keep/src/readItAndKeep .
+rm -rf read-it-and-keep
 
 #________________________ varifier __________________________#
 cd $install_root
@@ -135,3 +144,4 @@ cd varifier
 git checkout 8bc8726ed3cdb337dc47b62515e709759e451137
 pip3 install .
 cd ..
+rm -rf varifier
