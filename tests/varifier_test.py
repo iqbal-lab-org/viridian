@@ -45,6 +45,7 @@ def test_run_varifier():
         varifier_out,
         50,
         900,
+        force_use_mafft=True,
     )
     assert set(got_seqs.values()) == {None}
     assert got_vcf_header is None

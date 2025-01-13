@@ -14,7 +14,12 @@ def run_varifier(
     sanitise_gaps=False,
     indel_fix_length=None,
     debug=False,
+    force_use_mafft=False,
 ):
+    use_mafft_opt = ""
+    if force_use_mafft or utils.seq_length_of_single_seq_fasta(ref_fasta) > 30_000:
+        use_mafft_opt = "--use_mafft"
+
     debug = "--debug" if debug else ""
     if sanitise_gaps:
         unmasked_cons_fa = os.path.join(outdir, "04.qry_sanitised_gaps.fa")
@@ -32,7 +37,7 @@ def run_varifier(
         "msa_unmasked_consensus": None,
         "msa_ref": None,
     }
-    command = f"varifier make_truth_vcf {debug} {sanitise_gaps_opt} {indel_fix} --global_align --use_mafft --global_align_min_coord {min_coord} --global_align_max_coord {max_coord} {cons_fasta} {ref_fasta} {outdir}"
+    command = f"varifier make_truth_vcf {debug} {sanitise_gaps_opt} {indel_fix} --global_align {use_mafft_opt} --global_align_min_coord {min_coord} --global_align_max_coord {max_coord} {cons_fasta} {ref_fasta} {outdir}"
 
     try:
         utils.syscall(command)

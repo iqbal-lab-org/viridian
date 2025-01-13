@@ -82,6 +82,10 @@ def load_single_seq_fasta(infile):
     return ref
 
 
+def seq_length_of_single_seq_fasta(infile):
+    return len(load_single_seq_fasta(infile))
+
+
 def check_tech_and_reads_options(args):
     if args.run_accession is not None:
         return True
