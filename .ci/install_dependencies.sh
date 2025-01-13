@@ -141,6 +141,7 @@ make
 make install
 cd $install_root
 cp -s mafft_install/bin/mafft .
+rm -rf mafft-7.525-without-extensions*
 
 #________________________ varifier __________________________#
 cd $install_root
