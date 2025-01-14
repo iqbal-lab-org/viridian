@@ -62,6 +62,7 @@ class Pipeline:
         temp_root=None,
         fix_small_indels=True,
         gzip_files=True,
+        force_mafft=False,
     ):
         self.tech = tech
         self.outdir = os.path.abspath(outdir)
@@ -111,6 +112,7 @@ class Pipeline:
         if self.gzip_files:
             self.json_log_file += ".gz"
             self.final_masked_fasta += ".gz"
+        self.force_mafft = force_mafft
 
     def set_command_line_dict(self):
         # Make a dict of the command line options to go in the JSON output file.
@@ -481,6 +483,7 @@ class Pipeline:
             sanitise_gaps=not self.force_consensus,
             indel_fix_length=indel_fix_length,
             debug=self.debug,
+            force_use_mafft=self.force_mafft,
         )
         if error_message is not None:
             logging.warning(

@@ -40,6 +40,11 @@ def test_load_single_seq_fasta():
         utils.load_single_seq_fasta(infile)
 
 
+def test_seq_length_of_single_seq_fasta():
+    infile = os.path.join(data_dir, "load_single_seq_fasta.ok.fa")
+    assert utils.seq_length_of_single_seq_fasta(infile) == 4
+
+
 def test_check_tech_and_reads_options():
     f = utils.check_tech_and_reads_options
     options = mock.Mock()

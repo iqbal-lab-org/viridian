@@ -137,11 +137,26 @@ cd $install_root
 mv read-it-and-keep/src/readItAndKeep .
 rm -rf read-it-and-keep
 
+#_________________________ mafft __________________________#
+# Can't apt get mafft because the version is too old and doesn't work
+# with how we call from python (avoid using files). Install from source.
+# See https://mafft.cbrc.jp/alignment/software/installation_without_root.html
+cd $install_root
+wget https://mafft.cbrc.jp/alignment/software/mafft-7.525-without-extensions-src.tgz
+tar xf mafft-7.525-without-extensions-src.tgz
+cd mafft-7.525-without-extensions/core
+sed  -i "s~PREFIX = /usr/local~PREFIX = $install_root/mafft_install~" Makefile
+make
+make install
+cd $install_root
+cp -s mafft_install/bin/mafft .
+rm -rf mafft-7.525-without-extensions*
+
 #________________________ varifier __________________________#
 cd $install_root
 git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout 8bc8726ed3cdb337dc47b62515e709759e451137
+git checkout 940d4503671f5dd09ce51116be6e77c85d50ada5
 pip3 install .
 cd ..
 rm -rf varifier
