@@ -145,9 +145,8 @@ rm -rf mafft-7.525-without-extensions*
 
 #________________________ varifier __________________________#
 cd $install_root
-#git clone https://github.com/iqbal-lab-org/varifier.git
-git clone https://github.com/martinghunt/varifier.git
+git clone https://github.com/iqbal-lab-org/varifier.git
 cd varifier
-git checkout c6c9d9df05953a66d2e9adcdba826851bc07dade
+git checkout 940d4503671f5dd09ce51116be6e77c85d50ada5
 pip3 install .
 cd ..
