@@ -49,4 +49,5 @@ def run(options):
         command_line_args=options,
         temp_root=options.tmp_dir,
         gzip_files=not options.no_gzip,
+        force_mafft=options.force_mafft,
     )

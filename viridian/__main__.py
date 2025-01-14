@@ -224,6 +224,11 @@ def main(args=None):
         help="Use this to not gzip the final output FASTA file and log.json file",
         action="store_true",
     )
+    advanced_parser.add_argument(
+        "--force_mafft",
+        help="Force use of mafft for global align between consensus and ref, instead of nucmer-based method. By default, mafft only used when the reference genome is longer than 30kbp",
+        action="store_true",
+    )
 
     # --------------------------- ref options --------------------------------
     ref_parser = argparse.ArgumentParser(add_help=False)
