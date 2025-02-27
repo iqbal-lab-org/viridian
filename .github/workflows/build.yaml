@@ -19,7 +19,14 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+            env: ARM=.arm
+          - ubuntu-24.04-arm
+            env: ARM=""
     steps:
 
     - name: Set up Go 1.16
@@ -74,7 +81,7 @@ jobs:
     - name: Build Singularity container
       env:
         SINGULARITY_RECIPE: Singularity.def
-        OUTPUT_CONTAINER: viridian_${{env.RELEASE_VERSION}}.img
+        OUTPUT_CONTAINER: viridian_${{env.RELEASE_VERSION}}${{ARM}}.img
       run: |
         ls
         if [ -f "${SINGULARITY_RECIPE}" ]; then
@@ -107,6 +114,8 @@ jobs:
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      flavor:
+        suffix: ${{ARM}}
 
     - name: Build and push Docker image
       if: startsWith(github.event.ref, 'refs/tags/v')
