@@ -117,6 +117,7 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         flavor: |
           suffix=${{matrix.os.suffix}}
+          latest=${{matrix.os.name == "ubuntu-latest"}}
 
     - name: Build and push Docker image
       if: startsWith(github.event.ref, 'refs/tags/v')
