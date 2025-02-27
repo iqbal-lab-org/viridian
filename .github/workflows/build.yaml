@@ -115,8 +115,8 @@ jobs:
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      flavor: |
-        suffix=${{matrix.os.suffix}}
+        flavor: |
+          suffix=${{matrix.os.suffix}}
 
     - name: Build and push Docker image
       if: startsWith(github.event.ref, 'refs/tags/v')
