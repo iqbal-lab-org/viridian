@@ -16,8 +16,8 @@ RUN cd /viridian \
   && pytest \
   && python3 -m pip install .
 
-#RUN apt-get autoremove -y \
-#  && apt-get purge -y --auto-remove \
-#  && rm -rf /var/lib/apt/lists/*
+RUN apt-get autoremove -y \
+  && apt-get purge -y --auto-remove \
+  && rm -rf /var/lib/apt/lists/*
 
 CMD viridian
