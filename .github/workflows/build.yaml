@@ -6,7 +6,6 @@ on:
       - 'v*.*.*'
     branches:
       - master
-      - arm_builds
     paths-ignore:
       - '**.md'
   pull_request:
