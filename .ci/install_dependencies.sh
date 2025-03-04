@@ -24,6 +24,7 @@ apt-get install -y \
   wget \
   zlib1g-dev \
   libbz2-dev \
+  libgomp1 \
   liblzma-dev \
   libhts-dev \
   tabix \

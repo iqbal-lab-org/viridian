@@ -18,6 +18,6 @@ RUN cd /viridian \
 
 RUN apt-get autoremove -y \
   && apt-get purge -y --auto-remove \
-  && rm -rf /var/lib/apt/lists/* 
+  && rm -rf /var/lib/apt/lists/*
 
 CMD viridian
