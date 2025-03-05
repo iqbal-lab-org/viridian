@@ -40,12 +40,28 @@ def main(args=None):
 
     # -------------- amplicons options ---------------------------------------
     amplicons_parser = argparse.ArgumentParser(add_help=False)
-    scheme_names = ",".join(
-        sorted(list(viridian.amplicon_schemes.get_built_in_schemes().keys()))
+    defaults_str = "; ".join(
+        f"{k}:{v['ref_fasta']}" for k, v in viridian.amplicon_schemes.SCHEMES.items()
     )
     amplicons_parser.add_argument(
+        "--ref_fasta",
+        help=f"FASTA file of reference genome. Default is to use species-dependent built in file. Only use this if you know what you are doing, since the amplicon scheme(s) must match this reference. Built in files are in {viridian.amplicon_schemes.DATA_DIR}, and defaults are {defaults_str}",
+        metavar="FILENAME",
+    )
+    allowed_species = sorted(list(viridian.amplicon_schemes.SCHEMES.keys()))
+    amplicons_parser.add_argument(
+        "--species",
+        help=f"Species. Choose from one of: {','.join(allowed_species)} [%(default)s]",
+        choices=allowed_species,
+        metavar="STRING",
+        default="sars-cov-2",
+    )
+    scheme_names = []
+    for species, d in viridian.amplicon_schemes.SCHEMES.items():
+        scheme_names.append(species + ":" + ",".join(d["schemes"]))
+    amplicons_parser.add_argument(
         "--built_in_amp_schemes",
-        help=f"Comma-separated list of built in amplicon schemes to use [{scheme_names}]",
+        help=f"Comma-separated list of built in amplicon schemes to use [{'; '.join(scheme_names)}]",
         metavar="scheme1,scheme2,...",
     )
     amplicons_parser.add_argument(
@@ -104,7 +120,7 @@ def main(args=None):
     advanced_parser = argparse.ArgumentParser(add_help=False)
     advanced_parser.add_argument(
         "--decontam",
-        help="Decontaminate input reads at start of pipeline, using ReadItAndKeep with the provided reference genome FASTA file (use '--decontam COVID' to use the MN908947.3 SARS-CoV-2 reference genome with poly-A removed). Incompatible with --reads_bam",
+        help="Decontaminate input reads at start of pipeline, using ReadItAndKeep with the provided reference genome FASTA file (use '--decontam COVID' to use the MN908947.3 SARS-CoV-2 reference genome with poly-A removed, or '--decontam same_as_ref' to use the reference fasta). Incompatible with --reads_bam",
         metavar="FILENAME",
     )
     advanced_parser.add_argument(
@@ -230,15 +246,6 @@ def main(args=None):
         action="store_true",
     )
 
-    # --------------------------- ref options --------------------------------
-    ref_parser = argparse.ArgumentParser(add_help=False)
-    ref_parser.add_argument(
-        "--ref_fasta",
-        help="FASTA file of reference genome. Default is to use built-in MN908947.3 SARS-CoV-2 reference genome. Only use this if you know what you are doing, since the amplicon scheme(s) must match this reference [%(default)s]",
-        metavar="FILENAME",
-        default=viridian.amplicon_schemes.REF_FASTA,
-    )
-
     # ------------------------- dl_and_run options -----------------------
     dl_and_run_parser = argparse.ArgumentParser(add_help=False)
     dl_and_run_parser.add_argument(
@@ -262,7 +269,6 @@ def main(args=None):
             outdir_parser,
             amplicons_parser,
             reads_parser,
-            ref_parser,
             advanced_parser,
         ],
         help="Run the complete pipeline on one sample",
@@ -279,7 +285,6 @@ def main(args=None):
             dl_and_run_parser,
             common_parser,
             amplicons_parser,
-            ref_parser,
             advanced_parser,
         ],
         help="Download reads from the ENA and run the pipeline, for multiple sequencing runs",
@@ -291,7 +296,7 @@ def main(args=None):
     # ------------------------ sim_schemes -------------------------------
     subparser_sim_schemes = subparsers.add_parser(
         "sim_schemes",
-        parents=[amplicons_parser, common_parser, outdir_parser, ref_parser],
+        parents=[amplicons_parser, common_parser, outdir_parser],
         help="For each scheme, simulate fragments and run scheme id code",
         usage="viridian sim_schemes [options] --outdir <out>",
         description="For each scheme, simulate fragments and run scheme id code",
@@ -321,6 +326,8 @@ def main(args=None):
         log.setLevel(logging.INFO)
 
     if hasattr(args, "func"):
+        if args.ref_fasta is None:
+            args.ref_fasta = viridian.amplicon_schemes.REF_FASTAS[args.species]
         args.func(args)
     else:
         parser.print_help()

@@ -1,3 +1,4 @@
+import gzip
 import os
 import pytest
 from unittest import mock
@@ -100,3 +101,18 @@ def test_check_tech_and_reads_options():
             f(options)
         options.reads2 = "r2.fq"
         assert f(options)
+
+
+def test_gunzip_file():
+    tmp_file = "tmp.gunzip_file"
+    tmp_file_gz = tmp_file + ".gz"
+    utils.syscall(f"rm -f {tmp_file} {tmp_file_gz}")
+    lines = ["one", "two"]
+    with gzip.open(tmp_file_gz, "wt") as f:
+        print(*lines, sep="\n", file=f)
+    utils.gunzip_file(tmp_file_gz, tmp_file)
+    with open(tmp_file) as f:
+        got_lines = [x.rstrip() for x in f]
+    assert got_lines == lines
+    os.unlink(tmp_file)
+    os.unlink(tmp_file_gz)

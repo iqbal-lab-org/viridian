@@ -11,7 +11,8 @@ def test_simulate_all_schemes():
     outdir = "tmp.simulate_all_schemes"
     utils.syscall(f"rm -rf {outdir}")
     scheme_simulate.simulate_all_schemes(
-        amplicon_schemes.REF_FASTA,
+        "sars-cov-2",
+        amplicon_schemes.REF_FASTAS["sars-cov-2"],
         outdir,
     )
 

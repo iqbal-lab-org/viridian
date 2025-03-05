@@ -8,6 +8,7 @@ def run(options):
         utils.syscall(f"rm -rf {options.outdir}")
 
     scheme_simulate.simulate_all_schemes(
+        options.species,
         options.ref_fasta,
         options.outdir,
         built_in_amp_schemes=options.built_in_amp_schemes,

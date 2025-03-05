@@ -12,10 +12,8 @@ def run(options):
     if options.masking_min_frs is None and options.tech is not None:
         options.masking_min_frs = constants.TECH2FRS[options.tech]
 
-    if options.decontam == "COVID":
-        options.decontam = amplicon_schemes.REF_FASTA_NO_POLY_A
-
     one_sample_pipeline.run_one_sample(
+        options.species,
         options.tech,
         options.outdir,
         options.ref_fasta,

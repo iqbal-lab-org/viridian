@@ -236,7 +236,12 @@ def test_reads_file_not_found(test_data):
     utils.syscall(f"rm -rf {outdir} {reads_fq}")
     with pytest.raises(FileNotFoundError):
         one_sample_pipeline.run_one_sample(
-            "ont", outdir, test_data["ref_fasta"], reads_file=reads_fq, gzip_files=False
+            "sars-cov-2",
+            "ont",
+            outdir,
+            test_data["ref_fasta"],
+            reads_file=reads_fq,
+            gzip_files=False,
         )
     log = utils.load_json(os.path.join(outdir, "log.json"))
     assert log["run_summary"]["result"] == "Fail"
@@ -252,7 +257,12 @@ def test_empty_reads_file(test_data):
         pass
     utils.syscall(f"rm -rf {outdir}")
     one_sample_pipeline.run_one_sample(
-        "ont", outdir, test_data["ref_fasta"], reads_file=reads_fq, gzip_files=False
+        "sars-cov-2",
+        "ont",
+        outdir,
+        test_data["ref_fasta"],
+        reads_file=reads_fq,
+        gzip_files=False,
     )
     log = utils.load_json(os.path.join(outdir, "log.json"))
     assert log["run_summary"]["result"] == "Fail"
@@ -265,6 +275,7 @@ def test_scheme_not_match_reference(test_data):
     outdir = "tmp.pipeline.scheme_not_match_reference.out"
     utils.syscall(f"rm -rf {outdir}")
     one_sample_pipeline.run_one_sample(
+        "sars-cov-2",
         "ont",
         outdir,
         test_data["ref_fasta"],
@@ -284,6 +295,7 @@ def test_all_perfect_reads_ont(test_data):
     outdir = "tmp.pipeline.all_perfect_reads_ont"
     utils.syscall(f"rm -rf {outdir}")
     one_sample_pipeline.run_one_sample(
+        "sars-cov-2",
         "ont",
         outdir,
         test_data["ref_fasta"],
@@ -312,6 +324,7 @@ def test_all_perfect_reads_ilm(test_data):
     outdir = "tmp.pipeline.all_perfect_reads_ilm"
     utils.syscall(f"rm -rf {outdir}")
     one_sample_pipeline.run_one_sample(
+        "sars-cov-2",
         "ont",
         outdir,
         test_data["ref_fasta"],
@@ -357,6 +370,7 @@ def test_all_perfect_reads_dropped_amp(test_data):
             out = f"{outprefix}.{amp}.{tech}"
             if tech == "ont":
                 one_sample_pipeline.run_one_sample(
+                    "sars-cov-2",
                     tech,
                     out,
                     test_data["ref_fasta"],
@@ -366,6 +380,7 @@ def test_all_perfect_reads_dropped_amp(test_data):
                 )
             else:
                 one_sample_pipeline.run_one_sample(
+                    "sars-cov-2",
                     tech,
                     out,
                     test_data["ref_fasta"],
@@ -443,6 +458,7 @@ def test_failed_amps_or_too_many_Ns(test_data):
             if opt_dict is not None:
                 options.update(opt_dict)
             one_sample_pipeline.run_one_sample(
+                "sars-cov-2",
                 tech,
                 out,
                 test_data["ref_fasta"],
@@ -504,6 +520,7 @@ def test_variants_and_force_consensus(test_data):
         out = f"{outprefix}.run.{tech}"
         if tech == "ont":
             one_sample_pipeline.run_one_sample(
+                "sars-cov-2",
                 tech,
                 out,
                 test_data["ref_fasta"],
@@ -514,6 +531,7 @@ def test_variants_and_force_consensus(test_data):
             )
         else:
             one_sample_pipeline.run_one_sample(
+                "sars-cov-2",
                 tech,
                 out,
                 test_data["ref_fasta"],
@@ -602,6 +620,7 @@ def test_variants_and_force_consensus(test_data):
         out = f"{outprefix}.run.{tech}"
         if tech == "ont":
             one_sample_pipeline.run_one_sample(
+                "sars-cov-2",
                 tech,
                 out,
                 test_data["ref_fasta"],
@@ -612,6 +631,7 @@ def test_variants_and_force_consensus(test_data):
             )
         else:
             one_sample_pipeline.run_one_sample(
+                "sars-cov-2",
                 tech,
                 out,
                 test_data["ref_fasta"],

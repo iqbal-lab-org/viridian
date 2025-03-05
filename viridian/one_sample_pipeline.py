@@ -28,6 +28,7 @@ from viridian import __version__ as viridian_version
 class Pipeline:
     def __init__(
         self,
+        species,
         tech,
         outdir,
         ref_fasta,
@@ -64,6 +65,7 @@ class Pipeline:
         gzip_files=True,
         force_mafft=False,
     ):
+        self.species = species
         self.tech = tech
         self.outdir = os.path.abspath(outdir)
         self.ena_run = ena_run
@@ -251,6 +253,7 @@ class Pipeline:
     def start_pipeline(self):
         self.start_time = datetime.datetime.now(datetime.timezone.utc)
         logging.info(f"Start running viridian, output dir: {self.outdir}")
+        logging.info(f"Species: {self.species}")
         try:
             os.mkdir(self.outdir)
         except:
@@ -263,6 +266,12 @@ class Pipeline:
             "reference fasta": self.ref_fasta,
         }
         if self.decontam_ref_fa is not None:
+            if self.decontam_ref_fa == "COVID":
+                self.decontam_ref_fa = amplicon_schemes.DECONTAM_REFS["sars-cov-2"]
+            elif self.decontam_ref_fa == "same_as_ref":
+                self.decontam_ref_fa = os.path.abspath(self.ref_fasta)
+            elif self.decontam_ref_fa is not None:
+                self.decontam_ref_fa = os.path.abspath(self.decontam_ref_fa)
             files_to_check["Decontamination reference fasta"] = self.decontam_ref_fa
 
         if self.reads_bam is not None:
@@ -284,6 +293,12 @@ class Pipeline:
             not_found = "\n".join(not_found)
             raise FileNotFoundError(f"File(s) not found:\n{not_found}")
 
+        if self.ref_fasta.endswith(".gz"):
+            unzipped_fasta = os.path.join(self.processing_dir, "ref.fa")
+            logging.info(f"Unzipping reference fasta file to: {unzipped_fasta}")
+            utils.gunzip_file(self.ref_fasta, unzipped_fasta)
+            self.ref_fasta = unzipped_fasta
+
         return True
 
     def decontam_reads(self):
@@ -303,9 +318,10 @@ class Pipeline:
         if self.built_in_amp_schemes is None and self.tsv_of_amp_schemes is None:
             logging.info("No primer schemes provided. Using all built in schemes")
             self.built_in_amp_schemes = list(
-                amplicon_schemes.get_built_in_schemes().keys()
+                amplicon_schemes.get_built_in_schemes(self.species).keys()
             )
         self.amplicon_scheme_name_to_tsv = amplicon_schemes.load_list_of_amplicon_sets(
+            self.species,
             built_in_names_to_use=self.built_in_amp_schemes,
             tsv_others_to_use=self.tsv_of_amp_schemes,
         )
@@ -698,10 +714,11 @@ class Pipeline:
 
 
 def run_one_sample(
+    species,
     tech,
     outdir,
     ref_genome,
     **kw,
 ):
-    pipeline = Pipeline(tech, outdir, ref_genome, **kw)
+    pipeline = Pipeline(species, tech, outdir, ref_genome, **kw)
     pipeline.run()
