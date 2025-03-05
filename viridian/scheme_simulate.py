@@ -5,11 +5,16 @@ import random
 from viridian import amplicon_schemes, maptools, scheme_id, utils
 
 
-def process_amplicon_schemes(built_in_amp_schemes=None, tsv_of_amp_schemes=None):
+def process_amplicon_schemes(
+    species, built_in_amp_schemes=None, tsv_of_amp_schemes=None
+):
     if built_in_amp_schemes is None and tsv_of_amp_schemes is None:
         logging.info("No primer schemes provided. Using all built in schemes")
-        built_in_amp_schemes = list(amplicon_schemes.get_built_in_schemes().keys())
+        built_in_amp_schemes = list(
+            amplicon_schemes.get_built_in_schemes(species).keys()
+        )
     amplicon_scheme_name_to_tsv = amplicon_schemes.load_list_of_amplicon_sets(
+        species,
         built_in_names_to_use=built_in_amp_schemes,
         tsv_others_to_use=tsv_of_amp_schemes,
     )
@@ -70,6 +75,7 @@ def sim_reads_one_scheme(
 
 
 def simulate_all_schemes(
+    species,
     ref_fasta,
     outdir,
     built_in_amp_schemes=None,
@@ -80,7 +86,7 @@ def simulate_all_schemes(
     logging.info(f"Loaded reference sequence from file {ref_fasta}")
     os.mkdir(outdir)
     amplicon_scheme_name_to_tsv = process_amplicon_schemes(
-        built_in_amp_schemes, tsv_of_amp_schemes
+        species, built_in_amp_schemes, tsv_of_amp_schemes
     )
     all_results = {}
 
@@ -136,13 +142,19 @@ def simulate_all_schemes(
         )
         for reads, results in sorted(all_results.items()):
             scores = sorted(list(results["scores"].values()))
+            if len(scores) > 1:
+                second_best = scores[-2]
+                best_two_diff = scores[-1] - scores[-2]
+                ratio = round(scores[-2] / scores[-1], 3)
+            else:
+                second_best = best_two_diff = ratio = "NA"
             print(
                 reads,
                 *[results["scores"][x] for x in schemes],
                 scores[-1],
-                scores[-2],
-                scores[-1] - scores[-2],
-                round(scores[-2] / scores[-1], 3),
+                second_best,
+                best_two_diff,
+                ratio,
                 sep="\t",
                 file=f,
             )

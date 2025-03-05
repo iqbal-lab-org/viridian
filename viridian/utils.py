@@ -138,3 +138,9 @@ def write_fasta(name, seq_string, outfile):
     else:
         with open(outfile, "w") as f:
             print(seq, file=f)
+
+
+def gunzip_file(infile, outfile):
+    with gzip.open(infile, "rt") as f_in, open(outfile, "w") as f_out:
+        for line in f_in:
+            print(line, end="", file=f_out)
