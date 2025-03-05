@@ -18,10 +18,19 @@ Both the Docker and Singularity container have the main script
 `viridian` installed.
 
 ### Docker
-Get a Docker image of the latest release:
+Get a Docker image of the latest release for x86 architecture:
 ```
 docker pull ghcr.io/iqbal-lab-org/viridian:latest
 ```
+From release v1.5.0 onwards, get a Docker image of release X.Y.Z for ARM/Apple silicon:
+```
+docker pull ghcr.io/iqbal-lab-org/viridian:vX.Y.Z.arm
+```
+where you need to replace `X.Y.Z` with the release, eg
+```
+docker pull ghcr.io/iqbal-lab-org/viridian:v1.5.0.arm
+```
+
 All Docker images from v1.2.1 onwards are listed in the
 [packages page](https://github.com/iqbal-lab-org/viridian/pkgs/container/viridian).
 Older images can be found on the 
@@ -62,6 +71,9 @@ the run was successful.
 ## Usage
 
 These instructions assume that you are assembling SARS-CoV-2 data.
+However, Viridian should work with any amplicon sequencing - see
+the wiki for how to provide your own amplicon scheme files and reference
+genome.
 
 To run on paired Illumina reads:
 ```
@@ -83,9 +95,9 @@ To run on paired or unpaired Ion Torrent reads, use either of the
 above commands, but with the option `--tech iontorrent`.
 
 
-Download reads with accession SRR12345678 and run:
+Download reads with accession ERR8959214 and run:
 ```
-viridian run_one_sample --run_accession SRR12345678 --outdir OUT
+viridian run_one_sample --run_accession ERR8959214 --outdir OUT
 ```
 The sequencing tech and unpaired/paired is taken from the ENA metadata
 for each run.
