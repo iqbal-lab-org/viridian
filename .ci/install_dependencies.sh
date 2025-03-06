@@ -122,7 +122,7 @@ rm -rf mummer-4.0.0rc1
 cd $install_root
 git clone https://github.com/iqbal-lab-org/cylon.git
 cd cylon
-git checkout 57d559a76254b0b95785f7c02fa58ef806713e01
+git checkout 8b61712aaff9a674f497b6569312cd84bfc446b6
 pip3 install .
 cd ..
 rm -rf cylon
